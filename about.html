@@ -2,18 +2,41 @@
 <html>
 <head>
     <title>About Us | CareTrack</title>
+    <link rel="stylesheet" href="header.css">
 </head>
 
 <body>
-    <img src="images/CareTrack Logo.png" alt="CareTrack Logo" height="45px" width="45px">
-    <p>CareTrack <br> Maternal and Child Healthcare</p>
-    <nav>
-        <a href="home.html">Home</a>
-        <a href="#">About Us</a>
-        <a href="contact.html">Contact Us</a>
-        <button>Register</button>
-        <button>Login</button>
-    </nav>
+    <header class="navbar">
+        <div class="brand">
+
+            <img src="images/CareTrack Logo.png" alt="CareTrack" height="45px" width="45px">
+
+            <div class="brand-text">
+                <h3>CareTrack</h3>
+                <p>Maternal & Child Healthcare</p>
+            </div>
+
+        </div>
+        
+        <nav class="nav-links">
+            <a href="home.html">Home</a>
+            <a class="active" href="#">About Us</a>
+            <a href="contact.html">Contact Us</a>
+        </nav>
+
+        <div class="nav-btn">
+            <a href="register.html" class="registerBtn">
+                <img src="icons/register_icon.png" alt="Register Icon" height="20px" width="20px">
+                Register
+            </a>
+
+            <a href="login.html" class="loginBtn">
+                <img src="icons/login_icon.png" alt="Login Icon" height="20px" width="20px">
+                Login
+            </a>
+        </div>
+
+    </header>
 
     <div>
         <h1>About CareTrack</h1>
