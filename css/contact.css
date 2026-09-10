@@ -5,25 +5,18 @@ body {
 }
 
 .contact.header {
-    width: calc(100% - 140px);
-    min-height: 280px;
+    width: 100%;
+    min-height: 350px;
 
-    background: white;
+    background: #FEE6EF;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    padding: 35px 50px;
+    padding: 50px 100px;
 
-    margin: 30px auto;
-
-    border: 1px solid #f3d9e9;
-    border-radius: 15px;
-
-    box-shadow: 0 4px 15px rgba(220, 120, 180, 0.08);
-
-    gap: 40px;
+    gap: 50px;
 }
 
 .contact-us {
@@ -33,10 +26,11 @@ body {
 .contact-us h2 {
     font-size: 50px;
     margin-bottom: 8px;
+    color: #183153;
 }
 
 .contact-us h3 {
-    color: #c43b98;
+    color: #e95ebd;
     font-size: 20px;
     margin-bottom: 15px;
 }
@@ -48,7 +42,7 @@ body {
 }
 
 .contact-picture {
-    width: 45%;
+    width: 60%;
 
     display: flex;
     justify-content: center;
@@ -56,26 +50,22 @@ body {
 }
 
 .contact-picture img {
-    width: 350px;
+    width: 380px;
     max-width: 100%;
 }
 
 .contact.details {
     max-width: 1100px;
-
     margin: 35px auto;
-
     padding: 0 20px;
 
     display: grid;
-
     grid-template-columns: 1fr 1.3fr;
-
     gap: 25px;
 }
 
 .contact.details > .contact:first-child {
-    background: #ffffff;
+    background: #FEE6EF;
     border: 1px solid #f3d9e9;
     border-radius: 15px;
     padding: 30px;
@@ -87,7 +77,7 @@ body {
     color: #183153;
     margin-bottom: 25px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #fce3f2;
+    border-bottom: 2px solid #e468b3;
 }
 
 .contactitem {
@@ -142,13 +132,13 @@ body {
 }
 
 .support-hours p:last-child {
-    color: #c43b98;
+    color: #db477d;
     font-size: 17px;
     margin-top: 8px;
 }
 
 .contact.details > .contact:last-child {
-    background: #ffffff;
+    background: #FEE6EF;
     border: 1px solid #f3d9e9;
     border-radius: 15px;
     padding: 30px;
@@ -166,19 +156,22 @@ body {
 form {
     display: flex;
     flex-direction: column;
+    width: 92%;
+    margin: 0 auto;
 }
 
 form label {
     font-size: 13px;
     font-weight: bold;
     margin-bottom: 7px;
-    color: #c43b98;
+    color: #e745bb;
 }
 
 form input,
 form select,
 form textarea {
     width: 100%;
+    box-sizing: border-box;
     border: 1px solid #f1c9df;
     border-radius: 9px;
     padding: 12px 14px;
@@ -190,12 +183,8 @@ form textarea {
     color: #183153;
 }
 
-form input:focus,
-form select:focus,
-form textarea:focus {
-    border-color: #eb75ca;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
+form select {
+    height: 42px;
 }
 
 form textarea {
@@ -203,21 +192,36 @@ form textarea {
     resize: vertical;
 }
 
+form input:focus,
+form select:focus,
+form textarea:focus {
+    border-color: #FEE6EF;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
+}
+
 form button {
     width: 100%;
     border: none;
-    background: #eb75ca;
+    background: #fea9f0;
     color: white;
     padding: 13px;
     border-radius: 9px;
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
+
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+
     transition: 0.2s;
+}
+
+form button:hover {
+    background: #e243b5;
+    transform: translateY(-1px);
 }
 
 form button img {
@@ -227,11 +231,6 @@ form button img {
     border: none;
 }
 
-form button:hover {
-    background: #e243b5;
-    transform: translateY(-1px);
-}
-
 .Frequently-Questions {
     max-width: 1100px;
 
@@ -239,7 +238,7 @@ form button:hover {
 
     padding: 20px;
 
-    background: #ffb7e3;
+    background: #FEE6EF;
 
     border-radius: 7px;
 
@@ -280,18 +279,18 @@ form button:hover {
 
     font-size: 14px;
 
-    color: #fffefe;
+    color: #ff59a1;
 
     margin-left: 30px;
 }
 
 
 .Frequently-Questions button {
-    background: white;
+    background: rgb(255, 126, 192);
 
-    border: 1px solid #ff8aca;
+    border: 1px solid #FEE6EF;
 
-    color: #f264d1;
+    color: #FEE6EF;
 
     padding: 10px 15px;
 
@@ -304,11 +303,11 @@ form button:hover {
 
 
 .Frequently.Questions button:hover {
-    background: #d367af;
+    background: #FEE6EF;
 }
 
 footer {
-    background: #ffbde6;
+    background: #FEE6EF;
     padding: 30px 150px 15px;
 
     display: grid;
@@ -373,22 +372,18 @@ footer {
 
     .contact.header {
         flex-direction: column;
-
         text-align: center;
-
-        padding: 30px;
+        padding: 30px 20px;
+        gap: 20px;
     }
 
-
-    .contact-us {
-        width: 100%;
-    }
-
-
+    .contact-us,
     .contact-picture {
         width: 100%;
+    }
 
-        margin-top: 20px;
+    .contact-picture {
+        margin-top: 0;
     }
 
 
