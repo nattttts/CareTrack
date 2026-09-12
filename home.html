@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home</title>
-    <link rel="stylesheet" href="header.css" />
+    <title>Home | CareTrack</title>
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/home.css" />
+    <link rel="stylesheet" href="css/footer.css">
 </head>
 
 <body>
+
+    <!-- Navigation Bar -->
     <header class="navbar">
         <div class="brand">
 
@@ -37,29 +41,141 @@
         </div>
 
     </header>
+    
+    <!-- Hero Section -->
+    <section class="home-hero">
+        <div class="hero-container">
 
-    <h1>Better care for mothers and children</h1>
-    <p>CareTrack is a complete maternal and child healthcare management system that helps you track appointments, vaccinations, follow-ups, and clinic visits — all in one place.</p>
+            <div class="hero-content">
+                <h4>CARE FOR MOM. CARE FOR CHILD. CARE FOR LIFE.</h4>
 
-    <h2>Everything you need in one place</h2>
-    <p>CareTrack simplifies maternal and child healthcare by bringing all essential features together for a healthier tomorrow.</p>
+                <h1>Better care for mothers and children</h1>
 
-    <button class="materalCareBtn">Maternal Care</button>
-    <button class="materalCareBtn">Child Vaccinations</button>
-    <button class="materalCareBtn">Clinic Queue Monitoring</button>
-    <button class="materalCareBtn">Follow-ups & Reminders</button>
-    <br><br>
+                <p>
+                    CareTrack is a complete maternal and child healthcare management system that helps you 
+                    track appointments, vaccinations, follow-ups, and clinic visits - all in one place.
+                </p>
+            </div>
 
-    <img src="images/CareTrack Logo.png" alt="CareTrack" height="45px" width="45px">
-    <h1>CareTrack</h1>
-    <p>Maternal & Child Healthcare</p>
-    <p>A complete platform for maternal and child healthcare management.</p>
+            <div class="hero-image">
+                <img src="images/mother_holding_baby.png" alt="Mother holding baby">
+            </div>
 
-    <h3>Contact Info</h3>
-    <p>+601234567890</p>
-    <p>support@caretrack.my</p>
-    <p>Penang, Malaysia</p>
-    <p>&copy; 2026 CareTrack. All rights reserved.</p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+
+        <div class="section-title">
+
+            <h2>Everything you need in one place</h2>
+
+            <p>CareTrack simplifies maternal and child healthcare by bringing all essential</p>
+            <p>features together for a healthier tomorrow.</p>
+
+        </div>
+    </section>
+
+    <!-- Feature Cards -->
+    <div class="features-container">
+
+        <!-- Maternal Care -->
+        <a href="maternal-care.html" class="feature-card">
+
+            <div class="feature-icon">
+                <img src="icons/appointment.png" alt="Maternal Care">
+            </div>
+
+            <div class="feature-content">
+
+                <h3>Maternal Care</h3>
+                <p>Track your prenatal and postnatal appointments. Get reminders and never miss an important visit.</p>
+
+            </div>
+
+        </a>
+
+        <!-- Child Vaccinations -->
+        <a href="child-vaccinations.html" class="feature-card">
+
+            <div class="feature-icon">
+                <img src="icons/syringe.png" alt="Child Vaccinations">
+            </div>
+
+            <div class="feature-content">
+
+                <h3>Child Vaccinations</h3>
+                <p>View and manage your child's vaccination schedule and get timely reminders.</p>
+                
+            </div>
+
+        </a>
+
+        <!-- Clinic Queue Monitoring -->
+        <a href="queue-monitoring.html" class="feature-card">
+
+            <div class="feature-icon">
+                <img src="icons/queue.png" alt="Clinic Queue Monitoring">
+            </div>
+
+            <div class="feature-content">
+
+                <h3>Clinic Queue Monitoring</h3>
+                <p>Check real-time queue status and estimated waiting time before your visit.</p>
+                
+            </div>
+
+        </a>
+
+        <!-- Follow-ups & Reminders -->
+        <a href="follow-ups.html" class="feature-card">
+
+            <div class="feature-icon">
+                <img src="icons/reminder.png" alt="Follow-ups and Reminders">
+            </div>
+
+            <div class="feature-content">
+
+                <h3>Follow-ups & Reminders</h3>
+                <p>Get notified about upcoming appointments, overdue visits, and important follow-ups.</p>
+                
+            </div>
+
+        </a>
+        
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+
+            <div class="footer-brand">
+                
+                <img src="images/CareTrack Logo.png" alt="CareTrack" height="45px" width="45px">
+
+                <div class="brand-text">
+                    <h3>CareTrack</h3>
+                    <p>Maternal & Child Healthcare</p>
+                </div>
+
+            </div>
+
+            <div class="footer-column">
+                <h3>Contact Info</h3>
+
+                <p>☎ +60 12 345 6789</p>
+                <p>✉ support@caretrack.my</p>
+                <p>Penang, Malaysia</p>
+            </div>
+
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 CareTrack. All rights reserved.
+        </div>
+
+    </footer>
   
 </body>
 </html>

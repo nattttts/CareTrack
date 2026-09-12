@@ -1,0 +1,158 @@
+/* Hero Section */
+.home-hero {
+    background: #FEE6EF;
+    border-bottom: 1px solid #e3eef9;
+}
+
+.hero-container {
+    max-width: 1400px;
+    min-height: 340px;
+    margin: auto;
+    padding: 30px 65px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hero-content {
+    width: 50%;
+}
+
+.hero-content h4{
+    color: #f9528e;
+    font-weight: 800;
+}
+
+.hero-content h1 {
+    font-size: 38px;
+    margin-bottom: 30px;
+    color: #122d55;
+}
+
+.hero-content p {
+    font-size: 16px; 
+    line-height: 1.8; 
+}
+
+.hero-image {
+    width: 42%;
+    display: flex;
+    justify-content: center; 
+}
+
+.hero-image img {
+    width: 440px;
+    height: 280px;
+}
+
+/* Features Section */
+.features-section {
+    padding: 10px;
+    text-align: center;
+}
+
+.features-section h2{
+    font-size: 30px;
+    color: #14284b;
+}
+
+.features-section p {
+    font-size: 13px;
+    color: #65758a;
+}
+
+/* Feature Cards */
+.features-container {
+    width: 90%;
+    max-width: 1400px;
+    margin: 10px auto 30px; 
+    padding: 10px;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Displays 4 cards in one row */
+    gap: 20px;
+} 
+
+.feature-card {
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 17px;
+
+    text-decoration: none;
+    border: 1px solid #dbe4ef;
+    border-radius: 12px;
+    background-color: white;
+    color: #14233d;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px); /* Moves the card up when hovered */
+    border-color: #f9528e;
+}
+
+.feature-icon {
+    flex-shrink: 0; /* Prevents the icon from shrinking into an oval */
+    width: 58px;
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background-color: #FEE6EF;
+}
+
+.feature-icon img {
+    width: 30px;
+    height: 30px;
+}
+
+.feature-content h3 {
+    margin: 5px 0px;
+    font-size: 15px;
+}
+
+.feature-content p {
+    margin: 0;
+    color: #65758a;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* Responsive Design */
+@media (max-width: 1000px) {
+
+    .nav-links {
+        display: none;
+    }
+
+    .hero-container {
+        padding: 40px;
+    }
+
+    .features-container {
+        grid-template-columns: repeat(2, 1fr); /* Displays 2 cards in one row */
+    }
+}
+
+@media (max-width: 700px) {
+
+    .hero-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-content {
+        width: 100%;
+    }
+
+    .hero-image {
+        width: 100%;
+    }
+
+    .features-container {
+        grid-template-columns: 1fr; /* Displays 1 cards in one row */
+    }
+}
