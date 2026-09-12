@@ -306,68 +306,6 @@ form button img {
     background: #FEE6EF;
 }
 
-footer {
-    background: #FEE6EF;
-    padding: 30px 150px 15px;
-
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 30px;
-}
-
-.footer.column {
-    text-align: left;
-    margin-left: 80px;
-}
-
-.footer.colume {
-    text-align: left;
-    margin-left: 250px;
-}
-
-.footer.column img {
-    display: block;
-    margin-bottom: 8px;
-}
-
-.footer.column h3,
-.footer.colume h3 {
-    font-size: 20px;
-    margin-bottom: 8px;
-}
-
-.footer.column h4 {
-    font-size: 15px;
-    margin-bottom: 8px;
-}
-
-.footer.column p,
-.footer.colume p {
-    font-size: 15px;
-    color: #555;
-    line-height: 1.6;
-}
-
-.footer.colume p {
-    margin-bottom: 3px;
-}
-
-.footer-copyright {
-    grid-column: 1 / -1;
-
-    margin-top: 25px;
-    padding-top: 12px;
-
-    border-top: 1px solid rgba(24, 49, 83, 0.15);
-
-    text-align: center;
-}
-
-.footer-copyright p {
-    font-size: 15px;
-    color: #555;
-}
-
 @media (max-width: 768px) {
 
     .contact.header {
@@ -401,20 +339,5 @@ footer {
         gap: 15px;
 
         align-items: flex-start;
-    }
-
-
-    footer {
-        grid-template-columns: 1fr;
-        padding: 30px;
-        gap: 20px;
-    }
-
-    .footer.colume {
-        text-align: left;
-    }
-
-    .footer-copyright {
-        grid-column: 1;
     }
 }
