@@ -43,6 +43,7 @@
 .hero-image img {
     width: 440px;
     height: 280px;
+    object-fit: contain;
 }
 
 /* Features Section */
