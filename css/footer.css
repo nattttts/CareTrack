@@ -9,7 +9,7 @@
     padding: 35px 40px;
 
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 60px;
 
     justify-items: center;
@@ -47,6 +47,8 @@
 .footer-column p {
     font-size: 13px;
     color: #617287;
+    margin: 0;
+    line-height: 1.6;
 }
 
 .copyright {

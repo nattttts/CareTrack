@@ -80,16 +80,10 @@
     align-items: flex-start;
     gap: 17px;
 
-    text-decoration: none;
     border: 1px solid #dbe4ef;
     border-radius: 12px;
     background-color: white;
     color: #14233d;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px); /* Moves the card up when hovered */
-    border-color: #f9528e;
 }
 
 .feature-icon {
