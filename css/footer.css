@@ -61,3 +61,17 @@
     font-size: 12px;
     color: #687a8f;
 }
+
+@media (max-width: 700px) {
+    
+    .footer-container {
+        grid-template-columns: 1fr;
+        padding: 30px 20px;
+        gap: 25px;
+    }
+
+    .footer-column {
+        align-items: center;
+        text-align: center;
+    }
+}
