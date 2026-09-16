@@ -46,31 +46,33 @@
     object-fit: contain;
 }
 
-/* Features Section */
-.features-section {
-    padding: 10px;
+/* Section Title and Description */
+.section-title h2 {
+    font-size: 30px;
+    color: #14284b;
     text-align: center;
 }
 
-.features-section h2{
-    font-size: 30px;
-    color: #14284b;
-}
-
-.features-section p {
+.section-title p {
     font-size: 13px;
     color: #65758a;
+    text-align: center;
+}
+
+/* Features Section */
+.features-section {
+    padding: 30px 10px;
+    text-align: center;
 }
 
 /* Feature Cards */
 .features-container {
     width: 90%;
     max-width: 1400px;
-    margin: 10px auto 30px; 
-    padding: 10px;
+    margin: 35px auto 20px; 
 
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Displays 4 cards in one row */
+    grid-template-columns: repeat(4, 1fr); /* Displays 4 cards per row */
     gap: 20px;
 } 
 
@@ -83,7 +85,6 @@
     border: 1px solid #dbe4ef;
     border-radius: 12px;
     background-color: white;
-    color: #14233d;
 }
 
 .feature-icon {
@@ -107,6 +108,7 @@
 .feature-content h3 {
     margin: 5px 0px;
     font-size: 15px;
+    color: #14233d;
 }
 
 .feature-content p {
@@ -114,6 +116,130 @@
     color: #65758a;
     font-size: 13px;
     line-height: 1.7;
+}
+
+/* Helps Section */
+.helps-section {
+    background-color: #f8fafc;
+    padding: 30px 10px;
+    text-align: center;
+}
+
+.helps-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 35px auto 20px; 
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Displays 4 cards per row */
+    gap: 30px;
+}
+
+.help-card {
+    padding: 25px;
+    border: 1px solid #dbe4ef;
+    border-radius: 12px;
+    background-color: white;
+}
+
+.help-card h2 {
+    margin: 5px;
+    font-size: 27px;
+    color: #f9528e;
+}
+
+.help-card h3 {
+    font-size: 15px;
+    color: #14233d;
+}
+
+.help-card p {
+    margin: 0;
+    color: #65758a;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* Users Section */
+.users-section {
+    padding: 30px 10px;
+}
+
+.users-container {
+    width: 85%;
+    max-width: 1000px;
+    margin: 35px auto 20px; 
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Displays 2 cards per row */
+    gap: 40px;
+}
+
+.user-card {
+    padding: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 17px;
+
+    border: 1px solid #dbe4ef;
+    border-radius: 12px;
+    background-color: white;
+}
+
+.user-icon {
+    flex-shrink: 0; /* Prevents the icon from shrinking into an oval */
+    width: 58px;
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background-color: #FEE6EF;
+}
+
+.user-icon p {
+    font-size: 30px;
+}
+
+.user-content h3 {
+    margin: 5px 0 15px;
+    font-size: 18px;
+    color: #14233d;
+}
+
+.user-content ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.user-content li {
+    color: #65758a;
+    font-size: 13px;
+    line-height: 2.0;
+}
+
+/*  Call to Action */
+.action-section {
+    padding: 20px 10px 50px;
+    text-align: center;
+}
+
+.register-now-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 25px;
+    color: #FFFFFF;
+    background: #f9528e;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.register-now-btn:hover {
+    background: #e81f67;
 }
 
 /* Responsive Design */
@@ -128,7 +254,15 @@
     }
 
     .features-container {
-        grid-template-columns: repeat(2, 1fr); /* Displays 2 cards in one row */
+        grid-template-columns: repeat(2, 1fr); /* Displays 2 cards per row */
+    }
+
+    .helps-container {
+        grid-template-columns: repeat(2, 1fr); /* Displays 2 cards per row */
+    }
+
+    .users-container {
+        grid-template-columns: repeat(2, 1fr); /* Displays 2 cards per row */
     }
 }
 
@@ -148,6 +282,14 @@
     }
 
     .features-container {
-        grid-template-columns: 1fr; /* Displays 1 cards in one row */
+        grid-template-columns: 1fr; /* Displays 1 card per row */
+    }
+
+    .helps-container {
+        grid-template-columns: repeat(1, 1fr); /* Displays 1 card per row */
+    }
+
+    .users-container {
+        grid-template-columns: repeat(1, 1fr); /* Displays 1 card per row */
     }
 }
