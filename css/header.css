@@ -70,6 +70,11 @@ body {
     gap: 8px; /* Space between icon and text */
 }
 
+.nav-btn img {
+    width: 20px;
+    height: 20px;
+}
+
 .registerBtn {
     color: #f9528e;
     background: #FFFFFF;
@@ -80,4 +85,29 @@ body {
     color: #FFFFFF;
     background: #f9528e;
     border: 1px solid #f9528e;
+}
+
+.registerBtn:hover {
+    color: #FFFFFF;
+    background: #e81f67;
+    border: 1px solid #e81f67;
+}
+
+.loginBtn:hover {
+    color: #FFFFFF;
+    background: #e81f67;
+    border: 1px solid #e81f67;
+}
+
+/* Switch Register Icon on Hover */
+.hover-icon {
+    display: none;
+}
+
+.registerBtn:hover .normal-icon {
+    display: none;
+}
+
+.registerBtn:hover .hover-icon {
+    display: block;
 }
