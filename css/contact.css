@@ -5,7 +5,7 @@ body {
 }
 
 .contact.header {
-    width: 100%;
+    width: 87%;
     min-height: 350px;
 
     background: #FEE6EF;
@@ -42,7 +42,7 @@ body {
 }
 
 .contact-picture {
-    width: 60%;
+    width: 40%;
 
     display: flex;
     justify-content: center;
@@ -203,7 +203,7 @@ form textarea:focus {
 form button {
     width: 100%;
     border: none;
-    background: #fea9f0;
+    background: #f9528e;
     color: white;
     padding: 13px;
     border-radius: 9px;
@@ -220,7 +220,7 @@ form button {
 }
 
 form button:hover {
-    background: #e243b5;
+    background: #e81f67;
     transform: translateY(-1px);
 }
 
@@ -229,81 +229,6 @@ form button img {
     height: 17px;
     padding: 0;
     border: none;
-}
-
-.Frequently-Questions {
-    max-width: 1100px;
-
-    margin: 20px auto 30px;
-
-    padding: 20px;
-
-    background: #FEE6EF;
-
-    border-radius: 7px;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-}
-
-
-.Questions {
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    flex-wrap: wrap;
-}
-
-
-.Questions img {
-    width: 30px;
-    height: 30px;
-}
-
-
-.Questions h3 {
-    font-size: 17px;
-
-    margin-bottom: 5px;
-}
-
-
-.Questions p {
-    width: 100%;
-
-    font-size: 14px;
-
-    color: #ff59a1;
-
-    margin-left: 30px;
-}
-
-
-.Frequently-Questions button {
-    background: rgb(255, 126, 192);
-
-    border: 1px solid #FEE6EF;
-
-    color: #FEE6EF;
-
-    padding: 10px 15px;
-
-    border-radius: 5px;
-
-    cursor: pointer;
-
-    font-size: 11px;
-}
-
-
-.Frequently.Questions button:hover {
-    background: #FEE6EF;
 }
 
 @media (max-width: 768px) {
@@ -327,17 +252,5 @@ form button img {
 
     .contact.details {
         grid-template-columns: 1fr;
-    }
-
-
-    .Frequently.Questions {
-        margin-left: 20px;
-        margin-right: 20px;
-
-        flex-direction: column;
-
-        gap: 15px;
-
-        align-items: flex-start;
     }
 }
