@@ -245,10 +245,6 @@
 /* Responsive Design */
 @media (max-width: 1000px) {
 
-    .nav-links {
-        display: none;
-    }
-
     .hero-container {
         padding: 40px;
     }
