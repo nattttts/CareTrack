@@ -63,7 +63,6 @@ body {
     padding: 10px 15px;
     border-radius: 8px;
     font-size: 14px;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,13 +86,7 @@ body {
     border: 1px solid #f9528e;
 }
 
-.registerBtn:hover {
-    color: #FFFFFF;
-    background: #e81f67;
-    border: 1px solid #e81f67;
-}
-
-.loginBtn:hover {
+.registerBtn:hover, .loginBtn:hover {
     color: #FFFFFF;
     background: #e81f67;
     border: 1px solid #e81f67;
