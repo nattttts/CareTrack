@@ -5,7 +5,8 @@ body {
 }
 
 .contact.header {
-    width: 87.2%;
+    width: 100%;
+    box-sizing: border-box;
     min-height: 350px;
 
     background: #FEE6EF;
