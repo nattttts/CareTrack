@@ -213,10 +213,11 @@ header {
     margin-left: 5px;
     font-weight: 700;
     text-decoration: none;
-    color: #e81f67;
+    color: #f9528e;
 }
 
 .login-section a:hover {
+    color: #e81f67;
     text-decoration: underline;
 }
 
