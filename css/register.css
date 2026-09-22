@@ -71,7 +71,7 @@ header {
 /* Content Section */
 .register-page {
     min-height: calc(100vh - 78px);
-    padding: 50px 100px;
+    padding: 50px 120px;
     background: #FEE6EF;
 }
 
