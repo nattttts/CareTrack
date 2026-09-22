@@ -13,7 +13,8 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between; /* Distribute items across the navbar */
-    border-bottom: 1px solid #e5e5e5;
+    background: #ffffff;
+    border-bottom: 1px solid #e2ebf5;
 }
 
 .logo {
@@ -25,6 +26,7 @@ header {
 .logo img {
     width: 42px;
     height: 42px;
+    object-fit: contain;
 }
 
 .logo-text h1 {
