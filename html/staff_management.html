@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Staff Management | CareTrack</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="../css/staff_management.css">
+    <link rel="stylesheet" href="../css/patient_header.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+</head>
+
+
+<body>
+
+    <!-- Header -->
+    <header class="top-header">
+
+        <a href="#" class="logo">
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal & Child Healthcare</p>
+            </div>
+        </a>
+
+        <div class="header-right">
+
+            <div class="profile">
+                <img src="../icons/user.png" alt="Profile">
+
+                <span>Admin</span>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- Page Layout -->
+
+    <div class="page-layout">
+
+
+        <!-- Sidebar -->
+
+        <aside class="sidebar">
+
+            <nav class="sidebar-nav">
+
+                <a href="#"
+                   class="sidebar-link active">
+
+                    <i class="bi bi-person-badge"></i>
+                    <span>Staff Management</span>
+
+                </a>
+
+                <a href="home.html" class="sidebar-link logout-link">
+                    <img src="../icons/logout.png" alt="">
+                    <span>Log Out</span>
+                </a>
+            </nav>
+
+        </aside>
+
+
+
+        <!-- Main Content -->
+
+        <main class="main-content">
+
+
+            <!-- Page Header -->
+
+            <div class="page-header">
+
+                <div class="page-heading">
+
+                    <div class="page-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+
+                    <div>
+                        <h2>Staff Management</h2>
+
+                        <p>
+                            Manage authorised healthcare staff accounts.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <!-- Add Staff -->
+
+                <button
+                    type="button"
+                    class="btn btn-primary add-staff-button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addStaffModal"
+                >
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    Add Staff
+                </button>
+
+            </div>
+
+            <!-- ================= SEARCH & FILTER ================= -->
+
+            <section class="filter-card">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Search -->
+
+                    <div class="col-lg-7">
+
+                        <label for="staffSearch" class="form-label">
+                            Search Staff
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input
+                                type="text"
+                                id="staffSearch"
+                                class="form-control"
+                                placeholder="Search by name, email or position..."
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Status Filter -->
+
+                    <div class="col-lg-3">
+
+                        <label for="statusFilter" class="form-label">
+                            Filter by Status
+                        </label>
+
+                        <select
+                            id="statusFilter"
+                            class="form-select"
+                        >
+
+                            <option>All (Active & Inactive)</option>
+                            <option>Active</option>
+                            <option>Inactive</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- ================= STAFF TABLE ================= -->
+
+            <section class="staff-table-card">
+
+                <div class="table-responsive">
+
+                    <table class="table staff-table align-middle mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Staff Name</th>
+
+                                <th>Email</th>
+
+                                <th>Position</th>
+
+                                <th>Account Status</th>
+
+                                <th>Date Created</th>
+
+                                <th class="text-center">
+                                    Actions
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            <!-- Dr. Amir Rahman -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="staff-info">
+
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Dr. Amir Rahman"
+                                            class="staff-avatar"
+                                        >
+
+                                        <div>
+
+                                            <strong>
+                                                Dr. Amir Rahman
+                                            </strong>
+
+                                            <span>
+                                                Doctor
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    amir.rahman@caretrack.my
+                                </td>
+
+
+                                <td>
+                                    Doctor
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge active-status">
+
+                                        <span class="status-dot"></span>
+
+                                        Active
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+                                    15 Apr 2025
+                                </td>
+
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <!-- View -->
+
+                                        <button
+                                            type="button"
+                                            class="action-button view-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewStaffModal"
+                                        >
+
+                                            <i class="bi bi-eye"></i>
+
+                                            <span>View</span>
+
+                                        </button>
+
+
+                                        <!-- Edit -->
+
+                                        <button
+                                            type="button"
+                                            class="action-button edit-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editStaffModal"
+                                        >
+
+                                            <i class="bi bi-pencil"></i>
+
+                                            <span>Edit</span>
+
+                                        </button>
+
+
+                                        <!-- Deactivate -->
+
+                                        <button
+                                            type="button"
+                                            class="action-button deactivate-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deactivateModal"
+                                        >
+
+                                            <i class="bi bi-person-x"></i>
+
+                                            <span>Deactivate</span>
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+
+
+                            <!-- Nurse Aina Hassan -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="staff-info">
+
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Nurse Aina Hassan"
+                                            class="staff-avatar"
+                                        >
+
+                                        <div>
+
+                                            <strong>
+                                                Nurse Aina Hassan
+                                            </strong>
+
+                                            <span>
+                                                Nurse
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    aina.hassan@caretrack.my
+                                </td>
+
+
+                                <td>
+                                    Nurse
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge active-status">
+
+                                        <span class="status-dot"></span>
+
+                                        Active
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+                                    18 Apr 2025
+                                </td>
+
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <button
+                                            type="button"
+                                            class="action-button view-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewStaffModal"
+                                        >
+
+                                            <i class="bi bi-eye"></i>
+                                            <span>View</span>
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="action-button edit-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editStaffModal"
+                                        >
+
+                                            <i class="bi bi-pencil"></i>
+                                            <span>Edit</span>
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="action-button deactivate-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deactivateModal"
+                                        >
+
+                                            <i class="bi bi-person-x"></i>
+                                            <span>Deactivate</span>
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+
+
+                            <!-- Nurse Siti Ahmad -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="staff-info">
+
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Nurse Siti Ahmad"
+                                            class="staff-avatar"
+                                        >
+
+                                        <div>
+
+                                            <strong>
+                                                Nurse Siti Ahmad
+                                            </strong>
+
+                                            <span>
+                                                Nurse
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    siti.ahmad@caretrack.my
+                                </td>
+
+
+                                <td>
+                                    Nurse
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge inactive-status">
+
+                                        <span class="status-dot"></span>
+
+                                        Inactive
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+                                    22 Apr 2025
+                                </td>
+
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <button
+                                            type="button"
+                                            class="action-button view-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewStaffModal"
+                                        >
+
+                                            <i class="bi bi-eye"></i>
+                                            <span>View</span>
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="action-button edit-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editStaffModal"
+                                        >
+
+                                            <i class="bi bi-pencil"></i>
+                                            <span>Edit</span>
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="action-button activate-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deactivateModal"
+                                        >
+
+                                            <i class="bi bi-person-check"></i>
+                                            <span>Activate</span>
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Table Footer -->
+
+                <div class="table-footer">
+
+                    <span>
+                        Showing 1 to 3 of 3 staff
+                    </span>
+
+
+                    <div class="pagination-buttons">
+
+                        <button class="pagination-button" disabled>
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+
+                        <button class="pagination-button current">
+                            1
+                        </button>
+
+                        <button class="pagination-button" disabled>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- ADD STAFF MODAL -->
+
+    <div
+        class="modal fade"
+        id="addStaffModal"
+        tabindex="-1"
+        aria-labelledby="addStaffModalLabel"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <div>
+
+                        <h5 class="modal-title" id="addStaffModalLabel">
+                            Add Staff
+                        </h5>
+
+                        <p class="modal-subtitle">
+                            Create a new authorised healthcare staff account.
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+
+                </div>
+
+
+                <form>
+
+                    <div class="modal-body">
+
+                        <div class="row g-4">
+
+                            <!-- Full Name -->
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="Enter full name"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <!-- Email -->
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    class="form-control"
+                                    placeholder="Enter email address e.g. staff@caretrack.my"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <!-- Phone -->
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Phone Number
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    class="form-control"
+                                    placeholder="Enter phone number e.g. 012-3456789"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <!-- Position -->
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Position
+                                </label>
+
+                                <select class="form-select" required>
+
+                                    <option selected disabled>
+                                        Select position
+                                    </option>
+
+                                    <option>
+                                        Doctor
+                                    </option>
+
+                                    <option>
+                                        Nurse
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Account Status -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Account Status
+                                </label>
+
+                                <div class="status-options">
+
+                                    <div class="form-check">
+
+                                        <input
+                                            class="form-check-input"
+                                            type="radio"
+                                            name="accountStatus"
+                                            id="activeStatus"
+                                            checked
+                                        >
+
+                                        <label
+                                            class="form-check-label"
+                                            for="activeStatus"
+                                        >
+
+                                            <strong>Active</strong>
+
+                                            <small>
+                                                Staff can log in and access
+                                                the system.
+                                            </small>
+
+                                        </label>
+
+                                    </div>
+
+
+                                    <div class="form-check">
+
+                                        <input
+                                            class="form-check-input"
+                                            type="radio"
+                                            name="accountStatus"
+                                            id="inactiveStatus"
+                                        >
+
+                                        <label
+                                            class="form-check-label"
+                                            for="inactiveStatus"
+                                        >
+
+                                            <strong>Inactive</strong>
+
+                                            <small>
+                                                Staff account is disabled
+                                                and cannot log in.
+                                            </small>
+
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- System Role -->
+
+                            <div class="col-12">
+
+                                <div class="system-role-note">
+
+                                    <i class="bi bi-info-circle"></i>
+
+                                    <span>
+                                        <strong>System Role:</strong>
+                                        Healthcare Staff
+                                        <small>
+                                            (applied to all staff accounts)
+                                        </small>
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="button"
+                            class="btn btn-light cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary modal-add-staff-button"
+                        >
+                            Add Staff
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- VIEW STAFF MODAL -->
+    <!-- ================================================= -->
+
+    <div
+        class="modal fade"
+        id="viewStaffModal"
+        tabindex="-1"
+        aria-labelledby="viewStaffModalLabel"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title" id="viewStaffModalLabel">
+                        Staff Details
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="view-profile">
+
+                        <img
+                            src="../icons/user.png"
+                            alt="Dr. Amir Rahman"
+                            class="view-avatar"
+                        >
+
+                        <h4>Dr. Amir Rahman</h4>
+
+                        <span class="status-badge active-status">
+                            <span class="status-dot"></span>
+                            Active
+                        </span>
+
+                    </div>
+
+
+                    <div class="staff-detail-list">
+
+                        <div>
+                            <span>Full Name</span>
+                            <strong>Dr. Amir Rahman</strong>
+                        </div>
+
+                        <div>
+                            <span>Email</span>
+                            <strong>amir.rahman@caretrack.my</strong>
+                        </div>
+
+                        <div>
+                            <span>Phone Number</span>
+                            <strong>+60 12 345 6789</strong>
+                        </div>
+
+                        <div>
+                            <span>Position</span>
+                            <strong>Doctor</strong>
+                        </div>
+
+                        <div>
+                            <span>System Role</span>
+                            <strong>Healthcare Staff</strong>
+                        </div>
+
+                        <div>
+                            <span>Date Created</span>
+                            <strong>15 Apr 2025</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- EDIT STAFF MODAL -->
+    <!-- ================================================= -->
+
+    <div
+        class="modal fade"
+        id="editStaffModal"
+        tabindex="-1"
+        aria-labelledby="editStaffModalLabel"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <div>
+
+                        <h5 class="modal-title" id="editStaffModalLabel">
+                            Edit Staff
+                        </h5>
+
+                        <p class="modal-subtitle">
+                            Update the staff member's account information.
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+
+                </div>
+
+
+                <form>
+
+                    <div class="modal-body">
+
+                        <div class="row g-4">
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    value="Dr. Amir Rahman"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    class="form-control"
+                                    value="amir.rahman@caretrack.my"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Phone Number
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    class="form-control"
+                                    value="+60 12 345 6789"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Position
+                                </label>
+
+                                <select class="form-select">
+
+                                    <option selected>
+                                        Doctor
+                                    </option>
+
+                                    <option>
+                                        Nurse
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Account Status
+                                </label>
+
+                                <select class="form-select">
+
+                                    <option selected>
+                                        Active
+                                    </option>
+
+                                    <option>
+                                        Inactive
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <div class="system-role-note">
+
+                                    <i class="bi bi-info-circle"></i>
+
+                                    <span>
+                                        <strong>System Role:</strong>
+                                        Healthcare Staff
+                                        <small>
+                                            Staff position does not change
+                                            the system role.
+                                        </small>
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="button"
+                            class="btn btn-light cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Deactivate Confirmation Modal -->
+    <div
+        class="modal fade"
+        id="deactivateModal"
+        tabindex="-1"
+        aria-labelledby="deactivateModalLabel"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+
+            <div class="modal-content deactivate-modal">
+
+                <div class="modal-body text-center">
+
+                    <div class="warning-icon">
+                        <i class="bi bi-person-x"></i>
+                    </div>
+
+
+                    <h4 id="deactivateModalLabel">
+                        Deactivate Staff Account?
+                    </h4>
+
+
+                    <p>
+                        Are you sure you want to deactivate
+                        <strong>Dr. Amir Rahman's</strong> account?
+                    </p>
+
+
+                    <p class="warning-text">
+                        The staff member will no longer be able
+                        to log in to the system.
+                    </p>
+
+
+                    <div class="confirmation-buttons">
+
+                        <button
+                            type="button"
+                            class="btn btn-light cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            data-bs-dismiss="modal"
+                        >
+                            <i class="bi bi-person-x"></i>
+                            Deactivate
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Bootstrap JS -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+
+</html>

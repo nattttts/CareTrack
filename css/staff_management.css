@@ -1,0 +1,857 @@
+/* ================= GENERAL ================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #142d58;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+/* ================= HEADER ================= */
+
+.top-header {
+    height: 78px;
+
+    padding: 0 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #dce8f5;
+}
+
+
+/* CareTrack Logo */
+
+.caretrack-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #073b73;
+}
+
+.caretrack-logo img {
+    width: 43px;
+    height: 43px;
+    object-fit: contain;
+}
+
+.caretrack-logo h1 {
+    margin: 0;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.caretrack-logo p {
+    margin: 2px 0 0;
+
+    font-size: 10px;
+    color: #1476d4;
+}
+
+
+/* Header Right */
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+/* Admin Profile */
+
+.admin-profile {
+    padding-left: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-profile img {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+.admin-profile strong,
+.admin-profile span {
+    display: block;
+}
+
+.admin-profile strong {
+    font-size: 13px;
+}
+
+.admin-profile span {
+    margin-top: 3px;
+
+    font-size: 11px;
+    color: #4670a2;
+}
+
+
+/* ================= PAGE LAYOUT ================= */
+
+.page-layout {
+    min-height: calc(100vh - 78px);
+
+    display: flex;
+}
+
+/* ================= MAIN CONTENT ================= */
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+
+    padding: 34px 38px 50px;
+
+    background: #ffffff;
+}
+
+
+/* ================= PAGE HEADER ================= */
+
+.page-header {
+    max-width: 1250px;
+
+    margin: 0 auto 27px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-heading {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.page-icon {
+    width: 60px;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fee6ef;
+
+    color: #f9528e;
+}
+
+.page-icon i {
+    font-size: 29px;
+}
+
+.page-heading h2 {
+    margin: 0 0 5px;
+
+    font-size: 34px;
+    font-weight: 700;
+
+    color: #142d58;
+}
+
+.page-heading p {
+    margin: 0;
+
+    font-size: 14px;
+    color: #55708f;
+}
+
+
+/* Add Staff */
+
+.add-staff-button {
+    min-height: 46px;
+
+    padding: 0 22px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    border: none;
+
+    background: #f9528e;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.add-staff-button:hover {
+    background: #e81f67;
+    border-color: #e81f67;
+}
+
+
+/* ================= FILTER ================= */
+
+.filter-card {
+    max-width: 1250px;
+
+    margin: 0 auto 18px;
+
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #dce9f6;
+
+    border-radius: 10px;
+
+    box-shadow: 0 2px 8px rgba(30, 80, 130, 0.03);
+}
+
+.form-label {
+    margin-bottom: 7px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #18345f;
+}
+
+.form-control,
+.form-select {
+    min-height: 42px;
+
+    border-color: #d3e2f1;
+
+    font-size: 13px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #f1c9df;
+    box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
+}
+
+.input-group-text {
+    background: #ffffff;
+    border-color: #d3e2f1;
+
+    color: #f9528e;
+}
+
+
+/* ================= STAFF TABLE ================= */
+
+.staff-table-card {
+    max-width: 1250px;
+
+    margin: 0 auto;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #dce9f6;
+
+    border-radius: 10px;
+
+    box-shadow: 0 2px 8px rgba(30, 80, 130, 0.03);
+}
+
+.staff-table {
+    min-width: 950px;
+}
+
+.staff-table thead th {
+    padding: 15px 18px;
+
+    background: #fee6ef;
+
+    border-bottom: 1px solid #f7c8da;
+
+    color: #a8325e;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+}
+
+.staff-table tbody td {
+    padding: 15px 18px;
+
+    border-bottom: 1px solid #e8eff6;
+
+    color: #3e5877;
+
+    font-size: 12px;
+}
+
+.staff-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* Staff Information */
+
+.staff-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.staff-avatar {
+    width: 43px;
+    height: 43px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    background: #edf6ff;
+}
+
+.staff-info strong,
+.staff-info span {
+    display: block;
+}
+
+.staff-info strong {
+    margin-bottom: 3px;
+
+    font-size: 13px;
+
+    color: #142d58;
+}
+
+.staff-info span {
+    font-size: 11px;
+    color: #69809c;
+}
+
+
+/* ================= STATUS ================= */
+
+.status-badge {
+    padding: 6px 12px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+}
+
+.active-status {
+    background: #def7e9;
+    color: #07854d;
+}
+
+.active-status .status-dot {
+    background: #0a9b5a;
+}
+
+.inactive-status {
+    background: #edf0f4;
+    color: #607087;
+}
+
+.inactive-status .status-dot {
+    background: #77879b;
+}
+
+
+/* ================= ACTIONS ================= */
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.action-button {
+    min-width: 42px;
+    height: 34px;
+
+    padding: 0 8px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    font-size: 11px;
+
+    transition: 0.2s;
+}
+
+.action-button i {
+    font-size: 14px;
+}
+
+.view-button,
+.edit-button {
+    color: #f9528e;
+
+    border: 1px solid #f9528e;
+}
+
+.view-button:hover,
+.edit-button:hover {
+    background: #fee6ef;
+}
+
+.deactivate-button {
+    color: #d93445;
+
+    border: 1px solid #f1a6ae;
+}
+
+.deactivate-button:hover {
+    background: #fff0f2;
+}
+
+.activate-button {
+    color: #07854d;
+
+    border: 1px solid #8bd5b2;
+}
+
+.activate-button:hover {
+    background: #edfff5;
+}
+
+
+/* ================= TABLE FOOTER ================= */
+
+.table-footer {
+    min-height: 55px;
+
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-top: 1px solid #e2ebf4;
+
+    color: #647993;
+
+    font-size: 11px;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-button {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #d6e3f0;
+
+    border-radius: 5px;
+
+    background: #ffffff;
+
+    color: #55708f;
+
+    font-size: 12px;
+}
+
+.pagination-button.current {
+    color: #ffffff;
+
+    background: #f9528e;
+    border-color: #f9528e;
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+}
+
+
+/* ================= MODALS ================= */
+
+.modal-content {
+    border: none;
+
+    border-radius: 12px;
+
+    box-shadow: 0 15px 45px rgba(20, 60, 100, 0.15);
+}
+
+.modal-header {
+    padding: 22px 25px;
+
+    border-bottom: 1px solid #e3edf6;
+}
+
+.modal-title {
+    margin: 0;
+
+    color: #142d58;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.modal-subtitle {
+    margin: 5px 0 0;
+
+    color: #6a7f99;
+
+    font-size: 12px;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.modal-footer {
+    padding: 15px 25px;
+
+    border-top: 1px solid #e3edf6;
+}
+
+.modal-add-staff-button {
+    border: 1px solid #f9528e;
+
+    /* color: white; */
+
+    background: #f9528e;
+}
+
+.modal-add-staff-button:hover {
+    background: #e81f67;
+    border-color: #e81f67;
+}
+
+/* Status Options */
+
+.status-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.status-options .form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.status-options label {
+    display: flex;
+    flex-direction: column;
+
+    cursor: pointer;
+}
+
+.status-options label strong {
+    font-size: 12px;
+    color: #243f66;
+}
+
+.status-options label small {
+    margin-top: 2px;
+
+    color: #71849c;
+
+    font-size: 10px;
+}
+
+.form-check-input {
+    margin-top: 2px;
+}
+
+
+/* System Role */
+
+.system-role-note {
+    padding: 12px 14px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+
+    border-radius: 7px;
+
+    background: #fee6ef;
+
+    color: #f9528e;
+
+    font-size: 11px;
+}
+
+.system-role-note i {
+    font-size: 16px;
+}
+
+.system-role-note span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.system-role-note small {
+    color: #d93670;
+}
+
+
+/* Cancel Button */
+
+.cancel-button {
+    border: 1px solid #d4e1ee;
+
+    color: #526a86;
+
+    background: #ffffff;
+}
+
+.cancel-button:hover {
+    background: #f5f8fb;
+}
+
+
+/* ================= VIEW STAFF ================= */
+
+.view-profile {
+    padding-bottom: 22px;
+
+    text-align: center;
+
+    border-bottom: 1px solid #e3edf6;
+}
+
+.view-avatar {
+    width: 80px;
+    height: 80px;
+
+    margin: 0 auto 12px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    background: #edf6ff;
+}
+
+.view-profile h4 {
+    margin-bottom: 9px;
+
+    font-size: 18px;
+    color: #142d58;
+}
+
+.staff-detail-list {
+    margin-top: 20px;
+}
+
+.staff-detail-list > div {
+    padding: 11px 0;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+
+    border-bottom: 1px solid #edf2f7;
+}
+
+.staff-detail-list > div:last-child {
+    border-bottom: none;
+}
+
+.staff-detail-list span {
+    color: #70839a;
+
+    font-size: 11px;
+}
+
+.staff-detail-list strong {
+    text-align: right;
+
+    color: #29486e;
+
+    font-size: 12px;
+}
+
+
+/* ================= DEACTIVATE MODAL ================= */
+
+.deactivate-modal .modal-body {
+    padding: 30px 28px;
+}
+
+.warning-icon {
+    width: 62px;
+    height: 62px;
+
+    margin: 0 auto 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fff0d5;
+
+    color: #e28a00;
+}
+
+.warning-icon i {
+    font-size: 27px;
+}
+
+.deactivate-modal h4 {
+    margin-bottom: 12px;
+
+    font-size: 18px;
+    color: #142d58;
+}
+
+.deactivate-modal p {
+    margin-bottom: 9px;
+
+    font-size: 12px;
+    line-height: 1.6;
+
+    color: #627895;
+}
+
+.deactivate-modal .warning-text {
+    color: #8b6b36;
+}
+
+.confirmation-buttons {
+    margin-top: 22px;
+
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.confirmation-buttons button {
+    min-width: 110px;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1000px) {
+
+    .sidebar {
+        width: 75px;
+    }
+
+    .sidebar-link {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-heading {
+        text-align: center;
+        font-size: 8px;
+    }
+
+    .sidebar-bottom {
+        display: none;
+    }
+
+    .main-content {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .top-header {
+        padding: 0 15px;
+    }
+
+    .caretrack-logo div {
+        display: none;
+    }
+
+    .admin-profile div {
+        display: none;
+    }
+
+    .page-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 20px;
+    }
+
+    .add-staff-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .page-heading h2 {
+        font-size: 28px;
+    }
+
+    .main-content {
+        padding: 25px 15px;
+    }
+
+    .table-footer {
+        flex-direction: column;
+
+        justify-content: center;
+
+        gap: 10px;
+
+        padding: 15px;
+    }
+
+}
