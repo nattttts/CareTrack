@@ -8,36 +8,37 @@ body {
 
 /* Header */
 header {
-    height: 60px;
-    padding: 0 20px;
+    height: 78px;
+    padding: 0 32px;
     display: flex;
     align-items: center;
     justify-content: space-between; /* Distribute items across the navbar */
     border-bottom: 1px solid #e5e5e5;
 }
 
-.brand {
+.logo {
     display: flex;
     align-items: center;
     gap: 10px; /* Space between logo and brand text */
 }
 
-.brand-text {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
+.logo img {
+    width: 42px;
+    height: 42px;
 }
 
-.brand-text h3{
-    color: #e81f67;
-    font-size: 25px;
+.logo-text h1 {
     margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #e81f67;
+    line-height: 1.1;
 }
 
-.brand-text p {
+.logo-text p {
+    margin: 3px 0 0;
+    font-size: 10px;
     color: #5e7188;
-    font-size: 12px;
-    margin-top: 2px;
 }
 
 .nav-btn {
@@ -69,29 +70,33 @@ header {
 
 /* Content Section */
 .register-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 30px 60px;
-    gap: 45px;
+    min-height: calc(100vh - 78px);
+    padding: 50px 100px;
     background: #FEE6EF;
+}
+
+.register-row {
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Left Section */
 .left-info {
-    margin: 10px;
+    margin: 0 auto;
 }
 
-.info-content h4 {
+.info-content h5 {
     color: #f9528e;
     font-weight: 800;
+    margin-bottom: 20px;
 }
 
 .info-content h1 {
     color: #122d55;
-    font-size: 46px;
+    font-size: 50px;
+    font-weight: 600;
     max-width: 530px;
+    margin-bottom: 20px;
 }
 
 .info-content h1 span {
@@ -100,7 +105,7 @@ header {
 
 .info-content p {
     color: #65758a;
-    font-size: 20px;
+    font-size: 16px;
     line-height: 1.5;
     max-width: 530px;
 }
@@ -109,7 +114,8 @@ header {
 .register-form-section {
     display: flex;
     justify-content: center;
-    margin: 10px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .form-container {
@@ -121,20 +127,15 @@ header {
     box-shadow: 5px 5px 8px rgb(197, 197, 197);
 }
 
-.form-container h1 {
+.form-container h2 {
     color: #122d55;
     margin-bottom: 20px;
     text-align: center;
+    font-weight: 600;
 }
 
 /* Form Fields */
-.form-row {
-    display: flex;
-    gap: 28px;
-}
-
 .form-group {
-    flex: 1;
     margin-bottom: 25px;
     width: 100%;
 }
@@ -185,6 +186,28 @@ header {
     color: #b5b5b5;
 }
 
+/* Terms and Conditions */
+.terms {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 3px 0 25px;
+}
+
+.terms input {
+    width: 20px;
+    height: 20px;
+}
+
+.terms label {
+    font-size: 16px;
+}
+
+.terms a {
+    color: #e81f67;
+    text-decoration: none;
+}
+
 /* Register Button */
 .register-btn {
     width: 100%;
@@ -230,8 +253,12 @@ header {
 
     /* Left Section */
     .left-info {
-        margin: 0;
-        text-align: center;
+        text-align: center;   
+    }
+
+    .info-content h1, .info-content p {
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .left-info img {
@@ -245,29 +272,9 @@ header {
     } 
 }
 
-@media (max-width: 900px) {
-    /* Stack the left section and registration form */
-    .register-page { 
-        flex-direction: column; 
-        align-items: center; 
-    }
-
+@media (max-width: 1000px) {
     /* Left Section */
      .left-info img {
         display: none; /* Hide the image */
-    }
-
-     /* Registration Form */
-    .register-form-section { 
-        width: 100%; 
-        margin: 0; 
-    }
-}
-
-@media (max-width: 700px) {
-    /* Put each input on a row */
-    .form-row {
-        flex-direction: column;
-        gap: 0;
     }
 }
