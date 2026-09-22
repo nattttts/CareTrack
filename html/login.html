@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login | CareTrack</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/login.css" />
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal & Child Healthcare</p>
+            </div>
+
+        </div>
+
+        <div class="nav-btn">
+            <a href="home.html" class="backToHomeBtn">
+                <img src="../icons/back_icon.png" alt="Back Icon" width="18px" height="18px">
+                Back to Home
+            </a>
+        </div>
+    </header>
+
+    <div class="login-page">
+
+        <div class="row align-items-center justify-content-center gx-1 login-row">
+        
+            <!-- Left Section -->
+            <div class="col-12 col-lg-6">
+                <section class="left-info">
+
+                    <div class="info-content">
+                        <h5>WELCOME TO CARETRACK</h5>
+
+                        <h1>Healthcare made simpler, all in one place</h1>
+                        <p>
+                            Log in to access CareTrack and manage healthcare appointments, 
+                            vaccination records, follow-ups, and clinic visits.
+                        </p>
+                    </div>
+
+                    <img src="../images/mother_holding_baby.png" alt="Mother holding baby">
+                </section>
+            </div>
+
+            <!-- Right Section -->
+            <div class="col-12 col-lg-6">
+                <section class="login-form-section">
+
+                    <div class="form-container">
+                        <h2>Login</h2>
+
+                        <form>
+
+                            <!-- Email -->
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                
+                                <div class="input-box">
+                                <img src="../icons/email.png" alt="Email" width="20px" height="20px">
+                                    <input type="email" id="email" name="email" 
+                                        placeholder="Enter your email address" required>
+                                </div>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="form-group">
+                                <label for="password">Password</label>
+
+                                <div class="input-box">
+                                    <img src="../icons/padlock.png" alt="Lock"  width="20px" height="20px">
+                                    <input type="password" id="password" name="password" 
+                                        placeholder="Enter your password" required>
+                                    <img src="../icons/show.png" alt="Show Password" width="20px" height="20px">
+                                </div>
+                            </div>
+
+                            <a href="reset_password.html" class="forgot-password">Forgot password?</a> 
+
+                            <button type="submit" class="login-btn">Login</button>
+
+                        </form>
+
+                        <div class="signup-section">
+                            Don't have an account?
+                            <a href="register.html">Sign up</a>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>

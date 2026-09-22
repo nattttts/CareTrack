@@ -1,0 +1,262 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Header */
+header {
+    height: 78px;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distribute items across the navbar */
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between logo and brand text */
+}
+
+.logo img {
+    width: 42px;
+    height: 42px;
+}
+
+.logo-text h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #e81f67;
+    line-height: 1.1;
+}
+
+.logo-text p {
+    margin: 3px 0 0;
+    font-size: 10px;
+    color: #5e7188;
+}
+
+.nav-btn {
+    display: flex;
+}
+
+.nav-btn a {
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and text */
+}
+
+.backToHomeBtn {
+    color: #FFFFFF;
+    background: #f9528e;
+    border: 1px solid #f9528e;
+}
+
+.backToHomeBtn:hover {
+    color: #FFFFFF;
+    background: #e81f67;
+    border: 1px solid #e81f67;
+}
+
+/* Content Section */
+.login-page {
+    min-height: calc(100vh - 78px);
+    padding: 60px 130px;
+    background: #FEE6EF;
+}
+
+.login-row {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Left Section */
+.left-info {
+    margin: 0 auto;
+}
+
+.info-content h5 {
+    color: #f9528e;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.info-content h1 {
+    color: #122d55;
+    font-size: 45px;
+    font-weight: 600;
+    max-width: 560px;
+    margin-bottom: 20px;
+}
+
+.info-content p {
+    color: #65758a;
+    font-size: 16px;
+    line-height: 1.5;
+    max-width: 560px;
+}
+
+/* Right Section - Login Form */
+.login-form-section {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.form-container {
+    width: 600px;
+    background-color: white;
+    padding: 30px 60px;
+    border-radius: 18px;
+    box-shadow: 5px 5px 8px rgb(197, 197, 197);
+}
+
+.form-container h2 {
+    color: #122d55;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Form Fields */
+.form-group {
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    color: #122d55;
+    margin-bottom: 10px;
+}
+
+/* Input Box */
+.input-box {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border: 1px solid #b5b5b5;
+    border-radius: 9px;
+}
+
+.input-box:focus-within {
+    border: 1px solid #f1c9df;
+    box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
+}
+
+.input-box img {
+    padding: 10px;
+    box-sizing: content-box;
+}
+
+.input-box input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    border-radius: 9px;
+    outline: none;
+    padding: 0 12px 0 0;
+    font-size: 14px;
+    background: transparent;
+}
+
+.input-box input::placeholder {
+    color: #b5b5b5;
+}
+
+.forgot-password {
+    color: #f9528e;
+    text-decoration: none;
+    display: block;
+    margin-top: -10px;
+    margin-bottom: 40px;
+}
+
+.forgot-password:hover {
+    color: #e81f67;
+    text-decoration: underline;
+}
+
+/* Login Button */
+.login-btn {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 8px;
+    color: #FFFFFF;
+    background: #f9528e;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background: #e81f67;
+}
+
+/* Sign Up Section */
+.signup-section {
+    margin-top: 28px;
+    text-align: center;
+    color: #65758a;
+}
+
+.signup-section a {
+    margin-left: 5px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #f9528e;
+}
+
+.signup-section a:hover {
+    color: #e81f67;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+/* Adjust spacing and image size for smaller screens */
+@media (max-width: 1200px) {
+    .login-page {
+        padding: 30px 20px;
+    }
+
+    /* Left Section */
+    .left-info {
+        text-align: center;
+    }
+
+    .info-content h1, .info-content p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .left-info img {
+        width: 300px;
+        height: 300px;
+    }
+
+     /* Login Form */
+    .form-container {
+        padding: 25px 25px;
+    } 
+}
+
+@media (max-width: 1000px) {
+    /* Left Section */
+     .left-info img {
+        display: none; /* Hide the image */
+    }
+}
