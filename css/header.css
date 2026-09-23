@@ -2,14 +2,12 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.navbar {
+.caretrack-header {
     height: 78px;
+}
+
+.caretrack-header .container-fluid {
     padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Distribute items across the navbar */
-    background: #ffffff;
-    border-bottom: 1px solid #e2ebf5;
 }
 
 .logo {
@@ -38,22 +36,21 @@ body {
     color: #5e7188;
 }
 
-.nav-links {
-    display: flex;
-    gap: 50px; /* Space between links */
-}
-
-.nav-links a {
-    text-decoration: none;
+.navbar-nav .nav-link {
     color: #101c30;
     font-size: 16px;
     font-weight: 600;
     padding: 15px 0;
+    margin: 0 25px;
 }
 
-.nav-links a.active {
+.navbar-nav .nav-link.active {
     color: #f9528e;
     border-bottom: 2px solid #f9528e;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 2px rgba(249, 82, 142, 1);
 }
 
 .nav-btn {
@@ -106,4 +103,18 @@ body {
 
 .registerBtn:hover .hover-icon {
     display: block;
+}
+
+@media (max-width:992px) {
+    .caretrack-header {
+        height: auto; /* Adjust header height for mobile */
+    }
+
+    .nav-btn {
+        flex-direction: column; /* Stack buttons vertically */
+        gap: 10px; /* Add spacing between buttons */
+        margin-top: 15px;
+        padding-bottom: 15px; 
+    }
+    
 }
