@@ -257,11 +257,11 @@ img {
 
     background-color: #ffffff;
 
-    border: 1px solid #c43b98;
+    border: 1px solid #f9528e;
 
     border-radius: 8px;
 
-    color: #c43b98;
+    color: #f9528e;
 
     font-size: 14px;
 
@@ -274,7 +274,7 @@ img {
 
 
 .edit-profile-button:hover {
-    background-color: #c43b98;
+    background-color: #e81f67;
 
     color: #ffffff;
 }
@@ -289,11 +289,11 @@ img {
 
     background-color: #ffffff;
 
-    border: 1px solid #c43b98;
+    border: 1px solid #f9528e;
 
     border-radius: 7px;
 
-    color: #c43b98;
+    color: #f9528e;
 
     font-size: 13px;
 
@@ -304,7 +304,7 @@ img {
 
 
 .small-edit-button:hover {
-    background-color: #c43b98;
+    background-color: #e81f67;
 
     color: #ffffff;
 }
@@ -356,7 +356,7 @@ img {
 
     border-radius: 50%;
 
-    color: #c43b98;
+    color: #f9528e;
 
     font-size: 17px;
 }
@@ -427,10 +427,10 @@ img {
 
 
 .profile-input:focus {
-    border-color: #c43b98;
+    border-color: #f9528e;
 
     box-shadow:
-        0 0 0 2px rgba(196, 59, 152, 0.10);
+        0 0 0 2px rgba(249, 82, 142, 0.10);
 }
 
 
@@ -490,7 +490,7 @@ textarea.profile-input {
 
 
 .profile-footer strong {
-    color: #c43b98;
+    color: #f9528e;
 
     font-size: 18px;
 }
