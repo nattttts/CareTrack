@@ -74,34 +74,40 @@ body {
     height: 20px;
 }
 
-.registerBtn {
+.registerBtn, .loginBtn {
     color: #f9528e;
     background: #FFFFFF;
     border: 1px solid #f9528e;
 }
 
-.loginBtn {
-    color: #FFFFFF;
-    background: #f9528e;
-    border: 1px solid #f9528e;
-}
-
 .registerBtn:hover, .loginBtn:hover {
     color: #FFFFFF;
-    background: #e81f67;
-    border: 1px solid #e81f67;
+    background: #f9528e;
 }
 
-/* Switch Register Icon on Hover */
-.hover-icon {
+/* Switch register icon on hover */
+.register-hover {
     display: none;
 }
 
-.registerBtn:hover .normal-icon {
+.registerBtn:hover .register-normal {
     display: none;
 }
 
-.registerBtn:hover .hover-icon {
+.registerBtn:hover .register-hover {
+    display: block;
+}
+
+/* Switch login icon on hover */
+.login-hover {
+    display: none;
+}
+
+.loginBtn:hover .login-normal {
+    display: none;
+}
+
+.loginBtn:hover .login-hover {
     display: block;
 }
 
