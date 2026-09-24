@@ -15,99 +15,6 @@ a {
     text-decoration: none;
 }
 
-
-/* ================= HEADER ================= */
-
-.top-header {
-    height: 78px;
-
-    padding: 0 30px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    background: #ffffff;
-
-    border-bottom: 1px solid #dce8f5;
-}
-
-
-/* CareTrack Logo */
-
-.caretrack-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    color: #073b73;
-}
-
-.caretrack-logo img {
-    width: 43px;
-    height: 43px;
-    object-fit: contain;
-}
-
-.caretrack-logo h1 {
-    margin: 0;
-
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.caretrack-logo p {
-    margin: 2px 0 0;
-
-    font-size: 10px;
-    color: #1476d4;
-}
-
-
-/* Header Right */
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-}
-
-/* Admin Profile */
-
-.admin-profile {
-    padding-left: 18px;
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.admin-profile img {
-    width: 40px;
-    height: 40px;
-
-    border-radius: 50%;
-
-    object-fit: cover;
-}
-
-.admin-profile strong,
-.admin-profile span {
-    display: block;
-}
-
-.admin-profile strong {
-    font-size: 13px;
-}
-
-.admin-profile span {
-    margin-top: 3px;
-
-    font-size: 11px;
-    color: #4670a2;
-}
-
-
 /* ================= PAGE LAYOUT ================= */
 
 .page-layout {
@@ -554,13 +461,20 @@ a {
 
 .modal-add-staff-button {
     border: 1px solid #f9528e;
-
-    /* color: white; */
-
     background: #f9528e;
 }
 
 .modal-add-staff-button:hover {
+    background: #e81f67;
+    border-color: #e81f67;
+}
+
+.modal-save-changes-button {
+    border: 1px solid #f9528e;
+    background: #f9528e;
+}
+
+.modal-save-changes-button:hover {
     background: #e81f67;
     border-color: #e81f67;
 }
