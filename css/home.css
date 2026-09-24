@@ -222,6 +222,7 @@
     .hero-container {
         padding: 40px;
     }
+    
 }
 
 @media (max-width: 700px) {
@@ -238,4 +239,5 @@
     .hero-image {
         width: 100%;
     }
+
 }
