@@ -1,0 +1,558 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #142d58;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* ================= PAGE LAYOUT ================= */
+
+.page-layout {
+    min-height: calc(100vh - 78px);
+}
+
+/* ================= MAIN CONTENT ================= */
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+
+    background: #ffffff;
+
+    padding: 35px 38px 50px;
+}
+
+
+/* ================= PAGE HEADER ================= */
+
+.page-header {
+    max-width: 1250px;
+    margin: 0 auto 28px;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.title-icon {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fee6ef;
+}
+
+.title-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.page-title h2 {
+    margin-bottom: 5px;
+
+    font-size: 36px;
+    font-weight: 700;
+    color: #142d58;
+}
+
+.page-title p {
+    font-size: 15px;
+    color: #50698a;
+}
+
+
+/* =========================================
+   PAGE TITLE
+   ========================================= */
+
+.profile-page-header {
+    display: flex;
+    align-items: center;
+
+    margin-bottom: 25px;
+}
+
+
+.profile-title {
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+}
+
+
+/* Profile picture beside Jane Smith */
+
+.profile-title-avatar {
+    width: 72px;
+    height: 72px;
+
+    background-color: #FDE7F0;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.profile-title-avatar img {
+    width: 42px;
+    height: 42px;
+
+    object-fit: contain;
+}
+
+
+.profile-title h2 {
+    margin: 0;
+
+    color: #183153;
+
+    font-size: 32px;
+
+    font-weight: 700;
+}
+
+
+.profile-title p {
+    margin: 4px 0 0;
+
+    color: #c43b98;
+
+    font-size: 15px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   PROFILE CARD
+   ========================================= */
+
+.profile-card {
+    margin-bottom: 22px;
+
+    padding: 25px 28px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #e6edf5;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 3px 12px rgba(24, 49, 83, 0.04);
+}
+
+
+/* =========================================
+   CARD HEADER
+   ========================================= */
+
+.profile-card-title {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding-bottom: 18px;
+
+    margin-bottom: 22px;
+
+    border-bottom: 1px solid #edf1f5;
+}
+
+
+.card-title-left {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.card-icon {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background-color: #FDE7F0;
+
+    border-radius: 10px;
+
+    color: #c43b98;
+
+    font-size: 19px;
+}
+
+
+.card-icon img {
+    width: 22px;
+    height: 22px;
+
+    object-fit: contain;
+}
+
+
+.profile-card-title h3 {
+    margin: 0;
+
+    color: #183153;
+
+    font-size: 19px;
+
+    font-weight: 700;
+}
+
+
+.profile-card-title p {
+    margin: 3px 0 0;
+
+    color: #718096;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   EDIT PROFILE BUTTON
+   ========================================= */
+
+.edit-profile-button {
+    padding: 9px 17px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #c43b98;
+
+    border-radius: 8px;
+
+    color: #c43b98;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+
+.edit-profile-button:hover {
+    background-color: #c43b98;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   SMALL EDIT BUTTON
+   ========================================= */
+
+.small-edit-button {
+    padding: 7px 14px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #c43b98;
+
+    border-radius: 7px;
+
+    color: #c43b98;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.small-edit-button:hover {
+    background-color: #c43b98;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   INFORMATION GRID
+   ========================================= */
+
+.profile-information-grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    column-gap: 55px;
+
+    row-gap: 25px;
+}
+
+
+/* =========================================
+   INFORMATION ITEM
+   ========================================= */
+
+.information-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    min-height: 58px;
+}
+
+
+.information-icon {
+    width: 42px;
+    height: 42px;
+
+    min-width: 42px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background-color: #FDE7F0;
+
+    border-radius: 50%;
+
+    color: #c43b98;
+
+    font-size: 17px;
+}
+
+
+.information-icon img {
+    width: 20px;
+    height: 20px;
+
+    object-fit: contain;
+}
+
+
+/* =========================================
+   INFORMATION TEXT
+   ========================================= */
+
+.information-text {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    width: 100%;
+}
+
+
+.information-text span {
+    color: #718096;
+
+    font-size: 12px;
+}
+
+
+.information-text strong {
+    color: #183153;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   INPUT BOX
+   ========================================= */
+
+.profile-input {
+    display: none;
+
+    width: 100%;
+
+    padding: 8px 10px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #d9dfeb;
+
+    border-radius: 6px;
+
+    color: #183153;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+
+.profile-input:focus {
+    border-color: #c43b98;
+
+    box-shadow:
+        0 0 0 2px rgba(196, 59, 152, 0.10);
+}
+
+
+textarea.profile-input {
+    resize: vertical;
+}
+
+
+/* =========================================
+   EDIT MODE
+   ========================================= */
+
+.editing .profile-input {
+    display: block;
+}
+
+
+.editing .information-text strong {
+    display: none;
+}
+
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+.profile-footer {
+    min-height: 100px;
+
+    margin-top: 35px;
+
+    padding: 25px 35px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background-color: #FFF0F6;
+
+    border-radius: 15px 15px 0 0;
+}
+
+
+.profile-footer div {
+    display: flex;
+
+    flex-direction: column;
+
+    line-height: 1.3;
+
+    color: #183153;
+
+    font-size: 16px;
+}
+
+
+.profile-footer strong {
+    color: #c43b98;
+
+    font-size: 18px;
+}
+
+
+.profile-footer p {
+    margin: 0;
+
+    color: #718096;
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 900px) {
+
+    .main-content {
+        padding: 25px;
+    }
+
+
+    .profile-information-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .profile-card-title {
+        align-items: flex-start;
+
+        gap: 15px;
+    }
+
+
+    .profile-card-title {
+        flex-direction: column;
+    }
+
+
+    .edit-profile-button {
+        align-self: flex-end;
+    }
+
+
+    .profile-title h2 {
+        font-size: 27px;
+    }
+
+
+    .profile-footer {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 15px;
+    }
+
+}

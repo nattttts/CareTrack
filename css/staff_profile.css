@@ -1,0 +1,600 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #142d58;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+/* ================= HEADER ================= */
+
+.top-header {
+    height: 78px;
+
+    padding: 0 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #dce8f5;
+}
+
+
+/* CareTrack Logo */
+
+.caretrack-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #073b73;
+}
+
+.caretrack-logo img {
+    width: 43px;
+    height: 43px;
+    object-fit: contain;
+}
+
+.caretrack-logo h1 {
+    margin: 0;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.caretrack-logo p {
+    margin: 2px 0 0;
+
+    font-size: 10px;
+    color: #1476d4;
+}
+
+
+/* Header Right */
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+/* Admin Profile */
+
+.admin-profile {
+    padding-left: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-profile img {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+.admin-profile strong,
+.admin-profile span {
+    display: block;
+}
+
+.admin-profile strong {
+    font-size: 13px;
+}
+
+.admin-profile span {
+    margin-top: 3px;
+
+    font-size: 11px;
+    color: #4670a2;
+}
+
+/* ================= PAGE LAYOUT ================= */
+
+.page-layout {
+    min-height: calc(100vh - 78px);
+
+    display: flex;
+}
+
+/* ================= MAIN CONTENT ================= */
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+
+    padding: 34px 38px 50px;
+
+    background: #ffffff;
+}
+
+
+/* ================= PAGE HEADER ================= */
+
+.page-header {
+    max-width: 1250px;
+
+    margin: 0 auto 27px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-heading {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.page-icon {
+    width: 60px;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fee6ef;
+
+    color: #f9528e;
+}
+
+.page-icon i {
+    font-size: 29px;
+}
+
+.page-heading h2 {
+    margin: 0 0 5px;
+
+    font-size: 34px;
+    font-weight: 700;
+
+    color: #142d58;
+}
+
+.page-heading p {
+    margin: 0;
+
+    font-size: 14px;
+    color: #55708f;
+}
+
+
+
+/* =========================================
+   PROFILE TITLE
+   ========================================= */
+
+.profile-page-header {
+    margin-bottom: 25px;
+}
+
+
+.profile-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+}
+
+
+.profile-title-avatar {
+    width: 82px;
+    height: 82px;
+
+    background-color: #FDE7F0;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+
+.profile-title-avatar img {
+    width: 48px;
+    height: 48px;
+
+    object-fit: contain;
+}
+
+
+.profile-title h2 {
+    margin: 0;
+
+    color: #183153;
+
+    font-size: 32px;
+
+    font-weight: 700;
+}
+
+
+.profile-title p {
+    margin: 5px 0 0;
+
+    color: #c43b98;
+
+    font-size: 16px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   PROFILE CARD
+   ========================================= */
+
+.profile-card {
+    margin-bottom: 22px;
+
+    padding: 22px 25px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #dfe7f0;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 8px rgba(24, 49, 83, 0.03);
+}
+
+
+/* =========================================
+   CARD HEADER
+   ========================================= */
+
+.profile-card-title {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding-bottom: 18px;
+
+    margin-bottom: 18px;
+
+    border-bottom: 1px solid #e8edf3;
+}
+
+
+.card-title-left {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.card-icon {
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background-color: #FDE7F0;
+
+    border-radius: 10px;
+
+    color: #c43b98;
+
+    font-size: 19px;
+}
+
+
+.card-icon img {
+    width: 22px;
+    height: 22px;
+
+    object-fit: contain;
+}
+
+
+.profile-card-title h3 {
+    margin: 0;
+
+    color: #183153;
+
+    font-size: 19px;
+
+    font-weight: 700;
+}
+
+
+.profile-card-title p {
+    margin: 3px 0 0;
+
+    color: #718096;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   INFORMATION GRID
+   ========================================= */
+
+.profile-information-grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    column-gap: 70px;
+
+    row-gap: 20px;
+}
+
+
+/* =========================================
+   INFORMATION ITEM
+   ========================================= */
+
+.information-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    min-height: 58px;
+}
+
+
+.information-icon {
+    width: 43px;
+    height: 43px;
+
+    min-width: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background-color: #FDE7F0;
+
+    border-radius: 50%;
+
+    color: #c43b98;
+
+    font-size: 16px;
+}
+
+
+.information-icon img {
+    width: 20px;
+    height: 20px;
+
+    object-fit: contain;
+}
+
+
+.information-text {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    width: 100%;
+}
+
+
+.information-text span {
+    color: #718096;
+
+    font-size: 12px;
+}
+
+
+.information-text strong {
+    color: #183153;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   INPUT
+   ========================================= */
+
+.profile-input {
+    display: none;
+
+    width: 100%;
+
+    padding: 8px 10px;
+
+    border: 1px solid #d5dce6;
+
+    border-radius: 6px;
+
+    background-color: #ffffff;
+
+    color: #183153;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+
+.profile-input:focus {
+    border-color: #c43b98;
+
+    box-shadow:
+        0 0 0 2px rgba(196, 59, 152, 0.10);
+}
+
+
+/* =========================================
+   EDITING MODE
+   ========================================= */
+
+.editing .profile-input {
+    display: block;
+}
+
+
+.editing .information-text strong {
+    display: none;
+}
+
+
+/* =========================================
+   ACCOUNT INFORMATION
+   ========================================= */
+
+.account-information {
+    width: 100%;
+}
+
+
+.account-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    min-height: 55px;
+
+    padding: 8px 5px;
+
+    border-bottom: 1px solid #e8edf3;
+
+    font-size: 14px;
+}
+
+
+.account-row:last-child {
+    border-bottom: none;
+}
+
+
+.account-left {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    color: #718096;
+}
+
+
+.account-icon {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background-color: #FDE7F0;
+
+    border-radius: 50%;
+
+    color: #c43b98;
+
+    font-size: 12px;
+}
+
+
+.account-row strong {
+    color: #183153;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   ACTIVE STATUS
+   ========================================= */
+
+.account-status {
+    padding: 6px 13px;
+
+    background-color: #e8f8ef;
+
+    border-radius: 20px;
+
+    color: #159447;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+
+    .main-content {
+        padding: 25px;
+    }
+
+
+    .profile-information-grid {
+        grid-template-columns: 1fr;
+
+        column-gap: 0;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .profile-card-title {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 15px;
+    }
+
+
+    .edit-profile-button {
+        align-self: flex-end;
+    }
+
+
+    .profile-title h2 {
+        font-size: 26px;
+    }
+
+}
