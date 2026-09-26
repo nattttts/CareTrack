@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Appointments | CareTrack</title>
+
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="../css/patient_header.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/staff_appointments.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="top-header">
+        <div class="logo">
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal & Child Healthcare</p>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="profile">
+                <img src="../icons/user.png" alt="Profile">
+                <span>Jane</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Layout -->
+
+    <div class="page-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <nav class="sidebar-nav">
+                <a href="staff_dashboard.html" class="sidebar-link">
+                    <img src="../icons/home.png" alt="">
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="#" class="sidebar-link active">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Appointments</span>
+                </a>
+
+                <a href="patient_management.html" class="sidebar-link">
+                    <img src="../icons/patients.png" alt="">
+                    <span>Patient Management</span>
+                </a>
+
+                <a href="staff_vaccinations.html" class="sidebar-link">
+                    <img src="../icons/syringe.png" alt="">
+                    <span>Vaccinations</span>
+                </a>
+
+                <a href="staff_queue.html" class="sidebar-link">
+                    <img src="../icons/queue.png" alt="">
+                    <span>Queue Management</span>
+                </a>
+
+                <a href="staff_followups.html" class="sidebar-link">
+                    <img src="../icons/follow-up.png" alt="">
+                    <span>Follow-ups</span>
+                </a>
+
+                <a href="notifications.html" class="sidebar-link">
+                    <img src="../icons/reminder.png" alt="">
+                    <span>Notifications</span>
+                </a>
+
+                <a href="staff_profile.html" class="sidebar-link">
+                    <img src="../icons/user.png" alt="">
+                    <span>My Profile</span>
+                </a>
+
+                <a href="settings.html" class="sidebar-link">
+                    <img src="../icons/setting.png" alt="">
+                    <span>Settings</span>
+                </a>
+                
+                <a href="logout.html" class="sidebar-link logout-link">
+                    <img src="../icons/logout.png" alt="">
+                    <span>Log Out</span>
+                </a>
+            </nav>
+
+        </aside>
+
+        <!-- Main Content -->
+
+        <main class="main-content">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-heading">
+                    <div class="page-icon"><img src="../icons/appointment.png"></div>
+                    <div>
+                        <h2>Appointments</h2>
+                        <p>
+                            Manage today's appointments and available
+                            appointment slots.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!--Appointment Tabs -->
+            <div class="appointment-tabs">
+                <button
+                    class="appointment-tab active"
+                    data-tab="today"
+                >
+                    <i class="bi bi-calendar-day"></i>
+                    Today
+                </button>
+
+                <button
+                    class="appointment-tab"
+                    data-tab="upcoming"
+                >
+                    <i class="bi bi-calendar-event"></i>
+                    Upcoming
+                </button>
+
+                <button
+                    class="appointment-tab"
+                    data-tab="past"
+                >
+                    <i class="bi bi-clock-history"></i>
+                    Past
+                </button>
+            </div>
+
+            <!-- Search & Filters -->
+            <section class="filter-card">
+                <div class="row g-3 align-items-end">
+                    <!-- Search -->
+                    <div class="col-xl-4 col-lg-6">
+                        <label for="searchInput" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input
+                                type="text"
+                                id="searchInput"
+                                class="form-control"
+                                placeholder="Search by patient or child name..."
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="col-xl-2 col-lg-6">
+                        <label for="dateFilter" class="form-label">Date</label>
+                        <input
+                            type="date"
+                            id="dateFilter"
+                            class="form-control"
+                        >
+                    </div>
+
+                    <!-- Appointment Type -->
+                    <div class="col-xl-2 col-lg-4">
+                        <label for="typeFilter" class="form-label">Appointment Type</label>
+                        <select
+                            id="typeFilter"
+                            class="form-select"
+                        >
+                            <option value="all">All Types</option>
+                            <option value="Maternal Follow-up">Maternal Follow-up</option>
+                            <option value="Child Vaccination">Child Vaccination</option>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-xl-2 col-lg-4">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select
+                            id="statusFilter"
+                            class="form-select"
+                        >
+                            <option value="all">All Statuses</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Pending Reschedule">Pending Reschedule</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Missed">Missed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <!-- Reset -->
+                    <div class="col-xl-2 col-lg-4">
+                        <button
+                            type="button"
+                            id="resetFilters"
+                            class="btn reset-button w-100"
+                        >
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Reset
+                        </button>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Appointments Table -->
+            <section class="content-card">
+                <div class="table-responsive">
+                    <table class="table appointment-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Patient / Child</th>
+                                <th>Appointment Type</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="appointmentTableBody">
+                            <!-- Appointment 1 -->
+                            <tr
+                                data-period="today"
+                                data-date="2026-09-25"
+                                data-type="Maternal Follow-up"
+                                data-status="Confirmed"
+                            >
+                                <td>
+                                    <div class="patient-cell">
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Nurul Syazwani"
+                                            class="patient-avatar"
+                                        >
+                                        <div>
+                                            <strong>Nurul Syazwani</strong>
+                                            <span>Mother</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="appointment-type">Maternal Follow-up</strong>
+                                    <span class="appointment-subtype">Antenatal Check-up</span>
+                                </td>
+
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>09:00 AM</td>
+
+                                <td>
+                                    <span class="status-badge confirmed">
+                                        <span></span>
+                                        Confirmed
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+                                        <button
+                                            type="button"
+                                            class="action-button view-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewAppointmentModal"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                            View Details
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="action-button start-button"
+                                        >
+                                            <i class="bi bi-play-fill"></i>
+                                            Start Visit
+                                        </button>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <!-- Appointment 2 -->
+                            <tr
+                                data-period="today"
+                                data-date="2026-09-25"
+                                data-type="Child Vaccination"
+                                data-status="Pending Reschedule"
+                            >
+                                <td>
+                                    <div class="patient-cell">
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Siti Aminah"
+                                            class="patient-avatar"
+                                        >
+                                        <div>
+                                            <strong>Siti Aminah</strong>
+                                            <span>Child: Ammar</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="appointment-type">Child Vaccination</strong>
+                                    <span class="appointment-subtype">MMR Vaccine</span>
+                                </td>
+
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>10:30 AM</td>
+
+                                <td>
+                                    <span class="status-badge pending">
+                                        <span></span>
+                                        Pending Reschedule
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+                                        <button
+                                            type="button"
+                                            class="action-button view-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewAppointmentModal"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                            View Details
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="action-button approve-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#rescheduleModal"
+                                        >
+                                            <i class="bi bi-person-check"></i>
+                                            Approve / Reject
+                                        </button>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <!-- Appointment 3 -->
+                            <tr
+                                data-period="today"
+                                data-date="2026-09-25"
+                                data-type="Child Vaccination"
+                                data-status="Confirmed"
+                            >
+                                <td>
+                                    <div class="patient-cell">
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Farah Ilyana"
+                                            class="patient-avatar"
+                                        >
+                                        <div>
+                                            <strong>Farah Ilyana</strong>
+                                            <span>Child: Maryam</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="appointment-type">Child Vaccination</strong>
+                                    <span class="appointment-subtype">Hepatitis B (Dose 2)</span>
+                                </td>
+
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>02:00 PM</td>
+
+                                <td>
+                                    <span class="status-badge confirmed">
+                                        <span></span>
+                                        Confirmed
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+                                        <button
+                                            type="button"
+                                            class="action-button view-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewAppointmentModal"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                            View Details
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="action-button start-button"
+                                        >
+                                            <i class="bi bi-play-fill"></i>
+                                            Start Visit
+                                        </button>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <!-- Appointment 4 -->
+                            <tr
+                                data-period="today"
+                                data-date="2026-09-25"
+                                data-type="Maternal Follow-up"
+                                data-status="Completed"
+                            >
+                                <td>
+                                    <div class="patient-cell">
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Nadia Rahman"
+                                            class="patient-avatar"
+                                        >
+                                        <div>
+                                            <strong>Nadia Rahman</strong>
+                                            <span>Mother</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="appointment-type">Maternal Follow-up</strong>
+                                    <span class="appointment-subtype">Postnatal Check-up</span>
+                                </td>
+
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>03:30 PM</td>
+
+                                <td>
+                                    <span class="status-badge completed">
+                                        <span></span>
+                                        Completed
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="action-button view-button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewAppointmentModal"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        View Details
+                                    </button>
+                                </td>
+
+                            </tr>
+
+                            <!-- Appointment 5 -->
+                            <tr
+                                data-period="today"
+                                data-date="2026-09-25"
+                                data-type="Child Vaccination"
+                                data-status="Missed"
+                            >
+                                <td>
+                                    <div class="patient-cell">
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Aisyah Hamid"
+                                            class="patient-avatar"
+                                        >
+                                        <div>
+                                            <strong>Aisyah Hamid</strong>
+                                            <span>Child: Alya</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="appointment-type">Child Vaccination</strong>
+                                    <span class="appointment-subtype">PCV (Dose 1)</span>
+                                </td>
+
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>04:30 PM</td>
+
+                                <td>
+                                    <span class="status-badge missed">
+                                        <span></span>
+                                        Missed
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="action-button view-button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewAppointmentModal"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Appointment 6 -->
+                            <tr
+                                data-period="upcoming"
+                                data-date="2026-09-28"
+                                data-type="Maternal Follow-up"
+                                data-status="Confirmed"
+                            >
+                                <td>
+                                    <div class="patient-cell">
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Fazana Aziz"
+                                            class="patient-avatar"
+                                        >
+                                        <div>
+                                            <strong>Fazana Aziz</strong>
+                                            <span>Mother</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="appointment-type">Maternal Follow-up</strong>
+                                    <span class="appointment-subtype">Antenatal Check-up</span>
+                                </td>
+
+                                <td>28 Sep 2026</td>
+
+                                <td>09:00 AM</td>
+
+                                <td>
+                                    <span class="status-badge confirmed">
+                                        <span></span>
+                                        Confirmed
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="action-button view-button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewAppointmentModal"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        View Details
+                                    </button>
+                                </td>
+
+                            </tr>
+
+                            <!-- Past Appointment -->
+                            <tr
+                                data-period="past"
+                                data-date="2026-09-20"
+                                data-type="Child Vaccination"
+                                data-status="Completed"
+                            >
+                                <td>
+                                    <div class="patient-cell">
+                                        <img
+                                            src="../icons/user.png"
+                                            alt="Siti Aminah"
+                                            class="patient-avatar"
+                                        >
+                                        <div>
+                                            <strong>Siti Aminah</strong>
+                                            <span>Child: Ammar</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="appointment-type">Child Vaccination</strong>
+                                    <span class="appointment-subtype">BCG Vaccine</span>
+                                </td>
+
+                                <td>20 Sep 2026</td>
+
+                                <td>10:00 AM</td>
+
+                                <td>
+                                    <span class="status-badge completed">
+                                        <span></span>
+                                        Completed
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="action-button view-button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewAppointmentModal"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        View Details
+                                    </button>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div
+                    id="noAppointments"
+                    class="no-results"
+                    style="display: none;"
+                >
+                    <i class="bi bi-calendar-x"></i>
+                    <h5>No appointments found</h5>
+                    <p>Try changing your search or filter options.</p>
+                </div>
+
+                <div class="table-footer">
+                    <span id="appointmentCount">Showing appointments</span>
+                    <div class="pagination-buttons">
+                        <button class="pagination-button" disabled>
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button class="pagination-button current">1</button>
+                        <button class="pagination-button" disabled>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Manage Available Slots -->
+            <section class="content-card slots-card">
+
+                <!-- Section Header -->
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <i class="bi bi-calendar-plus"></i>
+                        </div>
+
+                        <div>
+                            <h3>Manage Available Slots</h3>
+                            <p>
+                                Create and manage available appointment
+                                dates and times.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn add-slot-button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addSlotModal"
+                    >
+                        <i class="bi bi-plus-lg"></i>
+                        Add New Slot
+                    </button>
+                </div>
+
+                <!-- Slot Filters -->
+                <div class="slot-filters">
+                    <div>
+                        <label for="slotDateFrom" class="form-label">Date From</label>
+                        <input
+                            type="date"
+                            id="slotDateFrom"
+                            class="form-control"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="slotDateTo" class="form-label">Date To</label>
+                        <input
+                            type="date"
+                            id="slotDateTo"
+                            class="form-control"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="slotTypeFilter" class="form-label">Service Type</label>
+                        <select
+                            id="slotTypeFilter"
+                            class="form-select"
+                        >
+                            <option value="all">All Services</option>
+                            <option value="Maternal Follow-up">Maternal Follow-up</option>
+                            <option value="Child Vaccination">Child Vaccination</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="slotStatusFilter" class="form-label">Slot Status</label>
+                        <select
+                            id="slotStatusFilter"
+                            class="form-select"
+                        >
+                            <option value="all">All</option>
+                            <option value="Available">Available</option>
+                            <option value="Booked">Booked</option>
+                        </select>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="filterSlots"
+                        class="btn slot-filter-button"
+                    >
+                        <i class="bi bi-funnel"></i>
+                        Filter
+                    </button>
+
+                </div>
+
+                <!-- Slots Table -->
+                <div class="table-responsive">
+                    <table class="table slots-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Service Type</th>
+                                <th>Status</th>
+                                <th>Booked By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="slotsTableBody">
+                            <!-- Slot 1 -->
+                            <tr
+                                data-slot-date="2026-09-25"
+                                data-slot-type="Maternal Follow-up"
+                                data-slot-status="Booked"
+                            >
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>09:00 AM – 09:30 AM</td>
+                                
+                                <td>
+                                    <strong>Maternal Follow-up</strong>
+                                    <span class="appointment-subtype">Antenatal Check-up</span>
+                                </td>
+
+                                <td>
+                                    <span class="slot-status booked">Booked</span>
+                                </td>
+
+                                <td>Nurul Syazwani</td>
+
+                                <td>
+                                    <div class="slot-actions">
+                                        <button
+                                            class="slot-action edit-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editSlotModal"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <button
+                                            class="slot-action delete-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteSlotModal"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <!-- Slot 2 -->
+                            <tr
+                                data-slot-date="2026-09-25"
+                                data-slot-type="Child Vaccination"
+                                data-slot-status="Booked"
+                            >
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>10:30 AM – 11:00 AM</td>
+
+                                <td>
+                                    <strong>Child Vaccination</strong>
+                                    <span class="appointment-subtype">MMR Vaccine</span>
+                                </td>
+
+                                <td>
+                                    <span class="slot-status booked">Booked</span>
+                                </td>
+
+                                <td>Siti Aminah (Ammar)</td>
+
+                                <td>
+                                    <div class="slot-actions">
+                                        <button
+                                            class="slot-action edit-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editSlotModal"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <button
+                                            class="slot-action delete-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteSlotModal"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <!-- Slot 3 -->
+                            <tr
+                                data-slot-date="2026-09-25"
+                                data-slot-type="Child Vaccination"
+                                data-slot-status="Available"
+                            >
+                                <td>
+                                    25 Sep 2026
+                                    <small class="today-label">Today</small>
+                                </td>
+
+                                <td>11:00 AM – 11:30 AM</td>
+
+                                <td>
+                                    <strong>Child Vaccination</strong>
+                                    <span class="appointment-subtype">MMR Vaccine</span>
+                                </td>
+
+                                <td>
+                                    <span class="slot-status available">Available</span>
+                                </td>
+
+                                <td>—</td>
+
+                                <td>
+                                    <div class="slot-actions">
+                                        <button
+                                            class="slot-action edit-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editSlotModal"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <button
+                                            class="slot-action delete-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteSlotModal"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <!-- Slot 4 -->
+                            <tr
+                                data-slot-date="2026-09-26"
+                                data-slot-type="Maternal Follow-up"
+                                data-slot-status="Available"
+                            >
+                                <td>
+                                    26 Sep 2026
+                                    <small class="tomorrow-label">Tomorrow</small>
+                                </td>
+
+                                <td>09:00 AM – 09:30 AM</td>
+
+                                <td>
+                                    <strong>Maternal Follow-up</strong>
+                                    <span class="appointment-subtype">Postnatal Check-up</span>
+                                </td>
+
+                                <td>
+                                    <span class="slot-status available">Available</span>
+                                </td>
+
+                                <td>—</td>
+
+                                <td>
+                                    <div class="slot-actions">
+                                        <button
+                                            class="slot-action edit-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editSlotModal"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <button
+                                            class="slot-action delete-slot"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteSlotModal"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="table-footer">
+                    <span>Showing 1 to 4 of 4 slots</span>
+                    <div class="pagination-buttons">
+                        <button class="pagination-button" disabled>
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+
+                        <button class="pagination-button current">1</button>
+                        <button class="pagination-button">2</button>
+                        <button class="pagination-button">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- View Appointment Modal -->
+
+    <div
+        class="modal fade"
+        id="viewAppointmentModal"
+        tabindex="-1"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Appointment Details</h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="appointment-modal-header">
+                        <div class="modal-appointment-icon">
+                            <i class="bi bi-calendar2-check"></i>
+                        </div>
+                        <div>
+                            <h4>Maternal Follow-up</h4>
+                            <span class="status-badge confirmed">
+                                <span></span>
+                                Confirmed
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="detail-list">
+                        <div>
+                            <span>Patient</span>
+                            <strong>Nurul Syazwani</strong>
+                        </div>
+
+                        <div>
+                            <span>Appointment Type</span>
+                            <strong>Maternal Follow-up</strong>
+                        </div>
+
+                        <div>
+                            <span>Date</span>
+                            <strong>25 September 2026</strong>
+                        </div>
+
+                        <div>
+                            <span>Time</span>
+                            <strong>09:00 AM</strong>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn cancel-button"
+                        data-bs-dismiss="modal"
+                    >
+                        Close
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Reschedule Modal -->
+
+    <div
+        class="modal fade"
+        id="rescheduleModal"
+        tabindex="-1"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reschedule Request</h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="request-icon">
+                        <i class="bi bi-calendar2-event"></i>
+                    </div>
+                    <h4 class="text-center">Pending Reschedule Request</h4>
+                    <p class="modal-description text-center">
+                        Siti Aminah has requested to reschedule
+                        Ammar's child vaccination appointment.
+                    </p>
+
+                    <div class="reschedule-details">
+                        <div>
+                            <span>Current Appointment</span>
+                            <strong>
+                                25 Sep 2026 · 10:30 AM
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Requested Date</span>
+                            <strong>
+                                28 Sep 2026 · 10:30 AM
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="approval-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>
+                            The appointment will remain unchanged
+                            until the request is approved.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn reject-button"
+                        data-bs-dismiss="modal"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                        Reject
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn approve-modal-button"
+                        data-bs-dismiss="modal"
+                    >
+                        <i class="bi bi-check-lg"></i>
+                        Approve
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Add Slot Modal -->
+
+    <div
+        class="modal fade"
+        id="addSlotModal"
+        tabindex="-1"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Add Available Slot</h5>
+                        <p class="modal-subtitle">
+                            Create a new appointment slot.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+                </div>
+
+                <form id="addSlotForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="newSlotDate"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Service Type</label>
+                                <select
+                                    class="form-select"
+                                    id="newSlotType"
+                                    required
+                                >
+                                    <option value="">Select service</option>
+                                    <option>Maternal Follow-up</option>
+                                    <option>Child Vaccination</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Start Time</label>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    id="newSlotStart"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">End Time</label>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    id="newSlotEnd"
+                                    required
+                                >
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn primary-button"
+                        >
+                            Add Slot
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Edit Slot Modal -->
+    <div
+        class="modal fade"
+        id="editSlotModal"
+        tabindex="-1"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Edit Available Slot</h5>
+                        <p class="modal-subtitle">
+                            Update this appointment slot.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+                </div>
+
+                <form>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    value="2026-09-25"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Service Type</label>
+                                <select class="form-select">
+                                    <option selected>Child Vaccination</option>
+                                    <option>Maternal Follow-up</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Start Time</label>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    value="11:00"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">End Time</label>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    value="11:30"
+                                >
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn primary-button"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Delete Slot Modal -->
+    <div
+        class="modal fade"
+        id="deleteSlotModal"
+        tabindex="-1"
+    >
+
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body delete-modal-body">
+                    <div class="delete-icon">
+                        <i class="bi bi-trash3"></i>
+                    </div>
+
+                    <h4>Remove Available Slot?</h4>
+
+                    <p>
+                        Are you sure you want to remove this
+                        appointment slot?
+                    </p>
+
+                    <small>Booked slots should not be removed.</small>
+
+                    <div class="confirmation-buttons">
+                        <button
+                            type="button"
+                            class="btn cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn delete-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Remove Slot
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- CareTrack JavaScript -->
+    <script src="../js/staff_appointments.js"></script>
+
+</body>
+
+</html>

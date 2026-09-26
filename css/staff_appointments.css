@@ -1,0 +1,1295 @@
+/* General */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #243653;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* =====================================================
+   CARETRACK COLOURS
+===================================================== */
+
+:root {
+    --caretrack-pink: #f9528e;
+    --caretrack-pink-dark: #e81f67;
+    --caretrack-pink-light: #fee6ef;
+
+    --text-dark: #172b4d;
+    --text-medium: #58708f;
+    --border: #eadfe4;
+
+    --white: #ffffff;
+}
+
+/* =====================================================
+   PAGE LAYOUT
+===================================================== */
+
+.page-layout {
+    min-height: calc(100vh - 78px);
+
+    display: flex;
+}
+
+/* =====================================================
+   MAIN CONTENT
+===================================================== */
+
+.main-content {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 34px 38px 60px;
+
+    background: #ffffff;
+}
+
+/* =====================================================
+   PAGE HEADER
+===================================================== */
+
+.page-header {
+    max-width: 1250px;
+
+    margin: 0 auto 24px;
+}
+
+.page-heading {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.page-icon {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fee6ef;
+}
+
+.page-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.page-heading h2 {
+    margin: 0 0 5px;
+
+    color: var(--text-dark);
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.page-heading p {
+    margin: 0;
+
+    color: var(--text-medium);
+
+    font-size: 14px;
+}
+
+
+/* =====================================================
+   APPOINTMENT TABS
+===================================================== */
+
+.appointment-tabs {
+    width: 330px;
+    max-width: 1250px;
+    margin: 0 auto 18px;
+    display: flex;
+    background: #ffffff;
+    border: 1px solid #efdde5;
+    border-radius: 9px;
+    overflow: hidden;
+}
+
+.appointment-tab {
+    min-width: 110px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: none;
+    background: #ffffff;
+    color: #53657d;
+    font-size: 12px;
+    font-weight: 500;
+    transition: 0.2s;
+
+}
+
+.appointment-tab + .appointment-tab {
+    border-left: 1px solid #f0e4e9;
+}
+
+.appointment-tab:hover {
+    color: var(--caretrack-pink);
+
+    background: #fff7fa;
+}
+
+.appointment-tab.active {
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+
+    font-weight: 600;
+}
+
+.appointment-tab i {
+    font-size: 15px;
+}
+
+
+/* =====================================================
+   FILTER CARD
+===================================================== */
+
+.filter-card {
+    max-width: 1250px;
+
+    margin: 0 auto 18px;
+
+    padding: 18px;
+
+    background: #ffffff;
+
+    border: 1px solid #f0dfe6;
+
+    border-radius: 10px;
+
+    box-shadow: 0 3px 12px rgba(120, 50, 80, 0.04);
+}
+
+.form-label {
+    margin-bottom: 6px;
+
+    color: #405777;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    min-height: 41px;
+
+    border-color: #dfd9de;
+
+    color: #405777;
+
+    font-size: 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #f1c9df;
+    box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
+}
+
+.input-group-text {
+    background: #ffffff;
+
+    border-color: #dfd9de;
+
+    color: var(--caretrack-pink);
+}
+
+.reset-button {
+    min-height: 41px;
+
+    border: 1px solid var(--caretrack-pink);
+
+    color: var(--caretrack-pink);
+
+    background: #ffffff;
+
+    font-size: 12px;
+}
+
+.reset-button:hover {
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+}
+
+
+/* =====================================================
+   CONTENT CARDS
+===================================================== */
+
+.content-card {
+    max-width: 1250px;
+
+    margin: 0 auto 24px;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #f0dfe6;
+
+    border-radius: 11px;
+
+    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
+}
+
+
+/* =====================================================
+   APPOINTMENT TABLE
+===================================================== */
+
+.appointment-table {
+    min-width: 1050px;
+}
+
+.appointment-table thead th,
+.slots-table thead th {
+    padding: 14px 18px;
+
+    background: var(--caretrack-pink-light);
+
+    border-bottom: 1px solid #f6d1df;
+
+    color: #9e3b60;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.appointment-table tbody td,
+.slots-table tbody td {
+    padding: 15px 18px;
+
+    border-bottom: 1px solid #f3e8ed;
+
+    color: #536780;
+
+    font-size: 11px;
+
+    vertical-align: middle;
+}
+
+.appointment-table tbody tr:last-child td,
+.slots-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.appointment-table tbody tr:hover,
+.slots-table tbody tr:hover {
+    background: #fffafd;
+}
+
+
+/* =====================================================
+   PATIENT CELL
+===================================================== */
+
+.patient-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.patient-avatar {
+    width: 39px;
+    height: 39px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    background: var(--caretrack-pink-light);
+}
+
+.patient-cell strong,
+.patient-cell span {
+    display: block;
+}
+
+.patient-cell strong {
+    margin-bottom: 3px;
+
+    color: var(--text-dark);
+
+    font-size: 12px;
+}
+
+.patient-cell span {
+    color: #78879a;
+
+    font-size: 10px;
+}
+
+
+/* =====================================================
+   APPOINTMENT TYPE
+===================================================== */
+
+.appointment-type {
+    display: block;
+
+    color: #334c6c;
+
+    font-size: 11px;
+}
+
+.appointment-subtype {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #8390a0;
+
+    font-size: 10px;
+}
+
+
+/* =====================================================
+   DATE
+===================================================== */
+
+.today-label,
+.tomorrow-label {
+    display: block;
+
+    margin-top: 3px;
+
+    color: var(--caretrack-pink);
+
+    font-size: 9px;
+}
+
+
+/* =====================================================
+   STATUS BADGES
+===================================================== */
+
+.status-badge {
+    padding: 6px 10px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    border-radius: 20px;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+.status-badge > span {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+}
+
+
+/* Confirmed */
+
+.status-badge.confirmed {
+    color: #13844d;
+    background: #eaf8f0;
+}
+
+.status-badge.confirmed > span {
+    background: #18a55f;
+}
+
+
+/* Pending */
+
+.status-badge.pending {
+    color: #b77a00;
+    background: #fff5dc;
+}
+
+.status-badge.pending > span {
+    background: #e4a100;
+}
+
+
+/* Completed */
+
+.status-badge.completed {
+    color: #59687e;
+    background: #f0f2f5;
+}
+
+.status-badge.completed > span {
+    background: #65748a;
+}
+
+
+/* Missed */
+
+.status-badge.missed {
+    color: #cf3a49;
+    background: #fff0f2;
+}
+
+.status-badge.missed > span {
+    background: #e5394c;
+}
+
+
+/* Cancelled */
+
+.status-badge.cancelled {
+    color: #727c8c;
+    background: #f1f2f4;
+}
+
+.status-badge.cancelled > span {
+    background: #8b94a2;
+}
+
+
+/* =====================================================
+   APPOINTMENT ACTIONS
+===================================================== */
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.action-button {
+    min-height: 30px;
+
+    padding: 5px 10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    border-radius: 5px;
+
+    background: #ffffff;
+
+    font-size: 10px;
+
+    white-space: nowrap;
+}
+
+.view-button {
+    color: #f9528e;
+    border: 1px solid #f9528e;
+}
+
+.view-button:hover {
+    background: #fee6ef;
+}
+
+.start-button {
+    border: 1px solid var(--caretrack-pink);
+
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+}
+
+.start-button:hover {
+    border-color: var(--caretrack-pink-dark);
+
+    background: var(--caretrack-pink-dark);
+}
+
+.approve-button {
+    border: 1px solid #e8b454;
+
+    color: #a86c00;
+
+    background: #fffaf0;
+}
+
+.approve-button:hover {
+    background: #fff2d5;
+}
+
+
+/* =====================================================
+   NO RESULTS
+===================================================== */
+
+.no-results {
+    padding: 50px 20px;
+
+    text-align: center;
+
+    color: #748298;
+}
+
+.no-results i {
+    color: var(--caretrack-pink);
+
+    font-size: 35px;
+}
+
+.no-results h5 {
+    margin: 12px 0 5px;
+
+    color: var(--text-dark);
+
+    font-size: 15px;
+}
+
+.no-results p {
+    margin: 0;
+
+    font-size: 11px;
+}
+
+
+/* =====================================================
+   TABLE FOOTER
+===================================================== */
+
+.table-footer {
+    min-height: 54px;
+
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-top: 1px solid #f0e5ea;
+
+    color: #748399;
+
+    font-size: 10px;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-button {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e1dce0;
+
+    border-radius: 5px;
+
+    background: #ffffff;
+
+    color: #61728a;
+
+    font-size: 11px;
+}
+
+.pagination-button.current {
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+
+    border-color: var(--caretrack-pink);
+}
+
+.pagination-button:disabled {
+    opacity: 0.45;
+}
+
+
+/* =====================================================
+   MANAGE SLOTS HEADER
+===================================================== */
+
+.slots-card {
+    padding-top: 0;
+}
+
+.section-header {
+    padding: 20px 20px 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid #f2e4e9;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.section-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--caretrack-pink-light);
+
+    border-radius: 50%;
+
+    color: var(--caretrack-pink);
+}
+
+.section-icon i {
+    font-size: 22px;
+}
+
+.section-title h3 {
+    margin: 0 0 4px;
+
+    color: var(--text-dark);
+
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.section-title p {
+    margin: 0;
+
+    color: #718096;
+
+    font-size: 11px;
+}
+
+.add-slot-button {
+    min-height: 40px;
+
+    padding: 0 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+
+    border: 1px solid var(--caretrack-pink);
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.add-slot-button:hover {
+    color: #ffffff;
+
+    background: var(--caretrack-pink-dark);
+
+    border-color: var(--caretrack-pink-dark);
+}
+
+
+/* =====================================================
+   SLOT FILTERS
+===================================================== */
+
+.slot-filters {
+    padding: 16px 18px;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr
+        1.4fr
+        1fr
+        auto;
+
+    gap: 12px;
+
+    border-bottom: 1px solid #f2e4e9;
+}
+
+.slot-filter-button {
+    align-self: end;
+
+    min-height: 41px;
+
+    padding: 0 18px;
+
+    color: var(--caretrack-pink);
+
+    background: #ffffff;
+
+    border: 1px solid var(--caretrack-pink);
+
+    font-size: 11px;
+}
+
+.slot-filter-button:hover {
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+}
+
+
+/* =====================================================
+   SLOTS TABLE
+===================================================== */
+
+.slots-table {
+    min-width: 850px;
+}
+
+.slot-status {
+    padding: 6px 11px;
+
+    display: inline-block;
+
+    border-radius: 6px;
+
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.slot-status.available {
+    color: #2271b1;
+
+    background: #edf6ff;
+}
+
+.slot-status.booked {
+    color: #16804e;
+
+    background: #eaf8f0;
+}
+
+
+/* =====================================================
+   SLOT ACTIONS
+===================================================== */
+
+.slot-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.slot-action {
+    width: 31px;
+    height: 31px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #f1cad8;
+
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    color: var(--caretrack-pink);
+
+    font-size: 13px;
+}
+
+.slot-action:hover {
+    background: var(--caretrack-pink-light);
+}
+
+.delete-slot {
+    color: #d94359;
+
+    border-color: #f0c4cb;
+}
+
+.delete-slot:hover {
+    background: #fff0f2;
+}
+
+
+/* =====================================================
+   MODALS
+===================================================== */
+
+.modal-content {
+    border: none;
+
+    border-radius: 12px;
+
+    box-shadow: 0 15px 50px rgba(70, 30, 50, 0.15);
+}
+
+.modal-header {
+    padding: 20px 23px;
+
+    border-bottom: 1px solid #f0e2e8;
+}
+
+.modal-title {
+    color: var(--text-dark);
+
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.modal-subtitle {
+    margin: 4px 0 0;
+
+    color: #718096;
+
+    font-size: 11px;
+}
+
+.modal-body {
+    padding: 23px;
+}
+
+.modal-footer {
+    padding: 14px 23px;
+
+    border-top: 1px solid #f0e2e8;
+}
+
+
+/* Modal Detail */
+
+.appointment-modal-header {
+    padding-bottom: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    border-bottom: 1px solid #f0e2e8;
+}
+
+.modal-appointment-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: var(--caretrack-pink-light);
+
+    color: var(--caretrack-pink);
+}
+
+.modal-appointment-icon i {
+    font-size: 21px;
+}
+
+.appointment-modal-header h4 {
+    margin: 0 0 7px;
+
+    color: var(--text-dark);
+
+    font-size: 16px;
+}
+
+.detail-list {
+    margin-top: 15px;
+}
+
+.detail-list > div {
+    padding: 10px 0;
+
+    display: flex;
+    justify-content: space-between;
+
+    border-bottom: 1px solid #f3ebef;
+}
+
+.detail-list > div:last-child {
+    border-bottom: none;
+}
+
+.detail-list span {
+    color: #77869a;
+
+    font-size: 11px;
+}
+
+.detail-list strong {
+    color: #354c6a;
+
+    font-size: 11px;
+
+    text-align: right;
+}
+
+
+/* Reschedule */
+
+.request-icon {
+    width: 55px;
+    height: 55px;
+
+    margin: 0 auto 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fff5dc;
+
+    color: #d39100;
+}
+
+.request-icon i {
+    font-size: 25px;
+}
+
+.modal-description {
+    color: #6e7e94;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+.reschedule-details {
+    margin-top: 17px;
+
+    padding: 13px;
+
+    background: #fff9fb;
+
+    border: 1px solid #f3dce5;
+
+    border-radius: 8px;
+}
+
+.reschedule-details > div {
+    padding: 7px 0;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.reschedule-details span {
+    color: #78869a;
+
+    font-size: 10px;
+}
+
+.reschedule-details strong {
+    color: #354b69;
+
+    font-size: 10px;
+
+    text-align: right;
+}
+
+.approval-note {
+    margin-top: 13px;
+
+    padding: 11px;
+
+    display: flex;
+    gap: 8px;
+
+    color: #a16d0b;
+
+    background: #fff7e5;
+
+    border-radius: 7px;
+
+    font-size: 10px;
+}
+
+.approval-note i {
+    font-size: 14px;
+}
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+.primary-button,
+.approve-modal-button {
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+
+    border-color: var(--caretrack-pink);
+
+    font-size: 11px;
+}
+
+.primary-button:hover,
+.approve-modal-button:hover {
+    color: #ffffff;
+
+    background: var(--caretrack-pink-dark);
+
+    border-color: var(--caretrack-pink-dark);
+}
+
+.cancel-button {
+    color: #5f7187;
+
+    background: #ffffff;
+
+    border: 1px solid #dddfe4;
+
+    font-size: 11px;
+}
+
+.cancel-button:hover {
+    background: #f7f8fa;
+}
+
+.reject-button {
+    color: #d33e52;
+
+    background: #ffffff;
+
+    border: 1px solid #efb5bf;
+
+    font-size: 11px;
+}
+
+.reject-button:hover {
+    background: #fff0f2;
+}
+
+
+/* =====================================================
+   DELETE MODAL
+===================================================== */
+
+.delete-modal-body {
+    padding: 30px 25px;
+
+    text-align: center;
+}
+
+.delete-icon {
+    width: 58px;
+    height: 58px;
+
+    margin: 0 auto 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fff0f2;
+
+    color: #d94359;
+}
+
+.delete-icon i {
+    font-size: 24px;
+}
+
+.delete-modal-body h4 {
+    margin-bottom: 9px;
+
+    color: var(--text-dark);
+
+    font-size: 17px;
+}
+
+.delete-modal-body p {
+    margin-bottom: 5px;
+
+    color: #64758b;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+.delete-modal-body small {
+    color: #9a7580;
+
+    font-size: 9px;
+}
+
+.confirmation-buttons {
+    margin-top: 20px;
+
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.confirmation-buttons button {
+    min-width: 105px;
+}
+
+.delete-button {
+    color: #ffffff;
+
+    background: #d94359;
+
+    border-color: #d94359;
+
+    font-size: 11px;
+}
+
+.delete-button:hover {
+    color: #ffffff;
+
+    background: #bd3046;
+
+    border-color: #bd3046;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1100px) {
+
+    .sidebar {
+        width: 75px;
+    }
+
+    .sidebar-link {
+        justify-content: center;
+
+        padding: 0;
+    }
+
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-bottom {
+        display: none;
+    }
+
+    .slot-filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .slot-filter-button {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    .top-header {
+        padding: 0 16px;
+    }
+
+    .staff-profile div {
+        display: none;
+    }
+
+    .staff-profile {
+        border-left: none;
+    }
+
+    .main-content {
+        padding: 25px 15px 40px;
+    }
+
+    .page-heading h2 {
+        font-size: 27px;
+    }
+
+    .appointment-tabs {
+        width: 100%;
+    }
+
+    .appointment-tab {
+        flex: 1;
+
+        min-width: 0;
+    }
+
+    .section-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+    .add-slot-button {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+}
+
+
+@media (max-width: 550px) {
+
+    .caretrack-brand div {
+        display: none;
+    }
+
+    .page-heading {
+        align-items: flex-start;
+    }
+
+    .page-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .appointment-tab {
+        padding: 11px 8px;
+
+        font-size: 10px;
+    }
+
+    .appointment-tab i {
+        display: none;
+    }
+
+    .slot-filters {
+        grid-template-columns: 1fr;
+    }
+
+}
