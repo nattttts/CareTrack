@@ -1,0 +1,553 @@
+/* ================= GENERAL ================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #142d58;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none; 
+    color: inherit;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* ================= PAGE LAYOUT ================= */
+
+.page-layout {
+    min-height: calc(100vh - 78px);
+}
+
+/* ================= MAIN CONTENT ================= */
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+    background: #ffffff;
+    padding: 35px 38px 50px;
+}
+
+/* ================= PAGE HEADER ================= */
+.page-header {
+    max-width: 1250px;
+    margin: 0 auto 28px;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.title-icon {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: #fee6ef; 
+}
+
+.title-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.page-title h2 {
+    margin-bottom: 5px;
+    font-size: 36px;
+    font-weight: 700;
+    color: #142d58;
+}
+
+.page-title p {
+    font-size: 15px;
+    color: #50698a;
+}
+
+/* ================= PAGE HEADER ================= */
+.queue-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ================= TODAY'S APPOINTMENT ================= */
+.appointment-card {
+    background: #FFFFFF;
+    border: 1px solid #dfe7f0;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.03);
+    border-radius: 14px;
+
+    padding: 25px 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.appointment-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.service-icon {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: #fee6ef;
+}
+
+.service-icon img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.appointment-info h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #888888;
+}
+
+.appointment-info h4 {
+    margin: 0 0 4px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.appointment-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #777777;
+}
+
+.appointment-details {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.appointment-details p img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.appointment-details p {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin: 0;
+
+    font-size: 13px;
+    color: #666666;
+}
+
+.appointment-status {
+    min-height: 30px;
+    padding: 6px 12px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    border-radius: 20px;
+    background: #ddf8e9;
+    color: #07854d;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.appointment-status img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
+/* ================= CHECK-IN CARD ================= */
+.checkin-card {
+    background: #FFFFFF;
+    border: 1px solid #dfe7f0;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.03);
+    border-radius: 14px;
+
+    padding: 25px 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.checkin-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.checkin-card h3 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #333333;
+}
+
+.checkin-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #777777;
+}
+
+.checkin-button {
+    min-width: 120px;
+    padding: 11px 22px;
+
+    border: none;
+    border-radius: 8px;
+    background: #f9528e;
+    color: #FFFFFF;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.checkin-button:hover {
+    background: #e81f67;
+}
+
+/* ================= CHECK-IN MESSAGE ================= */
+.checkin-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+
+    border-radius: 10px;
+    background: #ddf8e9;
+    border: 1px solid #ccebd8;
+}
+
+.checkin-message img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.checkin-message h6 {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #27834d;
+}
+
+.checkin-message p {
+    margin: 0;
+    font-size: 13px;
+    color: #777777;
+}
+
+
+/* ================= QUEUE STATUS CARD ================= */
+.queue-status-card {
+    background: #FFFFFF;
+    border: 1px solid #dfe7f0;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.03);
+    border-radius: 14px;
+    padding: 30px;
+}
+
+/* ================= QUEUE STATUS HEADER ================= */
+.queue-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+}
+
+.queue-status-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #142d58;
+}
+
+/* ================= QUEUE STATUS BADGE ================= */
+.queue-status {
+    padding: 7px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.queue-status.waiting {
+    background: #fff2d6;
+    color: #d77b00;
+}
+
+/* ================= QUEUE NUMBER ================= */
+.queue-number-section {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 25px;
+    background: #FEE6EF;
+    border-radius: 12px;
+}
+
+.queue-number-section h6 {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #777777;
+}
+
+.queue-number-section p {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 700;
+    color: #e81f67;
+}
+
+/* ================= QUEUE DETAILS ================= */
+.queue-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+
+    background: #fafafa;
+    border-radius: 10px;
+}
+
+.queue-detail img {
+    width: 24px;
+    height: 24px;
+}
+
+.queue-detail h6 {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #777777;
+}
+
+.queue-detail strong {
+    display: block;
+    font-size: 16px;
+    color: #333333;
+}
+
+/* ================= LIVE QUEUE ================= */
+.live-queue-card {
+    background: #FFFFFF;
+    border: 1px solid #dfe7f0;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.03);
+    border-radius: 14px;
+    padding: 30px;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.section-title-row h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #142d58;
+}
+
+.section-title-row p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #777777;
+}
+
+/* ================= LIVE STATUS ================= */
+.live-status {
+    padding: 7px 13px;
+    border-radius: 20px;
+    background: #ddf8e9;
+    color: #07854d;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ================= CURRENTLY SERVING ================= */
+.currently-serving {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 25px;
+    margin-bottom: 15px;
+    background: #FEE6EF;
+    border-radius: 10px;
+}
+
+.currently-serving h6 {
+    margin: 0;
+    font-size: 14px;
+    color: #555555;
+}
+
+.currently-serving strong {
+    font-size: 24px;
+    color: #e81f67;
+}
+
+/* ================= QUEUE LIST ================= */
+.queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.queue-number {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.queue-item-status {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.queue-item.in-progress .queue-item-status {
+    color: #07854d;
+}
+
+.queue-item.waiting .queue-item-status {
+    color: #d77b00;
+}
+
+
+/* ================= YOUR QUEUE ================= */
+.queue-item.your-queue {
+    background: #FEE6EF;
+    border: 1px solid #f9528e;
+}
+
+.queue-item.your-queue .queue-number {
+    color: #e81f67;
+}
+
+.queue-item.your-queue .queue-item-status {
+    color: #e81f67;
+    font-weight: 600;
+}
+
+/* ================= QUEUE INFORMATION ================= */
+.queue-info {
+    background: #fff2d6;
+    border-radius: 14px;
+    padding: 15px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.queue-info img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.queue-info p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #936318;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+
+    .main-content {
+        padding: 30px;
+    }
+
+    .appointment-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .appointment-details {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .main-content {
+        padding: 20px;
+    }
+
+    .checkin-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .checkin-button {
+        width: 100%;
+    }
+
+    .queue-status-card,
+    .live-queue-card {
+        padding: 22px;
+    }
+
+    .page-title h2 {
+        font-size: 24px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .appointment-details {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+}
