@@ -1,5 +1,4 @@
 /* ================= GENERAL ================= */
-
 * {
     margin: 0;
     padding: 0;
@@ -23,13 +22,11 @@ img {
 }
 
 /* ================= PAGE LAYOUT ================= */
-
 .page-layout {
     min-height: calc(100vh - 78px);
 }
 
 /* ================= MAIN CONTENT ================= */
-
 .main-content {
     flex: 1;
     min-width: 0;
