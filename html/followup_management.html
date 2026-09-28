@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Follow-ups | CareTrack</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/patient_header.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/followup_management.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="top-header">
+        <div class="logo">
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal & Child Healthcare</p>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="profile">
+                <img src="../icons/user.png" alt="Profile">
+                <span>Jane</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN LAYOUT ================= -->
+    <div class="page-layout">
+
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="sidebar">
+
+            <nav class="sidebar-nav">
+                <a href="staff_dashboard.html" class="sidebar-link">
+                    <img src="../icons/home.png" alt="">
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="staff_appointments.html" class="sidebar-link">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Appointments</span>
+                </a>
+
+                <a href="patient_management.html" class="sidebar-link">
+                    <img src="../icons/patients.png" alt="">
+                    <span>Patient Management</span>
+                </a>
+
+                <a href="staff_vaccinations.html" class="sidebar-link">
+                    <img src="../icons/syringe.png" alt="">
+                    <span>Vaccinations</span>
+                </a>
+
+                <a href="staff_queue.html" class="sidebar-link">
+                    <img src="../icons/queue.png" alt="">
+                    <span>Queue Management</span>
+                </a>
+
+                <a href="#" class="sidebar-link active">
+                    <img src="../icons/follow-up.png" alt="">
+                    <span>Follow-ups</span>
+                </a>
+
+                <a href="notifications.html" class="sidebar-link">
+                    <img src="../icons/reminder.png" alt="">
+                    <span>Notifications</span>
+                </a>
+
+                <a href="staff_profile.html" class="sidebar-link">
+                    <img src="../icons/user.png" alt="">
+                    <span>My Profile</span>
+                </a>
+
+                <a href="settings.html" class="sidebar-link">
+                    <img src="../icons/setting.png" alt="">
+                    <span>Settings</span>
+                </a>
+                
+                <a href="home.html" class="sidebar-link logout-link">
+                    <img src="../icons/logout.png" alt="">
+                    <span>Log Out</span>
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- ================= CONTENT ================= -->
+        <main class="main-content">
+
+            <!-- Page heading -->
+            <div class="page-heading">
+
+                <div class="page-icon">
+                    <img src="../icons/follow-up.png" alt="">
+                </div>
+
+                <div>
+                    <h2>Follow-ups</h2>
+                    <p>Identify and manage cases that need follow-up action.</p>
+                </div>
+
+            </div>
+
+
+            <!-- ================= SUMMARY CARDS ================= -->
+            <div class="row g-4 summary-row">
+
+                <!-- Missed Appointments -->
+                <div class="col-12 col-md-6">
+
+                    <div class="summary-card missed-card">
+
+                        <div class="summary-icon">
+                            <img src="../icons/appointment.png"
+                                 alt="">
+                        </div>
+
+                        <div class="summary-content">
+                            <h3>Missed Appointments</h3>
+                            <div class="summary-number">8</div>
+                            <p>Require follow-up</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Overdue Vaccinations -->
+                <div class="col-12 col-md-6">
+
+                    <div class="summary-card overdue-card">
+
+                        <div class="summary-icon">
+                            <img src="../icons/orange_syringe.png"
+                                 alt="">
+                        </div>
+
+                        <div class="summary-content">
+                            <h3>Overdue Vaccinations</h3>
+                            <div class="summary-number">12</div>
+                            <p>Require follow-up</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ================= TABS ================= -->
+            <div class="followup-tabs">
+                <button class="followup-tab active"
+                        data-filter="all">
+                    All
+                </button>
+
+                <button class="followup-tab"
+                        data-filter="missed">
+                    Missed Appointments
+                </button>
+
+                <button class="followup-tab"
+                        data-filter="overdue">
+                    Overdue Vaccinations
+                </button>
+            </div>
+
+            <!-- ================= FILTERS ================= -->
+            <div class="filter-card">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Search -->
+                    <div class="col-12 col-lg-4">
+
+                        <label for="searchInput">
+                            Search
+                        </label>
+
+                        <div class="search-box">
+
+                            <span>⌕</span>
+
+                            <input type="text"
+                                   id="searchInput"
+                                   class="form-control"
+                                   placeholder="Search by mother or child name...">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Follow-up Type -->
+                    <div class="col-12 col-md-6 col-lg-3">
+
+                        <label for="typeFilter">
+                            Follow-up Type
+                        </label>
+
+                        <select id="typeFilter"
+                                class="form-select">
+
+                            <option value="all">
+                                All Types
+                            </option>
+
+                            <option value="missed">
+                                Missed Appointment
+                            </option>
+
+                            <option value="overdue">
+                                Overdue Vaccination
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Status -->
+                    <div class="col-12 col-md-6 col-lg-3">
+
+                        <label for="statusFilter">
+                            Status
+                        </label>
+
+                        <select id="statusFilter"
+                                class="form-select">
+
+                            <option value="all">
+                                All Statuses
+                            </option>
+
+                            <option value="missed">
+                                Missed
+                            </option>
+
+                            <option value="overdue">
+                                Overdue
+                            </option>
+
+                            <option value="progress">
+                                Follow-up in Progress
+                            </option>
+
+                            <option value="arranged">
+                                Appointment Arranged
+                            </option>
+
+                            <option value="resolved">
+                                Resolved
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Reset -->
+                    <div class="col-12 col-lg-2">
+
+                        <button id="resetButton"
+                                class="btn reset-btn w-100">
+                            ↻ Reset
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= FOLLOW-UP TABLE ================= -->
+            <div class="followup-table-card">
+
+                <div class="table-responsive">
+
+                    <table class="table followup-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Patient / Child</th>
+                                <th>Follow-up Type</th>
+                                <th>Original Appointment / Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="followupTableBody">
+
+                            <!-- Record 1 -->
+                            <tr data-type="missed"
+                                data-status="missed">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Nurul Syazwani</strong>
+                                            <small>Mother</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+                                        <span class="type-icon missed">
+                                            📅
+                                        </span>
+
+                                        <div>
+                                            <strong>Missed Appointment</strong>
+                                            <small>Antenatal Check-up</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>20 May 2025</strong>
+                                    <small>09:00 AM</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-missed">
+                                        ● Missed
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn">
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Record 2 -->
+                            <tr data-type="overdue"
+                                data-status="overdue">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Amnar Bin Ali</strong>
+                                            <small>Child of Siti Aminah</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+
+                                        <span class="type-icon overdue">
+                                            !
+                                        </span>
+
+                                        <div>
+                                            <strong>Overdue Vaccination</strong>
+                                            <small>MMR Vaccine</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>10 May 2025</strong>
+                                    <small>Due date</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-overdue">
+                                        ● Overdue
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn">
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Record 3 -->
+                            <tr data-type="missed"
+                                data-status="progress">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Farah Ilyana</strong>
+                                            <small>Mother</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+
+                                        <span class="type-icon missed">
+                                            📅
+                                        </span>
+
+                                        <div>
+                                            <strong>Missed Appointment</strong>
+                                            <small>Postnatal Check-up</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>18 May 2025</strong>
+                                    <small>02:30 PM</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-progress">
+                                        ● Follow-up in Progress
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn">
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Record 4 -->
+                            <tr data-type="overdue"
+                                data-status="progress">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Maryam Binti Farah</strong>
+                                            <small>Child of Farah Ilyana</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+
+                                        <span class="type-icon overdue">
+                                            !
+                                        </span>
+
+                                        <div>
+                                            <strong>Overdue Vaccination</strong>
+                                            <small>Hepatitis B (Dose 2)</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>15 May 2025</strong>
+                                    <small>Due date</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-progress">
+                                        ● Follow-up in Progress
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn">
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Record 5 -->
+                            <tr data-type="missed"
+                                data-status="arranged">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Siti Aminah</strong>
+                                            <small>Mother</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+
+                                        <span class="type-icon missed">
+                                            📅
+                                        </span>
+
+                                        <div>
+                                            <strong>Missed Appointment</strong>
+                                            <small>Postnatal Check-up</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>21 May 2025</strong>
+                                    <small>10:30 AM</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-arranged">
+                                        ● Appointment Arranged
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn">
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Record 6 -->
+                            <tr data-type="overdue"
+                                data-status="arranged">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Hafiz Bin Amir</strong>
+                                            <small>Child of Nor Aisyah</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+
+                                        <span class="type-icon overdue">
+                                            !
+                                        </span>
+
+                                        <div>
+                                            <strong>Overdue Vaccination</strong>
+                                            <small>BCG Vaccine</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>05 May 2025</strong>
+                                    <small>Due date</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-arranged">
+                                        ● Appointment Arranged
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn">
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Record 7 -->
+                            <tr data-type="missed"
+                                data-status="resolved">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Nadia Rahman</strong>
+                                            <small>Mother</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+
+                                        <span class="type-icon missed">
+                                            📅
+                                        </span>
+
+                                        <div>
+                                            <strong>Missed Appointment</strong>
+                                            <small>Antenatal Check-up</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>12 May 2025</strong>
+                                    <small>11:00 AM</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-resolved">
+                                        ● Resolved
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn disabled"
+                                                disabled>
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Record 8 -->
+                            <tr data-type="overdue"
+                                data-status="resolved">
+
+                                <td>
+                                    <div class="person-info">
+
+                                        <img src="../icons/user.png"
+                                             alt="">
+
+                                        <div>
+                                            <strong>Alya Binti Aisyah</strong>
+                                            <small>Child of Nor Aisyah</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="followup-type">
+
+                                        <span class="type-icon overdue">
+                                            !
+                                        </span>
+
+                                        <div>
+                                            <strong>Overdue Vaccination</strong>
+                                            <small>PCV (Dose 1)</small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>01 May 2025</strong>
+                                    <small>Due date</small>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-resolved">
+                                        ● Resolved
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <button class="btn view-btn">
+                                            View
+                                        </button>
+
+                                        <button class="btn schedule-btn disabled"
+                                                disabled>
+                                            Schedule Follow-up
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Table footer -->
+                <div class="table-footer">
+
+                    <span id="recordCount">
+                        Showing 1 to 8 of 8 records
+                    </span>
+
+                    <div class="pagination-buttons">
+
+                        <button class="pagination-btn">
+                            ‹
+                        </button>
+
+                        <button class="pagination-btn active">
+                            1
+                        </button>
+
+                        <button class="pagination-btn">
+                            2
+                        </button>
+
+                        <button class="pagination-btn">
+                            3
+                        </button>
+
+                        <button class="pagination-btn">
+                            ›
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/followup_management.js"></script>
+
+</body>
+</html>
