@@ -5,7 +5,7 @@
 :root {
     --caretrack-pink: #f9528e;
     --caretrack-light-pink: #fee6ef;
-    --caretrack-dark-pink: #df3d76;
+    --caretrack-dark-pink: #e81f67;
 
     --text-dark: #17233c;
     --text-muted: #68758a;
@@ -281,9 +281,8 @@ a {
 
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--caretrack-pink);
-
-    box-shadow: 0 0 0 0.15rem rgba(249, 82, 142, 0.15);
+    border-color: #f1c9df;
+    box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
 }
 
 .search-box {
@@ -310,8 +309,7 @@ a {
 .reset-btn {
     min-height: 44px;
 
-    background: var(--caretrack-light-pink);
-    border: 1px solid #f8c5d7;
+    border: 1px solid #f9528e;
 
     color: var(--caretrack-pink);
 
@@ -459,6 +457,13 @@ a {
 .type-icon.missed {
     background: var(--caretrack-light-pink);
     color: var(--caretrack-pink);
+}
+
+.type-icon.missed img,
+.type-icon.overdue img
+{
+    width: 15px;
+    height: 15px;
 }
 
 .type-icon.overdue {
