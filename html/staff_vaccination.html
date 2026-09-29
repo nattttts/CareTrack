@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Vaccination Management | CareTrack</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="../css/staff_vaccination.css">
+    <link rel="stylesheet" href="../css/patient_header.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+</head>
+
+<!-- Header -->
+    <header class="top-header">
+
+        <a href="#" class="logo">
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal & Child Healthcare</p>
+            </div>
+        </a>
+
+        <div class="header-right">
+
+            <div class="profile">
+                <img src="../icons/user.png" alt="Profile">
+
+                <span>Amir</span>
+
+            </div>
+
+        </div>
+
+    </header>
+    
+    <!-- Page Layout -->
+
+    <div class="page-layout">
+
+
+        <!-- Sidebar -->
+
+        <aside class="sidebar">
+
+            <nav class="sidebar-nav">
+                <a href="staff_dashboard.html" class="sidebar-link">
+                    <img src="../icons/home.png" alt="">
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="staff_appointments.html" class="sidebar-link">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Appointments</span>
+                </a>
+
+                <a href="patient_management.html" class="sidebar-link">
+                    <img src="../icons/patients.png" alt="">
+                    <span>Patient Management</span>
+                </a>
+
+                <a href="staff_vaccination.html" class="sidebar-link active">
+                    <img src="../icons/syringe.png" alt="">
+                    <span>Vaccinations</span>
+                </a>
+
+                <a href="staff_queue.html" class="sidebar-link">
+                    <img src="../icons/queue.png" alt="">
+                    <span>Queue Management</span>
+                </a>
+
+                <a href="followup_management.html" class="sidebar-link">
+                    <img src="../icons/follow-up.png" alt="">
+                    <span>Follow-ups</span>
+                </a>
+
+                <a href="notifications.html" class="sidebar-link">
+                    <img src="../icons/reminder.png" alt="">
+                    <span>Notifications</span>
+                </a>
+
+                <a href="staff_profile.html" class="sidebar-link">
+                    <img src="../icons/user.png" alt="">
+                    <span>My Profile</span>
+                </a>
+
+                <a href="settings.html" class="sidebar-link">
+                    <img src="../icons/setting.png" alt="">
+                    <span>Settings</span>
+                </a>
+                
+                <a href="home.html" class="sidebar-link logout-link">
+                    <img src="../icons/logout.png" alt="">
+                    <span>Log Out</span>
+                </a>
+            </nav>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- PAGE TITLE -->
+            <div class="page-header">
+
+                <div class="page-heading">
+
+                    <div class="page-icon">
+                        💉
+                    </div>
+
+                    <div>
+                        <h2>Vaccination Management</h2>
+
+                        <p>
+                            Search for a child, view vaccination records,
+                            and manage their vaccination status.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SEARCH SECTION -->
+            <section class="search-card">
+
+                <div class="search-box">
+
+                    <span class="search-icon">⌕</span>
+
+                    <input
+                        type="text"
+                        id="searchChild"
+                        placeholder="Search child by name or IC"
+                    >
+
+                </div>
+
+                <button class="search-button" onclick="searchChild()">
+                    Search
+                </button>
+
+            </section>
+
+
+            <!-- CHILD INFORMATION -->
+            <section class="child-card">
+
+                <div class="child-photo">
+                    <img src="../icons/user.png" alt="Profile Picture">
+                </div>
+
+                <div class="child-information">
+
+                    <h2 id="childName">Emma Tan</h2>
+
+                    <p>
+                        <span>👤</span>
+                        <span id="childGender">Female</span>
+
+                        &nbsp; • &nbsp;
+
+                        <span id="childAge">3 years old</span>
+
+                        &nbsp; • &nbsp;
+
+                        <span>DOB: 12 Jan 2022</span>
+                    </p>
+
+                    <p>
+                        <span>📄</span>
+                        IC No:
+                        <span id="childIC">220112-14-5678</span>
+                    </p>
+
+                    <p>
+                        <span>⌂</span>
+                        <span id="childAddress">
+                            12, CareTrack Street, Penang
+                        </span>
+                    </p>
+
+                </div>
+
+                <button
+                    class="edit-child-button"
+                    onclick="editChild()"
+                >
+                    ✎ Edit Child Details
+                </button>
+
+            </section>
+
+            <!-- CONTENT GRID -->
+            <div class="content-grid">
+
+
+                <!-- VACCINATION RECORDS -->
+                <section class="records-card">
+
+                    <h2>Vaccination Records</h2>
+
+                    <div class="table-container">
+
+                        <table id="vaccinationTable">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Vaccine</th>
+                                    <th>Dose</th>
+                                    <th>Status</th>
+                                    <th>Next Due Date</th>
+                                    <th>Remarks</th>
+                                    <th>Actions</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>12 Mar 2022</td>
+                                    <td>BCG</td>
+                                    <td>Dose 1</td>
+                                    <td>
+                                        <span class="status completed">
+                                            Completed
+                                        </span>
+                                    </td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>16 Apr 2022</td>
+                                    <td>Hepatitis B</td>
+                                    <td>Dose 1</td>
+                                    <td>
+                                        <span class="status completed">
+                                            Completed
+                                        </span>
+                                    </td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>14 May 2022</td>
+                                    <td>DTP - IPV - Hib</td>
+                                    <td>Dose 1</td>
+                                    <td>
+                                        <span class="status completed">
+                                            Completed
+                                        </span>
+                                    </td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>11 Jun 2022</td>
+                                    <td>DTP - IPV - Hib</td>
+                                    <td>Dose 2</td>
+                                    <td>
+                                        <span class="status completed">
+                                            Completed
+                                        </span>
+                                    </td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>09 Jul 2022</td>
+                                    <td>DTP - IPV - Hib</td>
+                                    <td>Dose 3</td>
+                                    <td>
+                                        <span class="status completed">
+                                            Completed
+                                        </span>
+                                    </td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>15 Oct 2025</td>
+                                    <td>DTP - IPV - Hib (Booster)</td>
+                                    <td>Dose 4</td>
+                                    <td>
+                                        <span class="status upcoming">
+                                            Upcoming
+                                        </span>
+                                    </td>
+                                    <td>15 Oct 2026</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>15 Oct 2025</td>
+                                    <td>MMR</td>
+                                    <td>Dose 1</td>
+                                    <td>
+                                        <span class="status upcoming">
+                                            Upcoming
+                                        </span>
+                                    </td>
+                                    <td>15 Oct 2026</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <tr onclick="loadRecord(this)">
+                                    <td>15 Oct 2025</td>
+                                    <td>Varicella</td>
+                                    <td>Dose 1</td>
+                                    <td>
+                                        <span class="status upcoming">
+                                            Upcoming
+                                        </span>
+                                    </td>
+                                    <td>15 Oct 2026</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <td>-</td>
+                                <td>-</td>
+
+                                <td class="action-buttons">
+
+                                    <button
+                                        class="edit-record-button"
+                                        onclick="editRecord(event, this)"
+                                        title="Edit Record"
+                                    >
+                                        ✏️
+                                    </button>
+
+                                    <button
+                                        class="delete-record-button"
+                                        onclick="deleteRecord(event, this)"
+                                        title="Delete Record"
+                                    >
+                                        🗑️
+                                    </button>
+
+                                </td>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+
+                    <div class="information-box">
+
+                        <span class="information-icon">ⓘ</span>
+
+                        <span>
+                            Click on a record to update the vaccination
+                            status or add a new record.
+                        </span>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- RIGHT SIDE -->
+                <div class="right-column">
+
+
+                    <!-- UPDATE VACCINATION -->
+                    <section class="update-card">
+
+                        <div class="card-title">
+
+                            <span class="card-icon">💉</span>
+
+                            <h2>Update Vaccination Status</h2>
+
+                        </div>
+
+
+                        <label for="vaccine">
+                            Vaccine
+                        </label>
+
+                        <select id="vaccine">
+
+                            <option>
+                                DTP - IPV - Hib (Booster)
+                            </option>
+
+                            <option>
+                                BCG
+                            </option>
+
+                            <option>
+                                Hepatitis B
+                            </option>
+
+                            <option>
+                                DTP - IPV - Hib
+                            </option>
+
+                            <option>
+                                MMR
+                            </option>
+
+                            <option>
+                                Varicella
+                            </option>
+
+                        </select>
+
+
+                        <label for="date">
+                            Date Administered
+                        </label>
+
+                        <input
+                            type="date"
+                            id="date"
+                            value="2025-10-15"
+                        >
+
+
+                        <label for="status">
+                            Status
+                        </label>
+
+                        <select id="status">
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                            <option value="Upcoming">
+                                Upcoming
+                            </option>
+
+                            <option value="Overdue">
+                                Overdue
+                            </option>
+
+                        </select>
+
+
+                        <label for="remarks">
+                            Remarks (optional)
+                        </label>
+
+                        <textarea
+                            id="remarks"
+                            placeholder="Add remarks..."
+                        ></textarea>
+
+
+                        <button
+                            class="save-button"
+                            onclick="saveRecord()"
+                        >
+                            💾 Save Record
+                        </button>
+
+                    </section>
+
+
+
+                    <!-- ADD NEW RECORD -->
+                    <section class="add-card">
+
+                        <div class="add-title">
+
+                            <div class="add-icon">
+                                +
+                            </div>
+
+                            <h2>
+                                Add New Vaccination Record
+                            </h2>
+
+                        </div>
+
+                        <button
+                            class="add-record-button"
+                            onclick="addRecord()"
+                        >
+                            ＋ Add Vaccination Record
+                        </button>
+
+                    </section>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script src="../js/staff_vaccination.js"></script>
+
+</body>
+</html>
