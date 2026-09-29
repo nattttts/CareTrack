@@ -55,3 +55,24 @@
     margin-top: 50px;
     border-top: 1px solid #d9e2ec;
 }
+
+@media (max-width: 850px) {
+
+    .sidebar {
+        width: 75px;
+    }
+
+    .sidebar-link {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-bottom {
+        display: none;
+    }
+
+}
