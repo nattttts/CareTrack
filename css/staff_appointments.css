@@ -540,6 +540,19 @@ a {
     background: #fff2d5;
 }
 
+.follow-up-button {
+    border: 1px solid var(--caretrack-pink);
+
+    color: #ffffff;
+
+    background: var(--caretrack-pink);
+}
+
+.follow-up-button:hover {
+    border-color: var(--caretrack-pink-dark);
+
+    background: var(--caretrack-pink-dark);
+}
 
 /* =====================================================
    NO RESULTS
