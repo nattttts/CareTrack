@@ -1,645 +1,763 @@
-let selectedRow = null;
+const children = {
 
-document.addEventListener("DOMContentLoaded", function () {
+    emma: {
 
-    setupActionColumn();
+        name: "Emma Tan",
 
-});
+        gender: "Female",
 
-/* =========================================================
-   ADD ACTIONS COLUMN TO EXISTING TABLE
-   ========================================================= */
+        age: "3 years old",
 
-function setupActionColumn() {
+        dob: "12 Jan 2022",
 
-    const table =
-        document.getElementById("vaccinationTable");
+        ic: "220112-14-5678",
 
-    if (!table) {
-        return;
+        address: "12, CareTrack Street, Penang",
+
+        records: [
+
+            {
+                date: "12 Mar 2022",
+                vaccine: "BCG",
+                dose: "Dose 1",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "16 Apr 2022",
+                vaccine: "Hepatitis B",
+                dose: "Dose 1",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "14 May 2022",
+                vaccine: "DTP - IPV - Hib",
+                dose: "Dose 1",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "11 Jun 2022",
+                vaccine: "DTP - IPV - Hib",
+                dose: "Dose 2",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "09 Jul 2022",
+                vaccine: "DTP - IPV - Hib",
+                dose: "Dose 3",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "15 Oct 2025",
+                vaccine: "DTP - IPV - Hib (Booster)",
+                dose: "Dose 4",
+                status: "Upcoming",
+                nextDue: "15 Oct 2026",
+                remarks: "-"
+            },
+
+            {
+                date: "15 Oct 2025",
+                vaccine: "MMR",
+                dose: "Dose 1",
+                status: "Upcoming",
+                nextDue: "15 Oct 2026",
+                remarks: "-"
+            },
+
+            {
+                date: "15 Oct 2025",
+                vaccine: "Varicella",
+                dose: "Dose 1",
+                status: "Upcoming",
+                nextDue: "15 Oct 2026",
+                remarks: "-"
+            }
+
+        ]
+
+    },
+
+    daniel: {
+
+        name: "Daniel Tan",
+
+        gender: "Male",
+
+        age: "2 years old",
+
+        dob: "08 Jun 2023",
+
+        ic: "230608-14-6789",
+
+        address: "25, CareTrack Street, Penang",
+
+        records: [
+
+            {
+                date: "08 Jun 2023",
+                vaccine: "BCG",
+                dose: "Dose 1",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "08 Jul 2023",
+                vaccine: "Hepatitis B",
+                dose: "Dose 1",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "08 Aug 2023",
+                vaccine: "DTP - IPV - Hib",
+                dose: "Dose 1",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "08 Sep 2023",
+                vaccine: "DTP - IPV - Hib",
+                dose: "Dose 2",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "08 Oct 2023",
+                vaccine: "DTP - IPV - Hib",
+                dose: "Dose 3",
+                status: "Completed",
+                nextDue: "-",
+                remarks: "-"
+            },
+
+            {
+                date: "20 Nov 2026",
+                vaccine: "MMR",
+                dose: "Dose 1",
+                status: "Upcoming",
+                nextDue: "20 Nov 2026",
+                remarks: "-"
+            }
+
+        ]
+
     }
 
+};
 
-    const headerRow =
-        table.querySelector("thead tr");
+let selectedChild = null;
 
-    const bodyRows =
-        table.querySelectorAll("tbody tr");
+// =====================================================
+// DISPLAY ALL CHILDREN
+// =====================================================
 
+function displayChildren() {
 
-    /* Add Actions heading */
+    const childrenList = document.getElementById("childrenList");
 
-    if (
-        headerRow &&
-        !headerRow.querySelector(".actions-heading")
-    ) {
-
-        const actionHeader =
-            document.createElement("th");
-
-        actionHeader.textContent = "Actions";
-
-        actionHeader.className =
-            "actions-heading";
-
-        headerRow.appendChild(actionHeader);
-    }
+    childrenList.innerHTML = "";
 
 
-    /* Add buttons to every existing row */
+    Object.keys(children).forEach(function(key) {
 
-    bodyRows.forEach(function (row) {
+        const child = children[key];
 
-        addActionButtons(row);
+
+        const childItem = document.createElement("div");
+
+        childItem.className = "child-list-item";
+
+
+        childItem.innerHTML = `
+
+            <div class="child-list-left">
+
+                <div class="child-list-avatar">
+
+                    <img
+                        src="../icons/user.png"
+                        alt="Child"
+                    >
+
+                </div>
+
+
+                <div class="child-list-information">
+
+                    <h3>
+                        ${child.name}
+                    </h3>
+
+                    <p>
+                        ${child.gender}
+                        &nbsp; • &nbsp;
+                        ${child.age}
+                    </p>
+
+                    <span>
+                        IC No: ${child.ic}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <button
+                class="view-child-button"
+                onclick="viewChild('${key}')"
+            >
+                View Child
+            </button>
+
+        `;
+
+
+        childrenList.appendChild(childItem);
 
     });
 
 }
 
+// =====================================================
+// SEARCH CHILD
+// =====================================================
 
-/* =========================================================
-   ADD EDIT + DELETE BUTTONS TO A ROW
-   ========================================================= */
+function searchChild() {
 
-function addActionButtons(row) {
+    const searchInput =
+        document.getElementById("searchChild");
 
-    if (
-        row.querySelector(".action-buttons")
-    ) {
+    const searchValue =
+        searchInput.value.trim().toLowerCase();
+
+
+    const childrenList =
+        document.getElementById("childrenList");
+
+    const noChildrenMessage =
+        document.getElementById("noChildrenMessage");
+
+
+    childrenList.innerHTML = "";
+
+
+    let found = false;
+
+
+    Object.keys(children).forEach(function(key) {
+
+        const child = children[key];
+
+
+        const name =
+            child.name.toLowerCase();
+
+        const ic =
+            child.ic.toLowerCase();
+
+
+        if (
+            name.includes(searchValue) ||
+            ic.includes(searchValue)
+        ) {
+
+            found = true;
+
+
+            const childItem =
+                document.createElement("div");
+
+
+            childItem.className =
+                "child-list-item";
+
+
+            childItem.innerHTML = `
+
+                <div class="child-list-left">
+
+                    <div class="child-list-avatar">
+
+                        <img
+                            src="../icons/user.png"
+                            alt="Child"
+                        >
+
+                    </div>
+
+
+                    <div class="child-list-information">
+
+                        <h3>
+                            ${child.name}
+                        </h3>
+
+                        <p>
+                            ${child.gender}
+                            &nbsp; • &nbsp;
+                            ${child.age}
+                        </p>
+
+                        <span>
+                            IC No: ${child.ic}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="view-child-button"
+                    onclick="viewChild('${key}')"
+                >
+                    View Child
+                </button>
+
+            `;
+
+
+            childrenList.appendChild(childItem);
+
+        }
+
+    });
+
+
+    if (found) {
+
+        noChildrenMessage.style.display = "none";
+
+    } else {
+
+        noChildrenMessage.style.display = "block";
+
+    }
+
+}
+
+// =====================================================
+// VIEW SELECTED CHILD
+// =====================================================
+
+function viewChild(childKey) {
+
+    const child = children[childKey];
+
+
+    if (!child) {
         return;
     }
 
+    selectedChild = childKey;
 
-    const actionCell =
-        document.createElement("td");
+    // ---------------------------------------------
+    // Display child information
+    // ---------------------------------------------
 
-    actionCell.className =
-        "action-buttons";
-
-
-    /* EDIT BUTTON */
-
-    const editButton =
-        document.createElement("button");
-
-    editButton.type = "button";
-
-    editButton.className =
-        "edit-record-button";
-
-    editButton.innerHTML = "✏️";
-
-    editButton.title =
-        "Edit Record";
+    document.getElementById("childName").textContent =
+        child.name;
 
 
-    editButton.onclick =
-        function (event) {
+    document.getElementById("childGender").textContent =
+        child.gender;
 
-            editRecord(event, this);
+
+    document.getElementById("childAge").textContent =
+        child.age;
+
+
+    document.getElementById("childDOB").textContent =
+        child.dob;
+
+
+    document.getElementById("childIC").textContent =
+        child.ic;
+
+
+    document.getElementById("childAddress").textContent =
+        child.address;
+
+    // ---------------------------------------------
+    // Display vaccination records
+    // ---------------------------------------------
+
+    displayRecords(child.records);
+
+    // ---------------------------------------------
+    // Show child details
+    // ---------------------------------------------
+
+    document.getElementById("childDetails").style.display =
+        "block";
+
+    // ---------------------------------------------
+    // Scroll to selected child
+    // ---------------------------------------------
+
+    document.getElementById("childDetails").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+}
+
+// =====================================================
+// DISPLAY VACCINATION RECORDS
+// =====================================================
+
+function displayRecords(records) {
+
+    const tableBody =
+        document.getElementById("vaccinationTableBody");
+
+
+    tableBody.innerHTML = "";
+
+
+    records.forEach(function(record, index) {
+
+        const row =
+            document.createElement("tr");
+
+
+        row.onclick = function() {
+
+            loadRecord(row);
 
         };
 
 
-    /* DELETE BUTTON */
-
-    const deleteButton =
-        document.createElement("button");
-
-    deleteButton.type = "button";
-
-    deleteButton.className =
-        "delete-record-button";
-
-    deleteButton.innerHTML = "🗑️";
-
-    deleteButton.title =
-        "Delete Record";
+        let statusClass = "";
 
 
-    deleteButton.onclick =
-        function (event) {
+        if (record.status === "Completed") {
 
-            deleteRecord(event, this);
+            statusClass = "completed";
 
-        };
+        } else if (record.status === "Upcoming") {
+
+            statusClass = "upcoming";
+
+        } else if (record.status === "Overdue") {
+
+            statusClass = "overdue";
+
+        }
 
 
-    actionCell.appendChild(editButton);
+        row.innerHTML = `
 
-    actionCell.appendChild(deleteButton);
+            <td>
+                ${record.date}
+            </td>
 
 
-    row.appendChild(actionCell);
+            <td>
+                ${record.vaccine}
+            </td>
 
 
-    /* Make row clickable */
+            <td>
+                ${record.dose}
+            </td>
 
-    row.onclick = function () {
 
-        loadRecord(this);
+            <td>
 
-    };
+                <span class="status ${statusClass}">
+
+                    ${record.status}
+
+                </span>
+
+            </td>
+
+
+            <td>
+                ${record.nextDue}
+            </td>
+
+
+            <td>
+                ${record.remarks}
+            </td>
+
+
+            <td class="action-buttons">
+
+                <button
+                    class="edit-record-button"
+                    onclick="editRecord(event, this)"
+                    title="Edit Record"
+                >
+                    ✏️
+                </button>
+
+
+                <button
+                    class="delete-record-button"
+                    onclick="deleteRecord(event, this)"
+                    title="Delete Record"
+                >
+                    🗑️
+                </button>
+
+            </td>
+
+        `;
+
+
+        tableBody.appendChild(row);
+
+    });
 
 }
 
-/* =========================================================
-   EDIT CHILD DETAILS
-   ========================================================= */
-
-function editChild() {
-
-    const nameElement =
-        document.getElementById("childName");
-
-    const icElement =
-        document.getElementById("childIC");
-
-    const addressElement =
-        document.getElementById("childAddress");
-
-
-    if (
-        !nameElement ||
-        !icElement ||
-        !addressElement
-    ) {
-
-        alert(
-            "Child information could not be found."
-        );
-
-        return;
-    }
-
-
-    const currentName =
-        nameElement.textContent.trim();
-
-    const currentIC =
-        icElement.textContent.trim();
-
-    const currentAddress =
-        addressElement.textContent.trim();
-
-
-    /* CHILD NAME */
-
-    const newName =
-        prompt(
-            "Enter child's name:",
-            currentName
-        );
-
-
-    if (newName === null) {
-        return;
-    }
-
-
-    if (newName.trim() === "") {
-
-        alert(
-            "Child name cannot be empty."
-        );
-
-        return;
-    }
-
-
-    /* IC NUMBER */
-
-    const newIC =
-        prompt(
-            "Enter child's IC number:",
-            currentIC
-        );
-
-
-    if (newIC === null) {
-        return;
-    }
-
-
-    if (newIC.trim() === "") {
-
-        alert(
-            "IC number cannot be empty."
-        );
-
-        return;
-    }
-
-
-    /* ADDRESS */
-
-    const newAddress =
-        prompt(
-            "Enter child's address:",
-            currentAddress
-        );
-
-
-    if (newAddress === null) {
-        return;
-    }
-
-
-    if (newAddress.trim() === "") {
-
-        alert(
-            "Address cannot be empty."
-        );
-
-        return;
-    }
-
-
-    /* UPDATE PAGE */
-
-    nameElement.textContent =
-        newName.trim();
-
-    icElement.textContent =
-        newIC.trim();
-
-    addressElement.textContent =
-        newAddress.trim();
-
-
-    alert(
-        "Child details updated successfully!"
-    );
-
-}
-
-/* =========================================================
-   LOAD VACCINATION RECORD
-   ========================================================= */
+// =====================================================
+// LOAD RECORD INTO UPDATE FORM
+// =====================================================
 
 function loadRecord(row) {
 
-    if (!row) {
+    const cells = row.querySelectorAll("td");
+
+
+    if (cells.length < 6) {
         return;
     }
 
-
-    selectedRow = row;
-
-
-    const cells =
-        row.cells;
-
-
-    /* DATE */
-
-    const date =
-        cells[0].textContent.trim();
-
-
-    /* VACCINE */
 
     const vaccine =
         cells[1].textContent.trim();
 
-
-    /* STATUS */
+    const date =
+        cells[0].textContent.trim();
 
     const status =
         cells[3].textContent.trim();
-
-
-    /* REMARKS */
 
     const remarks =
         cells[5].textContent.trim();
 
 
-    const vaccineInput =
-        document.getElementById("vaccine");
-
-    const dateInput =
-        document.getElementById("date");
-
-    const statusInput =
-        document.getElementById("status");
-
-    const remarksInput =
-        document.getElementById("remarks");
-
-
-    /* Put vaccine into form */
-
-    if (vaccineInput) {
-
-        vaccineInput.value =
-            vaccine;
-
-    }
-
-
-    /* Put status into form */
-
-    if (statusInput) {
-
-        statusInput.value =
-            status;
-
-    }
-
-
-    /* Put remarks into form */
-
-    if (remarksInput) {
-
-        remarksInput.value =
-            remarks === "-"
-                ? ""
-                : remarks;
-
-    }
-
-
-    /* Convert table date to input date */
-
-    if (dateInput) {
-
-        const convertedDate =
-            convertToInputDate(date);
-
-
-        if (convertedDate !== "") {
-
-            dateInput.value =
-                convertedDate;
-
-        }
-
-    }
-
-
-    /* Highlight selected row */
-
-    document
-        .querySelectorAll(
-            "#vaccinationTable tbody tr"
-        )
-        .forEach(function (item) {
-
-            item.classList.remove(
-                "selected-row"
-            );
-
-        });
-
-
-    row.classList.add(
-        "selected-row"
-    );
-
-}
-
-
-/* =========================================================
-   CONVERT DATE
-   ========================================================= */
-
-function convertToInputDate(dateText) {
-
-    if (!dateText) {
-        return "";
-    }
-
-
-    const date =
-        new Date(dateText);
-
-
-    if (isNaN(date.getTime())) {
-
-        return "";
-
-    }
-
-
-    const year =
-        date.getFullYear();
-
-
-    const month =
-        String(
-            date.getMonth() + 1
-        ).padStart(2, "0");
-
-
-    const day =
-        String(
-            date.getDate()
-        ).padStart(2, "0");
-
-
-    return (
-        year +
-        "-" +
-        month +
-        "-" +
-        day
-    );
-
-}
-
-
-/* =========================================================
-   FORMAT DATE
-   ========================================================= */
-
-function formatDate(dateValue) {
-
-    if (!dateValue) {
-        return "-";
-    }
-
-
-    const date =
-        new Date(
-            dateValue + "T00:00:00"
-        );
-
-
-    if (isNaN(date.getTime())) {
-
-        return dateValue;
-
-    }
-
-
-    return date.toLocaleDateString(
-        "en-GB",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        }
-    );
-
-}
-
-
-/* =========================================================
-   SAVE / UPDATE VACCINATION RECORD
-   ========================================================= */
-
-function saveRecord() {
-
-    /* Check whether a row was selected */
-
-    if (!selectedRow) {
-
-        alert(
-            "Please click a vaccination record first."
-        );
-
-        return;
-    }
-
-
-    const vaccineInput =
-        document.getElementById("vaccine");
-
-    const dateInput =
-        document.getElementById("date");
-
-    const statusInput =
-        document.getElementById("status");
-
-    const remarksInput =
-        document.getElementById("remarks");
-
-
-    if (
-        !vaccineInput ||
-        !dateInput ||
-        !statusInput ||
-        !remarksInput
-    ) {
-
-        alert(
-            "Vaccination form could not be found."
-        );
-
-        return;
-    }
-
-
-    const vaccine =
-        vaccineInput.value.trim();
-
-    const date =
-        dateInput.value;
-
-    const status =
-        statusInput.value;
-
-    const remarks =
-        remarksInput.value.trim();
-
-
-    /* Validation */
-
-    if (vaccine === "") {
-
-        alert(
-            "Please select a vaccine."
-        );
-
-        return;
-    }
-
-
-    if (date === "") {
-
-        alert(
-            "Please select the vaccination date."
-        );
-
-        return;
-    }
-
-
-    if (status === "") {
-
-        alert(
-            "Please select a status."
-        );
-
-        return;
-    }
-
-
-    /* UPDATE DATE */
-
-    selectedRow.cells[0].textContent =
-        formatDate(date);
-
-    /* UPDATE VACCINE */
-
-    selectedRow.cells[1].textContent =
+    document.getElementById("vaccine").value =
         vaccine;
 
-    /* UPDATE STATUS */
 
-    selectedRow.cells[3].innerHTML =
-
-        createStatusHTML(status);
-
-    /* UPDATE REMARKS */
-
-    selectedRow.cells[5].textContent =
-        remarks === ""
-            ? "-"
-            : remarks;
+    document.getElementById("status").value =
+        status;
 
 
-    /* Highlight row */
-
-    selectedRow.classList.add(
-        "selected-row"
-    );
+    document.getElementById("remarks").value =
+        remarks === "-" ? "" : remarks;
 
 
-    alert(
-        "Vaccination record updated successfully!"
-    );
+    // Convert date to YYYY-MM-DD
+    const dateParts = date.split(" ");
+
+
+    if (dateParts.length === 3) {
+
+        const day = dateParts[0];
+
+        const monthName = dateParts[1];
+
+        const year = dateParts[2];
+
+
+        const months = {
+
+            Jan: "01",
+            Feb: "02",
+            Mar: "03",
+            Apr: "04",
+            May: "05",
+            Jun: "06",
+            Jul: "07",
+            Aug: "08",
+            Sep: "09",
+            Oct: "10",
+            Nov: "11",
+            Dec: "12"
+
+        };
+
+
+        const month =
+            months[monthName];
+
+
+        if (month) {
+
+            document.getElementById("date").value =
+                year + "-" + month + "-" + day.padStart(2, "0");
+
+        }
+
+    }
 
 }
 
+// =====================================================
+// EDIT CHILD
+// =====================================================
 
-/* =========================================================
-   CREATE STATUS HTML
-   ========================================================= */
+function editChild() {
 
-function createStatusHTML(status) {
+    if (!selectedChild) {
 
-    let className =
-        status.toLowerCase();
+        alert("Please select a child first.");
 
+        return;
 
-    return `
-        <span class="status ${className}">
-            ${status}
-        </span>
-    `;
+    }
+    const child = children[selectedChild];
+
+    document.getElementById("editChildName").value =
+        child.name;
+
+    document.getElementById("editChildGender").value =
+        child.gender;
+
+    document.getElementById("editChildAge").value =
+        child.age;
+
+    document.getElementById("editChildDOB").value =
+        child.dob;
+
+    document.getElementById("editChildIC").value =
+        child.ic;
+
+    document.getElementById("editChildAddress").value =
+        child.address;
+
+    document.getElementById("childDisplay").style.display =
+        "none";
+
+    document.getElementById("childEditForm").style.display =
+        "block";
+
+    document.getElementById("editChildButton").style.display =
+        "none";
 
 }
 
+function saveChildDetails() {
 
-/* =========================================================
-   EDIT RECORD BUTTON
-   ========================================================= */
+    if (!selectedChild) {
+        return;
+    }
+
+    const child = children[selectedChild];
+
+    const newName =
+        document.getElementById("editChildName").value.trim();
+
+    const newGender =
+        document.getElementById("editChildGender").value;
+
+    const newAge =
+        document.getElementById("editChildAge").value.trim();
+
+    const newDOB =
+        document.getElementById("editChildDOB").value.trim();
+
+    const newIC =
+        document.getElementById("editChildIC").value.trim();
+
+    const newAddress =
+        document.getElementById("editChildAddress").value.trim();
+
+    if (
+        !newName ||
+        !newAge ||
+        !newDOB ||
+        !newIC ||
+        !newAddress
+    ) {
+
+        alert("Please fill in all child details.");
+
+        return;
+
+    }
+
+    child.name = newName;
+
+    child.gender = newGender;
+
+    child.age = newAge;
+
+    child.dob = newDOB;
+
+    child.ic = newIC;
+
+    child.address = newAddress;
+
+    document.getElementById("childName").textContent =
+        child.name;
+
+    document.getElementById("childGender").textContent =
+        child.gender;
+
+    document.getElementById("childAge").textContent =
+        child.age;
+
+    document.getElementById("childDOB").textContent =
+        child.dob;
+
+    document.getElementById("childIC").textContent =
+        child.ic;
+
+    document.getElementById("childAddress").textContent =
+        child.address;
+
+    document.getElementById("childEditForm").style.display =
+        "none";
+
+    document.getElementById("childDisplay").style.display =
+        "block";
+
+    document.getElementById("editChildButton").style.display =
+        "block";
+
+    searchChild();
+
+
+    alert("Child details updated successfully.");
+
+}
+
+// =====================================================
+// EDIT RECORD
+// =====================================================
 
 function editRecord(event, button) {
-
-    /* Prevent row onclick */
 
     event.stopPropagation();
 
@@ -647,44 +765,21 @@ function editRecord(event, button) {
     const row =
         button.closest("tr");
 
-
-    if (!row) {
-        return;
-    }
-
-
-    /* Load record into form */
 
     loadRecord(row);
 
 
-    /* Scroll to update form */
-
-    const updateCard =
-        document.querySelector(
-            ".update-card"
-        );
-
-
-    if (updateCard) {
-
-        updateCard.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
-
-    }
+    alert(
+        "The vaccination record has been loaded into the update form."
+    );
 
 }
 
-
-/* =========================================================
-   DELETE RECORD
-   ========================================================= */
+// =====================================================
+// DELETE RECORD
+// =====================================================
 
 function deleteRecord(event, button) {
-
-    /* Prevent row onclick */
 
     event.stopPropagation();
 
@@ -693,500 +788,270 @@ function deleteRecord(event, button) {
         button.closest("tr");
 
 
-    if (!row) {
+    const vaccine =
+        row.cells[1].textContent.trim();
+
+
+    const confirmDelete =
+        confirm(
+            "Are you sure you want to delete the " +
+            vaccine +
+            " vaccination record?"
+        );
+
+
+    if (confirmDelete) {
+
+        row.remove();
+
+    }
+
+}
+
+// =====================================================
+// SAVE RECORD
+// =====================================================
+
+function saveRecord() {
+
+    if (!selectedChild) {
+
+        alert("Please select a child first.");
+
         return;
+
     }
 
 
     const vaccine =
-        row.cells[1]
-            .textContent
-            .trim();
-
+        document.getElementById("vaccine").value;
 
     const date =
-        row.cells[0]
-            .textContent
-            .trim();
+        document.getElementById("date").value;
+
+    const status =
+        document.getElementById("status").value;
+
+    const remarks =
+        document.getElementById("remarks").value;
 
 
-    const confirmed =
-        confirm(
-            "Are you sure you want to delete this vaccination record?\n\n" +
-            "Vaccine: " +
-            vaccine +
-            "\nDate: " +
-            date
-        );
+    if (!date) {
 
-
-    if (!confirmed) {
+        alert("Please select a date.");
 
         return;
-
-    }
-
-
-    /* Delete row */
-
-    row.remove();
-
-
-    /* Clear selected row */
-
-    if (selectedRow === row) {
-
-        selectedRow = null;
-
-        clearForm();
 
     }
 
 
     alert(
-        "Vaccination record deleted successfully!"
+        "Vaccination record saved successfully.\n\n" +
+        "Child: " + children[selectedChild].name + "\n" +
+        "Vaccine: " + vaccine + "\n" +
+        "Status: " + status
     );
 
 }
 
+function cancelEditChild() {
 
-/* =========================================================
-   ADD NEW VACCINATION RECORD
-   ========================================================= */
+    document.getElementById("childEditForm").style.display =
+        "none";
+
+
+    document.getElementById("childDisplay").style.display =
+        "block";
+
+
+    document.getElementById("editChildButton").style.display =
+        "block";
+
+}
+
+// =====================================================
+// ADD NEW RECORD
+// =====================================================
 
 function addRecord() {
 
-    /* Get vaccine */
+    if (!selectedChild) {
+
+        alert("Please select a child first.");
+
+        return;
+
+    }
+
+    document.getElementById("addRecordForm").style.display =
+        "block";
+
+    document.getElementById("showAddRecordButton").style.display =
+        "none";
+
+}
+
+function confirmAddRecord() {
+
+    if (!selectedChild) {
+
+        alert("Please select a child first.");
+
+        return;
+
+    }
+
+    const child = children[selectedChild];
 
     const vaccine =
-        prompt(
-            "Enter vaccine name:",
-            "MMR"
-        );
-
-
-    if (
-        vaccine === null ||
-        vaccine.trim() === ""
-    ) {
-
-        return;
-
-    }
-
-
-    /* Get dose */
+        document.getElementById("newVaccine").value;
 
     const dose =
-        prompt(
-            "Enter dose:",
-            "Dose 1"
-        );
-
-
-    if (
-        dose === null ||
-        dose.trim() === ""
-    ) {
-
-        return;
-
-    }
-
-
-    /* Get date */
+        document.getElementById("newDose").value.trim();
 
     const date =
-        prompt(
-            "Enter vaccination date:",
-            "15 Oct 2026"
-        );
-
-
-    if (
-        date === null ||
-        date.trim() === ""
-    ) {
-
-        return;
-
-    }
-
-
-    /* Get status */
+        document.getElementById("newDate").value;
 
     const status =
-        prompt(
-            "Enter status:\n\n" +
-            "Completed\n" +
-            "Upcoming\n" +
-            "Overdue",
-            "Upcoming"
-        );
+        document.getElementById("newStatus").value;
 
-
-    if (
-        status === null ||
-        status.trim() === ""
-    ) {
-
-        return;
-
-    }
-
-
-    /* Validate status */
-
-    const validStatuses = [
-        "Completed",
-        "Upcoming",
-        "Overdue"
-    ];
-
-
-    let finalStatus =
-        status.trim();
-
-
-    const matchingStatus =
-        validStatuses.find(
-            function (item) {
-
-                return (
-                    item.toLowerCase() ===
-                    finalStatus.toLowerCase()
-                );
-
-            }
-        );
-
-
-    if (!matchingStatus) {
-
-        alert(
-            "Please enter only:\n" +
-            "Completed, Upcoming, or Overdue"
-        );
-
-        return;
-
-    }
-
-
-    finalStatus =
-        matchingStatus;
-
-
-    /* Get next due date */
-
-    const nextDueDate =
-        prompt(
-            "Enter next due date (optional):",
-            ""
-        );
-
-
-    /* Get remarks */
+    const nextDue =
+        document.getElementById("newDueDate").value;
 
     const remarks =
-        prompt(
-            "Enter remarks (optional):",
-            ""
-        );
+        document.getElementById("newRemarks").value.trim();
 
 
-    /* Get table */
-
-    const table =
-        document.getElementById(
-            "vaccinationTable"
-        );
-
-
-    if (!table) {
+    if (!dose || !date) {
 
         alert(
-            "Vaccination table could not be found."
+            "Please enter the dose and date administered."
         );
 
         return;
 
     }
 
+    const formattedDate =
+        formatDate(date);
 
-    const tbody =
-        table.querySelector("tbody");
+
+    let formattedNextDue = "-";
 
 
-    if (!tbody) {
+    if (nextDue) {
 
-        alert(
-            "Vaccination table body could not be found."
-        );
-
-        return;
+        formattedNextDue =
+            formatDate(nextDue);
 
     }
 
+    const newRecord = {
 
-    /* Create new row */
+        date: formattedDate,
 
-    const newRow =
-        document.createElement("tr");
+        vaccine: vaccine,
 
+        dose: dose,
 
-    newRow.innerHTML = `
+        status: status,
 
-        <td>
-            ${escapeHTML(date.trim())}
-        </td>
+        nextDue: formattedNextDue,
 
-        <td>
-            ${escapeHTML(vaccine.trim())}
-        </td>
+        remarks: remarks || "-"
 
-        <td>
-            ${escapeHTML(dose.trim())}
-        </td>
+    };
 
-        <td>
-            ${createStatusHTML(finalStatus)}
-        </td>
+    child.records.push(newRecord);
 
-        <td>
-            ${
-                nextDueDate &&
-                nextDueDate.trim() !== ""
-                    ? escapeHTML(
-                        nextDueDate.trim()
-                    )
-                    : "-"
-            }
-        </td>
+    displayRecords(child.records);
 
-        <td>
-            ${
-                remarks &&
-                remarks.trim() !== ""
-                    ? escapeHTML(
-                        remarks.trim()
-                    )
-                    : "-"
-            }
-        </td>
+    document.getElementById("newDose").value = "";
 
-    `;
+    document.getElementById("newDate").value = "";
 
+    document.getElementById("newDueDate").value = "";
 
-    /* Add row to table */
+    document.getElementById("newRemarks").value = "";
 
-    tbody.appendChild(newRow);
+    document.getElementById("addRecordForm").style.display =
+        "none";
 
-
-    /* Add Edit + Delete */
-
-    addActionButtons(newRow);
+    document.getElementById("showAddRecordButton").style.display =
+        "inline-block";
 
 
     alert(
-        "New vaccination record added successfully!"
+        "Vaccination record added successfully for " +
+        child.name + "."
     );
 
 }
 
+function formatDate(dateString) {
 
-/* =========================================================
-   SEARCH CHILD
-   ========================================================= */
-
-function searchChild() {
-
-    const searchInput =
-        document.getElementById(
-            "searchChild"
-        );
+    const parts =
+        dateString.split("-");
 
 
-    if (!searchInput) {
-
-        return;
-
+    if (parts.length !== 3) {
+        return dateString;
     }
 
+    const year = parts[0];
 
-    const searchValue =
-        searchInput.value
-            .trim()
-            .toLowerCase();
+    const month = parts[1];
 
+    const day = parts[2];
 
-    const childName =
-        document.getElementById(
-            "childName"
-        );
+    const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+    ];
 
-
-    const childIC =
-        document.getElementById(
-            "childIC"
-        );
-
-
-    if (
-        !childName ||
-        !childIC
-    ) {
-
-        return;
-
-    }
-
-
-    const name =
-        childName.textContent
-            .trim()
-            .toLowerCase();
-
-
-    const ic =
-        childIC.textContent
-            .trim()
-            .toLowerCase();
-
-
-    if (searchValue === "") {
-
-        alert(
-            "Please enter a child's name or IC number."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        name.includes(searchValue) ||
-        ic.includes(searchValue)
-    ) {
-
-        alert(
-            "Child found: " +
-            childName.textContent.trim()
-        );
-
-
-        /* Scroll to child information */
-
-        const childCard =
-            document.querySelector(
-                ".child-card"
-            );
-
-
-        if (childCard) {
-
-            childCard.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-
-        }
-
-    } else {
-
-        alert(
-            "No child found."
-        );
-
-    }
+    return (
+        day +
+        " " +
+        months[parseInt(month, 10) - 1] +
+        " " +
+        year
+    );
 
 }
 
+function cancelAddRecord() {
 
-/* =========================================================
-   CLEAR FORM
-   ========================================================= */
-
-function clearForm() {
-
-    const vaccine =
-        document.getElementById(
-            "vaccine"
-        );
-
-    const date =
-        document.getElementById(
-            "date"
-        );
-
-    const status =
-        document.getElementById(
-            "status"
-        );
-
-    const remarks =
-        document.getElementById(
-            "remarks"
-        );
+    document.getElementById("addRecordForm").style.display =
+        "none";
 
 
-    if (vaccine) {
-
-        vaccine.selectedIndex = 0;
-
-    }
-
-
-    if (date) {
-
-        date.value = "";
-
-    }
-
-
-    if (status) {
-
-        status.value =
-            "Completed";
-
-    }
-
-
-    if (remarks) {
-
-        remarks.value = "";
-
-    }
-
-
-    document
-        .querySelectorAll(
-            "#vaccinationTable tbody tr"
-        )
-        .forEach(function (row) {
-
-            row.classList.remove(
-                "selected-row"
-            );
-
-        });
+    document.getElementById("showAddRecordButton").style.display =
+        "inline-block";
 
 }
 
+// =====================================================
+// PAGE LOAD
+// =====================================================
 
-/* =========================================================
-   PREVENT HTML INJECTION
-   ========================================================= */
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
 
-function escapeHTML(text) {
+        displayChildren();
 
-    const div =
-        document.createElement("div");
+        document.getElementById("childDetails").style.display =
+            "none";
 
-    div.textContent =
-        text;
-
-    return div.innerHTML;
-
-}
+    }
+);

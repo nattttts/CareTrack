@@ -371,7 +371,7 @@ a {
 .content-grid {
     display: grid;
 
-    grid-template-columns: minmax(600px, 1fr) 360px;
+    grid-template-columns: minmax(0, 1fr) 360px;
 
     gap: 20px;
 
@@ -435,7 +435,7 @@ td {
 
     border-bottom: 1px solid #e7edf3;
 
-    white-space: nowrap;
+    white-space: normal;
 }
 
 tbody tr {
@@ -827,4 +827,423 @@ tbody tr:hover {
 
 #vaccinationTable tbody tr.selected-row {
     background-color: #FDE7F0;
+}
+
+/* =====================================================
+   ALL CHILDREN LIST
+===================================================== */
+
+.children-list-card {
+    background-color: #ffffff;
+    border: 1px solid #e6edf5;
+    border-radius: 14px;
+    padding: 25px 28px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 12px rgba(24, 49, 83, 0.04);
+}
+
+.section-title {
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #edf1f5;
+}
+
+.section-title h2 {
+    margin: 0;
+    color: #183153;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.section-title p {
+    margin: 4px 0 0;
+    color: #718096;
+    font-size: 13px;
+}
+
+/* CHILD LIST ITEM */
+
+.child-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 17px 18px;
+
+    margin-bottom: 12px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #edf1f5;
+
+    border-radius: 12px;
+
+    transition: 0.2s;
+}
+
+.child-list-item:last-child {
+    margin-bottom: 0;
+}
+
+.child-list-item:hover {
+    background-color: #fff7fa;
+    border-color: #f6c7da;
+}
+
+/* LEFT SIDE */
+
+.child-list-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* AVATAR */
+
+.child-list-avatar {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #FDE7F0;
+
+    border-radius: 50%;
+
+    flex-shrink: 0;
+}
+
+.child-list-avatar img {
+    width: 27px;
+    height: 27px;
+    object-fit: contain;
+}
+
+/* CHILD INFORMATION */
+
+.child-list-information {
+    display: flex;
+    flex-direction: column;
+}
+
+.child-list-information h3 {
+    margin: 0 0 4px;
+
+    color: #183153;
+
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.child-list-information p {
+    margin: 0 0 3px;
+
+    color: #50698a;
+
+    font-size: 13px;
+}
+
+.child-list-information span {
+    color: #718096;
+
+    font-size: 12px;
+}
+
+/* VIEW BUTTON */
+
+.view-child-button {
+    padding: 9px 17px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #f9528e;
+
+    border-radius: 8px;
+
+    color: #f9528e;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+    white-space: nowrap;
+}
+
+.view-child-button:hover {
+    background-color: #f9528e;
+    color: #ffffff;
+}
+
+/* NO CHILDREN */
+
+.no-children-message {
+    margin: 0;
+
+    padding: 20px;
+
+    text-align: center;
+
+    color: #718096;
+
+    font-size: 14px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+
+    .child-list-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .view-child-button {
+        width: 100%;
+    }
+
+}
+/* =====================================================
+   EDIT CHILD DETAILS
+===================================================== */
+
+.child-edit-form {
+    flex: 1;
+    width: 100%;
+}
+
+.child-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 25px;
+}
+
+.child-edit-grid label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #718096;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.child-edit-grid input,
+.child-edit-grid select {
+    width: 100%;
+
+    padding: 9px 11px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #d9dfeb;
+
+    border-radius: 7px;
+
+    color: #183153;
+
+    font-size: 13px;
+
+    outline: none;
+}
+
+.child-edit-grid input:focus,
+.child-edit-grid select:focus {
+    border-color: #f9528e;
+
+    box-shadow:
+        0 0 0 2px rgba(249, 82, 142, 0.10);
+}
+
+
+/* EDIT FORM BUTTONS */
+
+.edit-form-buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 17px;
+}
+
+.save-child-button {
+    padding: 9px 17px;
+
+    background-color: #f9528e;
+
+    border: 1px solid #f9528e;
+
+    border-radius: 8px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.save-child-button:hover {
+    background-color: #e81f67;
+}
+
+
+.cancel-child-button {
+    padding: 9px 17px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #d9dfeb;
+
+    border-radius: 8px;
+
+    color: #718096;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.cancel-child-button:hover {
+    background-color: #f7f9fc;
+}
+
+
+/* =====================================================
+   ADD VACCINATION FORM
+===================================================== */
+
+.add-record-form {
+    margin-top: 18px;
+
+    padding-top: 18px;
+
+    border-top: 1px solid #edf1f5;
+}
+
+.add-record-grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px 20px;
+}
+
+.add-record-grid label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #718096;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+.add-record-grid input,
+.add-record-grid select,
+.add-record-grid textarea {
+    width: 100%;
+
+    padding: 9px 11px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #d9dfeb;
+
+    border-radius: 7px;
+
+    color: #183153;
+
+    font-size: 13px;
+
+    outline: none;
+}
+
+.add-record-grid textarea {
+    min-height: 75px;
+
+    resize: vertical;
+}
+
+.add-record-grid input:focus,
+.add-record-grid select:focus,
+.add-record-grid textarea:focus {
+    border-color: #f9528e;
+
+    box-shadow:
+        0 0 0 2px rgba(249, 82, 142, 0.10);
+}
+
+.add-record-full {
+    grid-column: 1 / -1;
+}
+
+.add-form-buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+.confirm-add-button {
+    padding: 9px 17px;
+
+    background-color: #f9528e;
+
+    border: 1px solid #f9528e;
+
+    border-radius: 8px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.confirm-add-button:hover {
+    background-color: #e81f67;
+}
+
+.cancel-add-button {
+    padding: 9px 17px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #d9dfeb;
+
+    border-radius: 8px;
+
+    color: #718096;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+
+    .child-edit-grid,
+    .add-record-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .add-record-full {
+        grid-column: auto;
+    }
+
 }
