@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Vaccination Schedule | CareTrack</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/child_vaccination.css">
+    <link rel="stylesheet" href="../css/patient_header.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <script src = "../js/child_vaccination.js" defer></script>
+</head>
+
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="top-header">
+
+        <a href="index.html" class="logo">
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal & Child Healthcare</p>
+            </div>
+        </a>
+        
+            <div class="profile">
+
+                <img src="../icons/user.png" alt="Profile">
+
+                <span id="headerProfileName">Jane</span>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <div class="page-layout d-flex">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <nav class="sidebar-nav">
+
+                <a href="patient_dashboard.html" class="sidebar-link">
+                    <img src="../icons/home.png" alt="">
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="child.html" class="sidebar-link">
+                    <img src="../icons/baby.png" alt="">
+                    <span>My Child(ren)</span>
+                </a>
+
+                <a href="patient_appointments.html" class="sidebar-link">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Appointments</span>
+                </a>
+
+                <a href="child_vaccination.html" class="sidebar-link active">
+                    <img src="../icons/syringe.png" alt="">
+                    <span>Vaccinations</span>
+                </a>
+
+                <a href="queue.html" class="sidebar-link">
+                    <img src="../icons/queue.png" alt="">
+                    <span>Queue Monitoring</span>
+                </a>
+
+                <a href="notifications.html" class="sidebar-link">
+                    <img src="../icons/reminder.png" alt="">
+                    <span>Notifications</span>
+                </a>
+
+                <a href="patient_profile.html" class="sidebar-link">
+                    <img src="../icons/user.png" alt="">
+                    <span>My Profile</span>
+                </a>
+
+                <a href="settings.html" class="sidebar-link">
+                    <img src="../icons/setting.png" alt="">
+                    <span>Settings</span>
+                </a>
+
+                <a href="logout.html" class="sidebar-link logout-link">
+                    <img src="../icons/logout.png" alt="">
+                    <span>Log Out</span>
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+
+                <div class="page-title">
+
+                    <div class="title-icon">
+                        💉
+                    </div>
+
+                    <div>
+                        <h2>Child Vaccination Schedule</h2>
+
+                        <p>
+                            View your child's vaccination schedule and records.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CHILD SELECTOR -->
+            <section class="child-selector-card">
+
+                <div class="selector-left">
+
+                    <div class="selector-icon">
+                        👶
+                    </div>
+
+                    <div>
+
+                        <span class="selector-label">
+                            Select Child
+                        </span>
+
+                        <select id="childSelect" onchange="changeChild()">
+
+                            <option value="emma">
+                                Emma Tan
+                            </option>
+
+                            <option value="daniel">
+                                Daniel Tan
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- CHILD PROFILE -->
+            <section class="child-profile-card">
+
+                <div class="child-profile-left">
+
+                    <div class="child-avatar">
+
+                        <img src="../icons/user.png" alt="Child">
+
+                    </div>
+
+                    <div class="child-details">
+
+                        <h2 id="childName">
+                            Emma Tan
+                        </h2>
+
+                        <div class="child-information">
+
+                            <span>
+                                👤
+                                <strong id="childGender">
+                                    Female
+                                </strong>
+                            </span>
+
+                            <span class="dot">•</span>
+
+                            <span>
+                                Age:
+                                <strong id="childAge">
+                                    3 years old
+                                </strong>
+                            </span>
+
+                            <span class="dot">•</span>
+
+                            <span>
+                                DOB:
+                                <strong id="childDOB">
+                                    12 Jan 2022
+                                </strong>
+                            </span>
+
+                        </div>
+
+                        <div class="child-information">
+
+                            <span>
+                                🪪
+                                IC No:
+                                <strong id="childIC">
+                                    220112-14-5678
+                                </strong>
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="child-status">
+
+                    <span class="status-label">
+                        Vaccination Status
+                    </span>
+
+                    <span class="status-complete">
+                        Up to Date
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- UPCOMING VACCINATION -->
+            <section class="upcoming-card">
+
+                <div class="upcoming-icon">
+                    💉
+                </div>
+
+                <div class="upcoming-content">
+
+                    <span class="upcoming-label">
+                        Next Vaccination
+                    </span>
+
+                    <h3 id="nextVaccine">
+                        DTP - IPV - Hib (Booster)
+                    </h3>
+
+                    <p>
+                        Due on
+                        <strong id="nextDate">
+                            15 Oct 2026
+                        </strong>
+                    </p>
+
+                </div>
+
+                <div class="upcoming-button">
+
+                    <button onclick="viewAppointment()">
+                        View Appointment
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- VACCINATION RECORDS -->
+            <section class="vaccination-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Vaccination Records
+                        </h2>
+
+                        <p>
+                            Your child's vaccination history and upcoming doses.
+                        </p>
+
+                    </div>
+
+                    <select id="statusFilter" onchange="filterRecords()">
+
+                        <option value="all">
+                            All Records
+                        </option>
+
+                        <option value="completed">
+                            Completed
+                        </option>
+
+                        <option value="upcoming">
+                            Upcoming
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table id="vaccinationTable">
+
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Vaccine</th>
+                                <th>Dose</th>
+                                <th>Status</th>
+                                <th>Next Due Date</th>
+                                <th>Remarks</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <!-- COMPLETED -->
+                            <tr data-status="completed">
+
+                                <td>12 Mar 2022</td>
+
+                                <td>BCG</td>
+
+                                <td>Dose 1</td>
+
+                                <td>
+                                    <span class="status completed">
+                                        Completed
+                                    </span>
+                                </td>
+
+                                <td>-</td>
+
+                                <td>-</td>
+
+                            </tr>
+
+                            <tr data-status="completed">
+
+                                <td>16 Apr 2022</td>
+
+                                <td>Hepatitis B</td>
+
+                                <td>Dose 1</td>
+
+                                <td>
+                                    <span class="status completed">
+                                        Completed
+                                    </span>
+                                </td>
+
+                                <td>-</td>
+
+                                <td>-</td>
+
+                            </tr>
+
+                            <tr data-status="completed">
+
+                                <td>14 May 2022</td>
+
+                                <td>DTP - IPV - Hib</td>
+
+                                <td>Dose 1</td>
+
+                                <td>
+                                    <span class="status completed">
+                                        Completed
+                                    </span>
+                                </td>
+
+                                <td>-</td>
+
+                                <td>-</td>
+
+                            </tr>
+
+                            <tr data-status="completed">
+
+                                <td>14 Jun 2022</td>
+
+                                <td>DTP - IPV - Hib</td>
+
+                                <td>Dose 2</td>
+
+                                <td>
+                                    <span class="status completed">
+                                        Completed
+                                    </span>
+                                </td>
+
+                                <td>-</td>
+
+                                <td>-</td>
+
+                            </tr>
+
+                            <tr data-status="completed">
+
+                                <td>14 Jul 2022</td>
+
+                                <td>DTP - IPV - Hib</td>
+
+                                <td>Dose 3</td>
+
+                                <td>
+                                    <span class="status completed">
+                                        Completed
+                                    </span>
+                                </td>
+
+                                <td>-</td>
+
+                                <td>-</td>
+
+                            </tr>
+
+                            <!-- UPCOMING -->
+                            <tr data-status="upcoming">
+
+                                <td>15 Oct 2026</td>
+
+                                <td>DTP - IPV - Hib</td>
+
+                                <td>Booster</td>
+
+                                <td>
+                                    <span class="status upcoming">
+                                        Upcoming
+                                    </span>
+                                </td>
+
+                                <td>15 Oct 2026</td>
+
+                                <td>Appointment required</td>
+
+                            </tr>
+
+                            <tr data-status="upcoming">
+
+                                <td>20 Nov 2026</td>
+
+                                <td>MMR</td>
+
+                                <td>Dose 2</td>
+
+                                <td>
+                                    <span class="status upcoming">
+                                        Upcoming
+                                    </span>
+                                </td>
+
+                                <td>20 Nov 2026</td>
+
+                                <td>-</td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </section>
+
+
+            <!-- INFORMATION BOX -->
+            <div class="information-box">
+
+                <div class="information-icon">
+                    ℹ️
+                </div>
+
+                <div>
+
+                    <strong>
+                        Vaccination Reminder
+                    </strong>
+
+                    <p>
+                        Please attend your scheduled appointment
+                        to keep your child's vaccination record up to date.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>
