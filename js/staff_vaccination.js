@@ -512,19 +512,18 @@ function displayRecords(records) {
 
                 <button
                     class="edit-record-button"
-                    onclick="editRecord(event, this)"
-                    title="Edit Record"
+                    onclick="editRecord(${index})"
+                    title="Edit"
                 >
-                    ✏️
+                    <i class="bi bi-pencil"></i>
                 </button>
-
 
                 <button
                     class="delete-record-button"
-                    onclick="deleteRecord(event, this)"
-                    title="Delete Record"
+                    onclick="deleteRecord(${index})"
+                    title="Delete"
                 >
-                    🗑️
+                    <i class="bi bi-trash"></i>
                 </button>
 
             </td>
