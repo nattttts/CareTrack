@@ -1059,9 +1059,9 @@ tbody tr:hover {
 
 .card-icon {
 
-    width: 28px;
+    width: 60px;
 
-    height: 28px;
+    height: 60px;
 
     display: flex;
 
@@ -1069,11 +1069,25 @@ tbody tr:hover {
 
     justify-content: center;
 
-    color: #f9528e;
-
-    background-color: #fde7f0;
-
     border-radius: 50%;
+
+    background-color: #fee6ef;
+
+    color: #f9528e;
+}
+
+.card-icon i {
+
+    font-size: 29px;
+}
+
+.card-icon img {
+
+    width: 30px;
+
+    height: 30px;
+
+    object-fit: contain;
 }
 
 /* =====================================================
