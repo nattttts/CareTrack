@@ -449,6 +449,7 @@ function applyFilters() {
     rows.forEach(row => {
 
         const patient = row.dataset.patient.toLowerCase();
+        const child = (row.dataset.child || "").toLowerCase();
         const queue = row.dataset.queue.toLowerCase();
 
         const service = row.dataset.service;
@@ -458,7 +459,10 @@ function applyFilters() {
         const matchesTab = rowTab === currentTab;
 
 
-        const matchesSearch = patient.includes(searchValue) || queue.includes(searchValue);
+        const matchesSearch = 
+            patient.includes(searchValue) ||
+            child.includes(searchValue) ||
+            queue.includes(searchValue);
 
         const matchesService = selectedService === "all" || service === selectedService;
 
