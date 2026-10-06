@@ -298,6 +298,7 @@ a {
 .input-group-text {
     background: #ffffff;
     border-color: #dfd9de;
+    color: var(--caretrack-pink);
 }
 
 .reset-button {
