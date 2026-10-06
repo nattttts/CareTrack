@@ -318,8 +318,6 @@ a {
     max-width: 1250px;
     margin: 0 auto 18px;
 
-    /* overflow: hidden; */
-
     background: #ffffff;
     border: 1px solid #f0dfe6;
     border-radius: 11px;
@@ -356,7 +354,6 @@ a {
 /* ================= QUEUE TABS ================= */
 .queue-tabs {
     width: 330px;
-    max-width: 1250px;
     margin: 0 auto 18px;
     display: flex;
     background: #ffffff;
@@ -480,13 +477,6 @@ a {
     font-size: 11px;
 }
 
-.room-name {
-    margin: 0;
-    color: #536780;
-    font-size: 11px;
-    font-weight: 600;
-}
-
 .appointment-time {
     margin: 0;
     color: #536780;
@@ -588,7 +578,7 @@ a {
 
 /* Skip */
 .skip-button {
-    /* color: #000000; */
+    color: #000000;
     border: 1px solid #f4b740;
     background: #f4b740;
 }
@@ -688,6 +678,9 @@ a {
 
 /* ================= QUEUE INFORMATION ================= */
 .queue-info {
+    max-width: 1250px;
+    margin: 0 auto;
+
     background: #ffffff;
     border: 1px solid #f0dfe6;
     border-radius: 11px;
