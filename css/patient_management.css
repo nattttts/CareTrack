@@ -1,0 +1,298 @@
+/* ================= GENERAL ================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #243653;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* ================= CARETRACK COLOURS ================= */
+:root {
+    --caretrack-pink: #f9528e;
+    --caretrack-pink-dark: #e81f67;
+    --caretrack-pink-light: #fee6ef;
+
+    --text-dark: #172b4d;
+    --text-medium: #58708f;
+    --border: #eadfe4;
+
+    --white: #ffffff;
+}
+
+/* ================= PAGE LAYOUT ================= */
+.page-layout {
+    min-height: calc(100vh - 78px);
+    display: flex;
+}
+
+/* ================= MAIN CONTENT ================= */
+.main-content {
+    flex: 1;
+    min-width: 0;
+    padding: 34px 38px 60px;
+    background: #ffffff;
+}
+
+/* ================= PAGE HEADER ================= */
+.page-header {
+    max-width: 1250px;
+    margin: 0 auto 24px;
+}
+
+.page-heading {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.page-icon {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: #fee6ef;
+}
+
+.page-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.page-heading h2 {
+    margin: 0 0 5px;
+    color: var(--text-dark);
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.page-heading p {
+    margin: 0;
+    color: var(--text-medium);
+    font-size: 14px;
+}
+
+/* ================= SEARCH ================= */
+.search-card {
+    max-width: 1250px;
+    margin: 0 auto 18px;
+    padding: 5px;
+
+    background: #ffffff;
+    border: 1px solid #f0dfe6;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(120, 50, 80, 0.04);
+} 
+
+.search {
+    margin: 18px;
+}
+
+.form-control {
+    min-height: 41px;
+    border-color: #dfd9de;
+    color: #405777;
+    font-size: 14px; 
+}
+
+.form-control:focus {
+    border-color: #f1c9df;
+    box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
+}
+
+.input-group-text {
+    background: var(--white);
+    border-color: #dfd9de;
+    color: var(--caretrack-pink);
+}
+
+/* ================= CONTENT CARD ================= */
+.content-card {
+    max-width: 1250px;
+    margin: 0 auto 18px;
+
+    background: #ffffff;
+    border: 1px solid #f0dfe6;
+    border-radius: 11px;
+    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
+}
+
+.section-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f0e5ea;
+}
+
+.section-header h3 {
+    margin: 0 0 4px;
+    color: var(--text-dark);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.section-header p {
+    margin: 0;
+    color: #78879a;
+    font-size: 11px;
+}
+
+/* ================= TABLE ================= */
+.patient-table {
+    width: 100%; 
+    min-width: 1000px;
+} 
+
+.patient-table thead th {
+    padding: 14px 18px;
+
+    background: var(--caretrack-pink-light);
+    border-bottom: 1px solid #f6d1df;
+    color: #9e3b60;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    white-space: nowrap; 
+}
+
+.patient-table tbody td {
+    padding: 10px 18px;
+    border-bottom: 1px solid #f3e8ed;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.patient-table tbody tr:hover {
+    background: #fffafd;
+}
+
+/* Mother Name */
+.patient-table .mother-name {
+    font-weight: 600;
+}
+
+/* Pregnancy */
+.pregnancy-status {
+    padding: 6px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pregnancy-status.pregnant {
+    color: var(--caretrack-pink-dark);
+    background: var(--caretrack-pink-light);
+}
+
+.pregnancy-status.not-pregnant {
+    color: #16804e;
+    background: #eaf8f0;
+}
+
+/* Children */
+.no-child {
+    color: #a5a3a4;
+}
+
+.child-name {
+    font-weight: 600;
+}
+
+/* Action Button */
+.action-button {
+    padding: 5px 13px;
+    border-radius: 7px;
+    font-size: 13px;
+
+    color: var(--white);
+    border: 1px solid var(--caretrack-pink);
+    background-color: var(--caretrack-pink);
+}
+
+.action-button:hover {
+    border-color: var(--caretrack-pink-dark);
+    background-color: var(--caretrack-pink-dark);
+}
+
+/* ================= NO RESULTS ================= */
+.no-results {
+    padding: 50px 20px;
+    text-align: center;
+    color: #748298;
+}
+
+.no-results i {
+    color: var(--caretrack-pink);
+    font-size: 35px;
+}
+
+.no-results h5 {
+    margin: 12px 0 5px;
+    color: var(--text-dark);
+    font-size: 15px;
+}
+
+.no-results p {
+    margin: 0;
+    font-size: 11px;
+}
+
+/* ================= TABLE FOOTER ================= */
+.table-footer {
+    min-height: 54px;
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-top: 1px solid #f0e5ea;
+    color: #748399;
+    font-size: 10px;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-button {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e1dce0;
+    border-radius: 5px;
+    background: #ffffff;
+    color: #61728a;
+    font-size: 11px;
+}
+
+.pagination-button.current {
+    color: #ffffff;
+    background: var(--caretrack-pink);
+    border-color: var(--caretrack-pink);
+}
+
+.pagination-button:disabled {
+    opacity: 0.45;
+}
