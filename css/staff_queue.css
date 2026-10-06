@@ -727,3 +727,62 @@ a {
 #confirmSkipButton:hover {
     background: var(--caretrack-pink-dark);
 }
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 800px) {
+    
+    .main-content {
+        padding: 25px 15px 40px;
+    }
+
+    .page-heading h2 {
+        font-size: 27px;
+    }
+
+    .queue-tabs {
+        width: 100%;
+    }
+
+    .queue-tab {
+        flex: 1;
+        min-width: 0;
+    }
+
+}
+
+@media (max-width: 550px) {
+
+    .page-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .page-icon img {
+        width: 25px;
+        height: 25px;
+        object-fit: contain;
+    }
+
+    .serving-info img {
+        width: 25px;
+        height: 25px;
+        object-fit: contain;
+    }
+
+    .section-header {
+        padding: 14px 15px;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .queue-tab {
+        padding: 11px 8px;
+        font-size: 10px;
+    }
+
+    .queue-tab i {
+        display: none;
+    }
+    
+}
