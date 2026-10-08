@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/patient_management.css">
 
-    <script src="../js/staff_queue.js" defer></script>
+    <script src="../js/patient_management.js" defer></script>
 </head>
 
 <body>
@@ -120,7 +120,7 @@
             </section>
 
             <!-- ================= SEARCH ================= -->
-            <section class="search-card">
+            <section id="searchSection" class="search-card">
                 
                 <!-- Search -->
                 <div class="search">
@@ -132,9 +132,9 @@
 
                         <input
                             type="text"
-                            id="searchInput"
+                            id="patientSearch"
                             class="form-control"
-                            placeholder="Search by patient name, IC number, or child name..."
+                            placeholder="Search by patient name, IC number, phone, or child name..."
                         >
                     </div>
                     
@@ -142,23 +142,23 @@
 
             </section>
 
-             <!-- ================= PATIENT LIST ================= -->
-            <section class="content-card">
+            <!-- ================= MOTHER LIST ================= -->
+            <section id="patientListSection" class="content-card">
 
                 <div class="section-header">
                      <div>
                         <h3>Registered Mothers</h3>
-                        <p>Select a patient to view their profile.</p>
+                        <p>Select a mother to view her profile and healthcare information.</p>
                     </div>
                 </div>
 
                 <div class="table-responsive">
 
-                    <table class="patient-table">
+                    <table class="mother-table">
                         <thead>
                             <tr>
                                 <th>Patient</th>
-                                <th>IC No.</th>
+                                <th>IC Number</th>
                                 <th>Contact</th>
                                 <th>Pregnancy</th>
                                 <th>Children</th>
@@ -166,125 +166,8 @@
                             </tr>
                         </thead>
                     
-                        <tbody id="patientTableBody">
-
-                            <!-- Patient 1 -->
-                            <tr>
-
-                                <td>
-                                    <p class="mother-name">Nurul Syazwani</p>
-                                </td>
-
-                                <td>
-                                    <p>900315-07-1234</p>
-                                </td>
-
-                                <td>
-                                    <p>012-345 6789</p>
-                                </td>
-
-                                <td class="pregnancy-column">
-                                    <p class="pregnancy-status pregnant">Pregnant</p>
-                                </td>
-
-                                <td>
-                                    <p class="no-child">No children</p>
-                                </td>
-
-                                <td class="actions-column">
-                                    <div class="action-buttons">
-
-                                        <button
-                                            type="button"
-                                            class="action-button"
-                                            data-action="view"
-                                        >
-                                            View Profile
-                                        </button>
-
-                                    </div>
-                                </td>
-
-                            </tr>
-
-                            <!-- Patient 2 -->
-                            <tr>
-
-                                <td>
-                                    <p class="mother-name">Siti Aminah</p>
-                                </td>
-
-                                <td>
-                                    <p>890622-07-2346</p>
-                                </td>
-
-                                <td>
-                                    <p>013-456 7890</p>
-                                </td>
-
-                                <td class="pregnancy-column">
-                                    <p class="pregnancy-status pregnant">Pregnant</p>
-                                </td>
-
-                                <td>
-                                    <p class="child-name">Ammar</p>
-                                </td>
-
-                                <td class="actions-column">
-                                    <div class="action-buttons">
-
-                                        <button
-                                            type="button"
-                                            class="action-button"
-                                            data-action="view"
-                                        >
-                                            View Profile
-                                        </button>
-
-                                    </div>
-                                </td>
-
-                            </tr>
-
-                            <!-- Patient 3 -->
-                            <tr>
-
-                                <td>
-                                    <p class="mother-name">Aisyah Hamid</p>
-                                </td>
-
-                                <td>
-                                    <p>900210-07-3458</p>
-                                </td>
-
-                                <td>
-                                    <p>016-789 0123</p>
-                                </td>
-
-                                <td class="pregnancy-column">
-                                    <p class="pregnancy-status not-pregnant">Not Pregnant</p>
-                                </td>
-
-                                <td>
-                                    <p class="child-name">Adam Rahman</p>
-                                </td>
-
-                                <td class="actions-column">
-                                    <div class="action-buttons">
-
-                                        <button
-                                            type="button"
-                                            class="action-button"
-                                            data-action="view"
-                                        >
-                                            View Profile
-                                        </button>
-
-                                    </div>
-                                </td>
-
-                            </tr>
-
+                        <tbody id="motherTableBody">
+                            <!-- Mother rows are generated by JavaScript -->
                         </tbody>
 
                     </table>
@@ -292,15 +175,15 @@
 
                 <!-- NO RESULTS -->
                 <div id="noResults" class="no-results" hidden>
-                    <i class="bi bi-calendar-x"></i>
-                    <h5>No queue records found</h5>
-                    <p>Try changing your search or filter options.</p>
+                    <i class="bi bi-person-fill-x"></i>
+                    <h5>No mother records found</h5>
+                    <p>Try searching with another mother or child name.</p>
                 </div>
 
                 <!-- TABLE FOOTER -->
                 <div class="table-footer">
 
-                    <span id="queueCount">Showing 3 of 3 records</span>
+                    <span id="patientCount"></span>
 
                     <div class="pagination-buttons">
                         <button class="pagination-button" disabled>
@@ -314,6 +197,166 @@
                         </button>
                     </div>
 
+                </div>
+
+            </section>
+
+            <!-- ================= PATIENT DETAILS ================= -->
+            <section id="patientDetailsSection" class="patient-details-section" hidden>
+
+                <!-- Back Button -->
+                <div class="detail-navigation">
+                    <button type="button" id="backToPatients" class="back-button">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Patients
+                    </button>
+                </div>
+
+                <!-- Patient Header Card -->
+                <div class="patient-profile-card">
+
+                    <div class="patient-profile-left">
+
+                        <div class="patient-avatar">
+                            <img src="../icons/user.png" alt="Profile">
+                        </div>
+                        
+                        <div>
+                            <h2 id="detailPatientName"></h2>
+
+                            <div class="patient-profile-subtitle">
+                                <span id="detailPatientType"></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div id="detailPregnancyBadge"></div>
+
+                </div>
+
+                <!-- ================= PATIENT INFORMATION ================= -->
+                <div class="detail-card">
+
+                    <div class="detail-card-header">
+                        <div>
+                            <h3>Patient Information</h3>
+                            <p>Basic personal and contact information.</p>
+                        </div>
+                    </div>
+
+                    <div class="information-grid">
+
+                        <div class="information-item">
+                            <span class="information-label">Full Name</span>
+                            <strong id="detailName"></strong>
+                        </div>
+
+                        <div class="information-item">
+                            <span class="information-label">IC Number</span>
+                            <strong id="detailIC"></strong>
+                        </div>
+
+                        <div class="information-item">
+                            <span class="information-label">Date of Birth</span>
+                            <strong id="detailDOB"></strong>
+                        </div>
+
+                        <div class="information-item">
+                            <span class="information-label">Phone Number</span>
+                            <strong id="detailPhone"></strong>
+                        </div>
+
+                        <div class="information-item">
+                            <span class="information-label">Email</span>
+                            <strong id="detailEmail"></strong>
+                        </div>
+
+                        <div class="information-item information-item-wide">
+                            <span class="information-label">Address</span>
+                            <strong id="detailAddress"></strong>
+                        </div>
+                        
+                    </div>
+
+                </div>
+
+                <!-- ================= HEALTHCARE HISTORY  ================= -->
+                <div class="history-card">
+                    <div class="history-card-header">
+
+                        <div>
+                            <h3>Healthcare History</h3>
+                            <p>Recent appointments and healthcare visits.</p>
+                        </div>
+
+                    </div>
+
+                    
+                    <div class="table-responsive">
+
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Appointment Type</th>
+                                    <th>Child</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                        
+                            <tbody id="historyTableBody">
+                                <!-- Healthcare history rows are generated by JavaScript -->
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                </div>
+                
+                <!-- ================= REGISTERED CHILDREN ================= -->
+                <div class="child-card">
+                    <div class="child-card-header">
+                        <h3>Registered Children</h3>
+                        <p>Children registered under this mother.</p>
+                    </div>
+
+                     <div id="noChildrenMessage" class="no-children-message">
+                        <i class="bi bi-person-fill-x"></i>
+                        <strong>No registered children</strong>
+                        <p>This patient currently has no registered children in CareTrack.</p>
+                    </div>
+
+                    <div id="childrenTableContainer" class="table-responsive">
+
+                        <table class="child-table">
+                            <thead>
+                                <tr>
+                                    <th>Child</th>
+                                    <th>MyKid Number</th>
+                                    <th>Date of Birth</th>
+                                    <th>Age</th>
+                                    <th>Gender</th>
+                                </tr>
+                            </thead>
+                        
+                            <tbody id="childTableBody">
+                                <!-- Child rows are generated by JavaScript -->
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                 <!-- ================= VACCINATION INFORMATION ================= -->
+                <div class="vaccination-info">
+                    <span class="information-icon">ⓘ</span>
+                    <p>
+                        Full vaccination history is managed under
+                        <strong>Vaccination Management</strong>
+                    </p>
                 </div>
 
             </section>
