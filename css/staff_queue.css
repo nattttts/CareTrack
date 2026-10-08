@@ -38,7 +38,7 @@ a {
     flex: 1;
     min-width: 0;
     padding: 34px 38px 60px;
-    background: #ffffff;
+    background: var(--white);
 }
 
 /* ================= PAGE HEADER ================= */
@@ -62,7 +62,7 @@ a {
     justify-content: center;
 
     border-radius: 50%;
-    background: #fee6ef;
+    background: var(--caretrack-pink-light);
 }
 
 .page-icon img {
@@ -94,7 +94,7 @@ a {
     align-items: center;
     justify-content: space-between;
 
-    background: #ffffff;
+    background: var(--white);
     border: 1px solid #f0dfe6;
     border-radius: 11px;
     box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
@@ -268,7 +268,7 @@ a {
     margin: 0 auto 18px;
     padding: 18px;
 
-    background: #ffffff;
+    background: var(--white);
     border: 1px solid #f0dfe6;
     border-radius: 10px;
     box-shadow: 0 3px 12px rgba(120, 50, 80, 0.04);
@@ -296,7 +296,7 @@ a {
 }
 
 .input-group-text {
-    background: #ffffff;
+    background: var(--white);
     border-color: #dfd9de;
     color: var(--caretrack-pink);
 }
@@ -305,12 +305,12 @@ a {
     min-height: 41px;
     border: 1px solid var(--caretrack-pink);
     color: var(--caretrack-pink);
-    background: #ffffff;
+    background: var(--white);
     font-size: 12px;
 }
 
 .reset-button:hover {
-    color: #ffffff;
+    color: var(--white);
     background: var(--caretrack-pink);
 }
 
@@ -319,7 +319,7 @@ a {
     max-width: 1250px;
     margin: 0 auto 18px;
 
-    background: #ffffff;
+    background: var(--white);
     border: 1px solid #f0dfe6;
     border-radius: 11px;
     box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
@@ -357,7 +357,7 @@ a {
     width: 330px;
     margin: 0 auto 18px;
     display: flex;
-    background: #ffffff;
+    background: var(--white);
     border: 1px solid #efdde5;
     border-radius: 9px;
     overflow: hidden;
@@ -372,7 +372,7 @@ a {
     gap: 8px;
 
     border: none;
-    background: #ffffff;
+    background: var(--white);
     color: #53657d;
     font-size: 12px;
     font-weight: 500;
@@ -390,7 +390,7 @@ a {
 }
 
 .queue-tab.active {
-    color: #ffffff;
+    color: var(--white);
     background: var(--caretrack-pink);
     font-weight: 600;
 }
@@ -542,7 +542,7 @@ a {
     justify-content: center;
     
     border-radius: 5px;
-    color: #FFFFFF;
+    color: var(--white);
     font-size: 13px;
 
     white-space: nowrap;
@@ -662,13 +662,13 @@ a {
 
     border: 1px solid #e1dce0;
     border-radius: 5px;
-    background: #ffffff;
+    background: var(--white);
     color: #61728a;
     font-size: 11px;
 }
 
 .pagination-button.current {
-    color: #ffffff;
+    color: var(--white);
     background: var(--caretrack-pink);
     border-color: var(--caretrack-pink);
 }
@@ -682,7 +682,7 @@ a {
     max-width: 1250px;
     margin: 0 auto;
 
-    background: #ffffff;
+    background: var(--white);
     border: 1px solid #f0dfe6;
     border-radius: 11px;
     box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
@@ -694,7 +694,7 @@ a {
 }
 
 .information-icon {
-    color: #f9528e;
+    color: var(--caretrack-pink);
     font-size: 20px;
     line-height: 1;
 }
@@ -721,7 +721,7 @@ a {
 }
 
 #confirmSkipButton {
-    color: #ffffff;
+    color: var(--white);
     background: var(--caretrack-pink);
 }
 
