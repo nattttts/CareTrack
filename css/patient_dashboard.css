@@ -1,0 +1,475 @@
+/* ================= GENERAL ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #142d58;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none; 
+    color: inherit;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* ================= CARETRACK COLOURS ================= */
+:root {
+    --caretrack-pink: #f9528e;
+    --caretrack-pink-dark: #e81f67;
+    --caretrack-pink-light: #fee6ef;
+
+    --text-dark: #142d58;
+    --text-medium: #50698a;
+    --border: #eadfe4;
+
+    --white: #ffffff;
+}
+
+/* ================= PAGE LAYOUT ================= */
+.page-layout {
+    min-height: calc(100vh - 78px);
+}
+
+/* ================= MAIN CONTENT ================= */
+.main-content {
+    flex: 1;
+    min-width: 0;
+    background: var(--white);
+    padding: 35px 38px 50px;
+}
+
+/* ================= PAGE HEADER ================= */
+.page-header {
+    max-width: 1250px;
+    margin: 0 auto 28px
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.title-icon {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: var(--caretrack-pink-light); 
+}
+
+.title-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.page-title h2 {
+    margin-bottom: 5px;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.page-title p {
+    font-size: 15px;
+    color: var(--text-medium);
+}
+
+/* ================= DASHBOARD CONTAINER ================= */
+.dashboard-container {
+    max-width: 1250px;
+}
+
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dashboard-card {
+    background: var(--white);
+    border: 1px solid #dfe7f0;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.03);
+    border-radius: 14px;
+}
+
+/* ================= UPCOMING APPOINTMENT & CHILD VACCINATION ================= */
+/* Card Heading */
+.card-heading {
+    padding: 15px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.card-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--caretrack-pink-light); 
+}
+
+.card-icon img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.card-heading h3 {
+    color: var(--caretrack-pink-dark);
+    font-size: 17px;
+    font-weight: 600;
+    margin-top: 15px;
+}
+
+.card-heading p {
+    color: var(--text-medium);
+    font-size: 13px;
+}
+
+/* Card Content */
+.card-content {
+    padding: 0px 30px 10px;
+}
+
+.appointment-name {
+    padding: 0px 60px;
+}
+
+.appointment-name h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.appointment-name p {
+    font-size: 13px;
+}
+
+/* Appointment Detail */
+.appointment-detail {
+    margin-top: 22px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px;
+
+    background-color: #fafafa;
+    border-radius: 9px;
+}
+
+.detail-item img {
+    width: 25px;
+    height: 25px;
+}
+
+.detail-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.detail-item-info span {
+    font-size: 14px;
+    color: var(--text-medium);
+}
+
+.detail-item-info strong {
+    font-size: 14px;
+}
+
+.card-footer-link {
+    margin: 20px 0px 10px;
+}
+
+.card-footer-link a {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--caretrack-pink-dark);
+}
+
+/* ================= QUEUE - NOT CHECKED IN ================= */
+.queue-not-checked-in {
+    padding: 12px 24px 22px;
+}
+
+.queue-status-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.queue-status-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.queue-status-icon.warning {
+    background-color: #fff2d6;
+}
+
+.queue-status-icon img {
+    width: 20px;
+    height: 20px;
+}
+
+.queue-status-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.queue-status-header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-medium);
+}
+
+.queue-message {
+    margin-top: 20px;
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+
+    background-color: #fafafa;
+    border-radius: 9px;
+}
+
+.queue-message i {
+    font-size: 18px;
+    color: var(--caretrack-pink);
+}
+
+.queue-message strong {
+    display: block;
+    font-size: 13px;
+}
+
+.queue-message p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-medium);
+}
+
+/* ================= QUEUE - CHECKED IN ================= */
+.queue-checked-in {
+    padding: 0px 30px 10px;
+}
+
+.queue-status {
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.queue-status h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* ================= QUEUE STATUS BADGE ================= */
+.queue-status-badge {
+    padding: 7px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.queue-status-badge.waiting {
+    background: #fff2d6;
+    color: #d77b00;
+}
+
+/* ================= QUEUE NUMBER ================= */
+.queue-number-section {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: #FEE6EF;
+    border-radius: 12px;
+}
+
+.queue-number-section h6 {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #777777;
+}
+
+.queue-number-section p {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 700;
+    color: #e81f67;
+}
+
+/* ================= QUEUE DETAILS ================= */
+.queue-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+
+    background: #fafafa;
+    border-radius: 10px;
+}
+
+.queue-detail img {
+    width: 22px;
+    height: 22px;
+}
+
+.queue-detail h6 {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #777777;
+}
+
+.queue-detail strong {
+    display: block;
+    font-size: 16px;
+}
+
+/* =================  NOTIFICATIONS ================= */
+.notification-list {
+    padding: 0 24px;
+}
+
+.card-icon.notification img {
+    width: 25px;
+    height: 25px;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    padding: 16px;
+    margin-bottom: 20px;
+
+    background: var(--white);
+    border: 1px solid #dfe7f0;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.03);
+    border-radius: 14px;
+}
+
+.notification-item-icon {
+    width: 45px;
+    height: 45px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.notification-item-icon.appointment {
+    background: var(--caretrack-pink-light);
+}
+
+.notification-item-icon.vaccination {
+    background: #edf6ff;
+}
+
+.notification-item-icon.update {
+    background: #f5f0ff;
+    color: #ab89ff;
+}
+
+.notification-item-icon img {
+    width: 25px;
+    height: 25px;
+}
+
+.notification-item-icon i {
+    font-size: 20px;
+} 
+
+.notification-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.notification-title-row h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.notification-title-row span {
+    font-size: 11px;
+    color: var(--text-medium);
+    white-space: nowrap;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-content p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-medium);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+
+    .main-content {
+        padding: 30px;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .main-content {
+        padding: 20px;
+    }
+
+    .page-title h2 {
+        font-size: 24px;
+    }
+
+}
