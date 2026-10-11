@@ -222,8 +222,7 @@ CREATE TABLE IF NOT EXISTS Notification (
         CHECK (
             notification_type IN (
                 'maternal_appointment',
-                'child_vaccination',
-                'general'
+                'child_vaccination'
             )
         ),
     is_read INTEGER NOT NULL DEFAULT 0
