@@ -78,7 +78,6 @@ CREATE TABLE IF NOT EXISTS Child (
     mykid_number TEXT UNIQUE,
     date_of_birth TEXT NOT NULL,
     gender TEXT NOT NULL,
-    child_image TEXT,
 
     FOREIGN KEY (mother_id)
         REFERENCES Mother(mother_id)
@@ -104,7 +103,8 @@ CREATE TABLE IF NOT EXISTS Vaccination (
     vaccination_id INTEGER PRIMARY KEY,
     vaccine_name TEXT NOT NULL,
     description TEXT NOT NULL,
-    dose_quantity INTEGER NOT NULL
+    dose_quantity INTEGER NOT NULL,
+    booster INTEGER NOT NULL
 );
 
 
