@@ -174,8 +174,8 @@ a {
 
 /* Waiting */
 .waiting-card {
-    background: #fff5dc;
-    border: 1px solid #b77a00;
+    background: #fff2d6;
+    border: 1px solid #d77b00;
 }
 
 /* Called */
@@ -207,7 +207,7 @@ a {
 
 /* Waiting Icon */
 .waiting-card .summary-icon {
-    color: #b77a00;
+    color: #d77b00;
 }
 
 /* Called Icon */
@@ -244,7 +244,7 @@ a {
 
 /* Waiting Count */
 .waiting-card strong {
-    color: #b77a00;
+    color: #d77b00;
 }
 
 /* Called Count */
@@ -502,8 +502,8 @@ a {
 
 /* Waiting */
 .status-badge.waiting {
-    color: #b77a00;
-    background: #fff5dc;
+    color: #d77b00;
+    background: #fff2d6;
 }
 
 /* Called */
