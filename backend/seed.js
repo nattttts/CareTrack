@@ -320,7 +320,7 @@ try {
 
     console.log("Sample data inserted successfully!");
     console.log("Admin: admin@gmail.com");
-    console.log("Staff: staff1@gmail.com, staff2@gmail.com");
+    console.log("Staff: staff1@gmail.com, staff2@gmail.com, staff3@gmail.com");
     console.log("Mothers: mother1@gmail.com, mother2@gmail.com, mother3@gmail.com");
     console.log("These accounts do not have usable passwords yet.");
 
