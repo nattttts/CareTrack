@@ -81,6 +81,8 @@ img {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    max-width: 1250px;
+    margin: 0 auto;
 }
 
 /* ================= TODAY'S APPOINTMENT ================= */
@@ -474,7 +476,9 @@ img {
 
 /* ================= QUEUE INFORMATION ================= */
 .queue-info {
-    background: #fff2d6;
+    background: var(--white);
+    border: 1px solid #dfe7f0;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.03);
     border-radius: 14px;
     padding: 15px;
 
@@ -483,17 +487,16 @@ img {
     gap: 10px;
 }
 
-.queue-info img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
+.information-icon {
+    color: #f9528e;
+    font-size: 20px;
+    line-height: 1;
 }
 
 .queue-info p {
     margin: 0;
+    color: #718096;
     font-size: 13px;
-    line-height: 1.5;
-    color: #936318;
 }
 
 /* ================= RESPONSIVE ================= */
