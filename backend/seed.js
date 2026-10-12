@@ -132,9 +132,10 @@ const seed = db.transaction(() => {
         [1, "admin@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "admin"],
         [2, "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff"],
         [3, "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff"],
-        [4, "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"],
-        [5, "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"],
-        [6, "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"]
+        [4, "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff"],
+        [5, "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"],
+        [6, "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"],
+        [7, "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"]
     ];
 
     users.forEach(row => insert.user.run(...row));
@@ -143,8 +144,9 @@ const seed = db.transaction(() => {
     // 2. STAFF
     // =========================================
     const staff = [
-        [1, 2, "Aisha Rahman", "Healthcare Staff", "012-3001001", "Active"],
-        [2, 3, "Mei Ling Tan", "Healthcare Staff", "012-3001002", "Active"]
+        [1, 2, "Aisha Rahman", "Doctor", "012-3001001", "Active"],
+        [2, 3, "Mei Ling Tan", "Nurse", "012-3001002", "Active"],
+        [3, 4, "Ming Chong Lim", "Doctor", "012-3001003", "Inactive"]
     ];
 
     staff.forEach(row => insert.staff.run(...row));
@@ -153,11 +155,11 @@ const seed = db.transaction(() => {
     // 3. MOTHERS
     // =========================================
     const mothers = [
-        [1, 4, "Sarah Lim", "TEST-MY-0001", "1998-04-12",
+        [1, 5, "Sarah Lim", "TEST-MY-0001", "1998-04-12",
             "012-4001001", "10 Example Street, Penang"],
-        [2, 5, "Nur Aina", "TEST-MY-0002", "1996-08-23",
+        [2, 6, "Nur Aina", "TEST-MY-0002", "1996-08-23",
             "012-4001002", "20 Sample Avenue, Penang"],
-        [3, 6, "Priya Kumar", "TEST-MY-0003", "2000-01-17",
+        [3, 7, "Priya Kumar", "TEST-MY-0003", "2000-01-17",
             "012-4001003", "30 Demo Road, Penang"]
     ];
 
@@ -264,19 +266,19 @@ const seed = db.transaction(() => {
     // is_read: 0 = unread, 1 = read.
     // =========================================
     const notifications = [
-        [1, 4, 3, null, "Reschedule request received",
+        [1, 5, 3, null, "Reschedule request received",
             "Your reschedule request has been submitted.",
             "maternal_appointment", 0],
 
-        [2, 4, 4, 2, "Vaccination appointment confirmed",
+        [2, 5, 4, 2, "Vaccination appointment confirmed",
             "Your child's vaccination appointment is confirmed.",
             "child_vaccination", 0],
 
-        [3, 5, 2, null, "Missed appointment",
+        [3, 6, 2, null, "Missed appointment",
             "Your maternal follow-up appointment was missed.",
             "maternal_appointment", 1],
 
-        [4, 5, 5, 1, "Vaccination appointment missed",
+        [4, 6, 5, 1, "Vaccination appointment missed",
             "The scheduled vaccination appointment was missed.",
             "child_vaccination", 0]
     ];
