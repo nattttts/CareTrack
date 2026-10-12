@@ -168,8 +168,8 @@ a {
 
 /* Total */
 .total-card {
-    background: #f5f0ff;
-    border: 1px solid #ab89ff;
+    background: #f1e8ff;
+    border: 1px solid #8744d9;
 }
 
 /* Waiting */
@@ -202,7 +202,7 @@ a {
 
 /* Total Icon */
 .total-card .summary-icon {
-    color: #7a57d2;
+    color: #8744d9;
 }
 
 /* Waiting Icon */
@@ -239,7 +239,7 @@ a {
 
 /* Total Count */
 .total-card strong {
-    color: #7a57d2;
+    color: #8744d9;
 }
 
 /* Waiting Count */
