@@ -9,8 +9,8 @@ const children = {
         nextDate: "15 Oct 2026"
     },
 
-    daniel: {
-        name: "Daniel Tan",
+    ethan: {
+        name: "Ethan Tan",
         gender: "Male",
         age: "2 years old",
         dob: "08 Jun 2023",
