@@ -92,6 +92,8 @@ img {
 /* ================= DASHBOARD CONTAINER ================= */
 .dashboard-container {
     max-width: 1250px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .dashboard-column {
@@ -109,11 +111,19 @@ img {
 
 /* ================= UPCOMING APPOINTMENT & CHILD VACCINATION ================= */
 /* Card Heading */
-.card-heading {
-    padding: 15px 24px 0;
+.dashboard-card-header {
     display: flex;
     align-items: center;
-    gap: 14px;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 26px;
+    padding: 20px 24px 0;
+}
+
+.card-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .card-icon {
@@ -139,17 +149,28 @@ img {
     color: var(--caretrack-pink-dark);
     font-size: 17px;
     font-weight: 600;
-    margin-top: 15px;
+    margin: 0 0 5px;
 }
 
 .card-heading p {
     color: var(--text-medium);
     font-size: 13px;
+    margin: 0;
+}
+
+.view-all-link {
+    color: var(--caretrack-pink);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.view-all-link:hover {
+    color: var(--caretrack-pink-dark);
 }
 
 /* Card Content */
 .card-content {
-    padding: 0px 30px 10px;
+    padding: 0px 30px 24px;
 }
 
 .appointment-name {
@@ -200,16 +221,6 @@ img {
 
 .detail-item-info strong {
     font-size: 14px;
-}
-
-.card-footer-link {
-    margin: 20px 0px 10px;
-}
-
-.card-footer-link a {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--caretrack-pink-dark);
 }
 
 /* ================= QUEUE - NOT CHECKED IN ================= */
@@ -286,7 +297,7 @@ img {
 
 /* ================= QUEUE - CHECKED IN ================= */
 .queue-checked-in {
-    padding: 0px 30px 10px;
+    padding: 0px 30px 24px;
 }
 
 .queue-status {
@@ -318,7 +329,7 @@ img {
 /* ================= QUEUE NUMBER ================= */
 .queue-number-section {
     text-align: center;
-    padding: 20px;
+    padding: 23px 20px;
     margin-bottom: 15px;
     background: #FEE6EF;
     border-radius: 12px;
@@ -409,8 +420,8 @@ img {
 }
 
 .notification-item-icon.update {
-    background: #f5f0ff;
-    color: #ab89ff;
+    background: #f1e8ff;
+    color: #8744d9;
 }
 
 .notification-item-icon img {
