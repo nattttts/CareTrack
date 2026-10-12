@@ -1,0 +1,407 @@
+/* ================= GENERAL ================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #243653;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* ================= CARETRACK COLOURS ================= */
+:root {
+    --caretrack-pink: #f9528e;
+    --caretrack-pink-dark: #e81f67;
+    --caretrack-pink-light: #fee6ef;
+
+    --text-dark: #172b4d;
+    --text-medium: #58708f;
+    --border: #eadfe4;
+
+    --white: #ffffff;
+}
+
+/* ================= PAGE LAYOUT ================= */
+.page-layout {
+    min-height: calc(100vh - 78px);
+    display: flex;
+}
+
+/* ================= MAIN CONTENT ================= */
+.main-content {
+    flex: 1;
+    min-width: 0;
+    padding: 34px 38px 60px;
+    background: var(--white);
+}
+
+/* ================= PAGE HEADER ================= */
+.page-header {
+    max-width: 1250px;
+    margin: 0 auto 24px;
+}
+
+.page-heading {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.page-icon {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: var(--caretrack-pink-light);
+}
+
+.page-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.page-heading h2 {
+    margin: 0 0 5px;
+    color: var(--text-dark);
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.page-heading p {
+    margin: 0;
+    color: var(--text-medium);
+    font-size: 14px;
+}
+
+/* =================  DASHBPARD CONTENT ================= */
+.dashboard-container {
+    max-width: 1250px;
+    margin: 0 auto;
+}
+
+/* =================  OVERVIEW CARDS ================= */
+.overview-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    margin: 0 auto 18px;
+    padding: 20px 24px;
+
+    background: var(--white);
+    border: 1px solid #f0dfe6;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
+}
+
+.overview-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 21px;
+}
+
+.appointments-icon {
+    background: var(--caretrack-pink-light);
+    color: var(--caretrack-pink);
+}
+
+.waiting-icon {
+    background: #fff2d6;
+    color: #d77b00;
+}
+
+.serving-icon {
+    background: #edf6ff;
+    color: #2271b1;
+}
+
+.attention-icon {
+    background: #fff0f2;
+    color: #cf3a49;
+}
+
+.overview-info p {
+    margin: 1px 0 9px;
+    font-size: 13px;
+}
+
+.overview-info h2 {
+    margin: 0 0 6px;
+    color: var(--text-dark);
+    font-size: 29px;
+    font-weight: 600;
+}
+
+.overview-info span {
+    color: var(--text-medium);
+    font-size: 11px;
+}
+
+/* ================= CARD ICONS ================= */
+.card-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--caretrack-pink-light); 
+}
+
+.card-icon img {
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+}
+
+/* ================= APPOINTMENTS + ACTIVE QUEUE ================= */
+.appointment-and-queue {
+    margin-bottom: 18px;
+}
+
+.dashboard-panel {
+    margin: 0 auto 18px;
+    padding: 20px 24px 8px;
+    border-radius: 14px;
+    background: var(--white);
+    border: 1px solid #f0dfe6;
+    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
+    height: 100%;
+}
+
+/* ================= PANEL HEADER ================= */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.panel-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.panel-header h2 {
+    color: var(--text-dark);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.panel-header p {
+    color: var(--text-medium);
+    font-size: 12px;
+    margin: 0;
+}
+
+.view-all-link {
+    color: var(--caretrack-pink);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.view-all-link:hover {
+    color: var(--caretrack-pink-dark);
+}
+
+.appointment-item,
+.active-queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 17px 0;
+    border-bottom: 1px solid #f0dfe6;
+}
+
+.appointment-item:first-child,
+.active-queue-item:first-child {
+    padding-top: 4px;
+}
+
+.appointment-item:last-child,
+.active-queue-item:last-child {
+    padding-bottom: 4px;
+    border-bottom: none;
+}
+
+.appointment-info,
+.queue-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.appointment-time,
+.queue-number {
+    padding: 8px;
+    background: var(--caretrack-pink-light);
+    color: var(--text-dark);
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.patient-name {
+    color: var(--text-dark);
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+    padding-bottom: 10px;
+}
+
+.appointment-details p,
+.queue-patient-details p {
+    color: var(--text-medium);
+    font-size: 11px;
+    margin: 0;
+}
+
+/* ================= TODAY's APPOINTMENTS ================= */
+/* Status Badges */
+.status-badge {
+    padding: 6px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.status-confirmed {
+    color: #16804e;
+    background: #eaf8f0;
+}
+
+.status-pending {
+    color: #d77b00;
+    background: #fff2d6;
+}
+
+/* ================= ACTIVE QUEUE ================= */
+/* Status Badges */
+.status-waiting {
+    color: #d77b00;
+    background: #fff2d6;
+}
+
+.status-called {
+    color: var(--caretrack-pink);
+    background: var(--caretrack-pink-light);
+}
+
+.status-in-progress {
+    color: #2271b1;
+    background: #edf6ff;
+}
+
+/* ================= FOLLOW UP ================= */
+.followup-panel {
+    margin: 0 auto;
+    padding: 20px 24px 8px;
+    border-radius: 14px;
+    background: var(--white);
+    border: 1px solid #f0dfe6;
+    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
+}
+
+.followup-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+
+    margin: 0 auto 18px;
+    padding: 20px 24px;
+    border-radius: 14px;
+
+    background: var(--white);
+    border: 1px solid #f0dfe6;
+    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
+}
+
+.followup-card-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 21px;
+}
+
+.followup-card-icon.missed-icon {
+    background: var(--caretrack-pink-light);
+}
+
+.followup-card-icon.overdue-icon {
+    background: #fff2d6;
+}
+
+.followup-card-icon img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.followup-card-content p {
+    margin: 1px 0 9px;
+    font-size: 13px;
+}
+
+.followup-card-content h3 {
+    margin: 0 0 6px;
+    color: var(--text-dark);
+    font-size: 29px;
+    font-weight: 600;
+}
+
+.followup-card-content span {
+    color: var(--text-medium);
+    font-size: 11px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 800px) {
+    
+    .main-content {
+        padding: 25px 15px 40px;
+    }
+
+    .page-heading h2 {
+        font-size: 27px;
+    }
+
+}
+
+@media (max-width: 550px) {
+
+    .page-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .page-icon img {
+        width: 25px;
+        height: 25px;
+        object-fit: contain;
+    }
+    
+}
