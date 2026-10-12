@@ -120,13 +120,10 @@
                         <label for="statusFilter" class="form-label">
                             Filter by Status
                         </label>
-                        <select
-                            id="statusFilter"
-                            class="form-select"
-                        >
-                            <option>All (Active & Inactive)</option>
-                            <option>Active</option>
-                            <option>Inactive</option>
+                        <select id="statusFilter" class="form-select">
+                            <option value="">All (Active & Inactive)</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
                         </select>
                     </div>
                 </div>
@@ -152,189 +149,10 @@
                             </tr>
                         </thead>
 
-                        <tbody>
-                            <!-- Dr. Amir Rahman -->
-                            <tr>
-                                <td>
-                                    <div class="staff-info">
-                                        <img
-                                            src="../icons/user.png"
-                                            alt="Dr. Amir Rahman"
-                                            class="staff-avatar"
-                                        >
-                                        <div>
-                                            <strong>
-                                                Dr. Amir Rahman
-                                            </strong>
-                                            <span>
-                                                Doctor
-                                            </span>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>amir.rahman@caretrack.my</td>
-                                <td>Doctor</td>
-                                <td>
-                                    <span class="status-badge active-status">
-                                        <span class="status-dot"></span>
-                                        Active
-                                    </span>
-                                </td>
-                                <td>15 Apr 2025</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <!-- View -->
-                                        <button
-                                            type="button"
-                                            class="action-button view-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#viewStaffModal"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                            <span>View</span>
-                                        </button>
-
-                                        <!-- Edit -->
-                                        <button
-                                            type="button"
-                                            class="action-button edit-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editStaffModal"
-                                        >
-                                            <i class="bi bi-pencil"></i>
-                                            <span>Edit</span>
-                                        </button>
-
-                                        <!-- Deactivate -->
-                                        <button
-                                            type="button"
-                                            class="action-button deactivate-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deactivateModal"
-                                        >
-                                            <i class="bi bi-person-x"></i>
-                                            <span>Deactivate</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Nurse Aina Hassan -->
-                            <tr>
-                                <td>
-                                    <div class="staff-info">
-                                        <img
-                                            src="../icons/user.png"
-                                            alt="Nurse Aina Hassan"
-                                            class="staff-avatar"
-                                        >
-                                        <div>
-                                            <strong>Nurse Aina Hassan</strong>
-                                            <span>Nurse</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>aina.hassan@caretrack.my</td>
-                                <td>Nurse</td>
-                                <td>
-                                    <span class="status-badge active-status">
-                                        <span class="status-dot"></span>
-                                        Active
-                                    </span>
-                                </td>
-                                <td>18 Apr 2025</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button
-                                            type="button"
-                                            class="action-button view-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#viewStaffModal"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                            <span>View</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="action-button edit-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editStaffModal"
-                                        >
-                                            <i class="bi bi-pencil"></i>
-                                            <span>Edit</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="action-button deactivate-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deactivateModal"
-                                        >
-                                            <i class="bi bi-person-x"></i>
-                                            <span>Deactivate</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Nurse Siti Ahmad -->
-                            <tr>
-                                <td>
-                                    <div class="staff-info">
-                                        <img
-                                            src="../icons/user.png"
-                                            alt="Nurse Siti Ahmad"
-                                            class="staff-avatar"
-                                        >
-                                        <div>
-                                            <strong>Nurse Siti Ahmad</strong>
-                                            <span>Nurse</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>siti.ahmad@caretrack.my</td>
-                                <td>Nurse</td>
-                                <td>
-                                    <span class="status-badge inactive-status">
-                                        <span class="status-dot"></span>
-                                        Inactive
-                                    </span>
-                                </td>
-                                <td>22 Apr 2025</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button
-                                            type="button"
-                                            class="action-button view-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#viewStaffModal"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                            <span>View</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="action-button edit-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editStaffModal"
-                                        >
-                                            <i class="bi bi-pencil"></i>
-                                            <span>Edit</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="action-button activate-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deactivateModal"
-                                        >
-                                            <i class="bi bi-person-check"></i>
-                                            <span>Activate</span>
-                                        </button>
-                                    </div>
+                        <tbody id="staffTableBody">
+                            <tr id="noStaffFound" hidden>
+                                <td colspan="6" class="text-center py-4">
+                                    No matching staff found.
                                 </td>
                             </tr>
                         </tbody>
@@ -343,7 +161,7 @@
 
                 <!-- Table Footer -->
                 <div class="table-footer">
-                    <span>Showing 1 to 3 of 3 staff</span>
+                    <span id="staffCount">Showing 0 of 0 staff</span>
 
                     <div class="pagination-buttons">
                         <button class="pagination-button" disabled>
@@ -780,6 +598,7 @@
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
     </script>
+    <script src="../js/staff_management.js"></script>
 
 </body>
 
