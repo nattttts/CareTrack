@@ -6,12 +6,13 @@ PRAGMA foreign_keys = ON;
 -- Stores login credentials and account roles
 -- =========================================
 CREATE TABLE IF NOT EXISTS User (
-    user_id INTEGER PRIMARY KEY,
+    user_id TEXT PRIMARY KEY,
+    full_name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL
-        CHECK (role IN ('mother', 'staff', 'admin')),
-    user_image TEXT,
+        CHECK (role IN ('mother', 'child', 'staff', 'admin')),
+    account_status TEXT NOT NULL DEFAULT 'Active',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -22,11 +23,9 @@ CREATE TABLE IF NOT EXISTS User (
 -- =========================================
 CREATE TABLE IF NOT EXISTS Staff (
     staff_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE,
-    full_name TEXT NOT NULL,
+    user_id TEXT NOT NULL UNIQUE,
     position TEXT,
-    phone_no TEXT,
-    account_status TEXT NOT NULL DEFAULT 'Active',
+    phone_no TEXT NOT NULL,
 
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
@@ -39,48 +38,29 @@ CREATE TABLE IF NOT EXISTS Staff (
 -- =========================================
 CREATE TABLE IF NOT EXISTS Mother (
     mother_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE,
-    full_name TEXT NOT NULL,
-    ic_number TEXT NOT NULL UNIQUE,
+    user_id TEXT NOT NULL UNIQUE,
     date_of_birth TEXT NOT NULL,
-    phone_no TEXT NOT NULL,
     address TEXT NOT NULL,
+    phone_no TEXT NOT NULL,
+    contact_name TEXT NOT NULL,
+    relationship TEXT NOT NULL,
+    contact_phone_no TEXT NOT NULL,
 
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
 );
 
-
--- =========================================
--- 4. EMERGENCY CONTACT
--- A mother can have one contact
--- =========================================
-CREATE TABLE IF NOT EXISTS Emergency_Contact (
-    contact_id INTEGER PRIMARY KEY,
-    mother_id INTEGER NOT NULL UNIQUE,
-    name TEXT NOT NULL,
-    relationship TEXT NOT NULL,
-    phone_no TEXT NOT NULL,
-
-    FOREIGN KEY (mother_id)
-        REFERENCES Mother(mother_id)
-);
-
-
 -- =========================================
 -- 5. CHILD
--- Children registered under a mother
 -- =========================================
 CREATE TABLE IF NOT EXISTS Child (
     child_id INTEGER PRIMARY KEY,
-    mother_id INTEGER NOT NULL,
-    full_name TEXT NOT NULL,
-    mykid_number TEXT UNIQUE,
     date_of_birth TEXT NOT NULL,
     gender TEXT NOT NULL,
-
-    FOREIGN KEY (mother_id)
-        REFERENCES Mother(mother_id)
+    
+    guardian_name TEXT NOT NULL,
+    guardian_email TEXT NOT NULL,
+    phone_no TEXT NOT NULL,
 );
 
 
@@ -109,43 +89,14 @@ CREATE TABLE IF NOT EXISTS Vaccination (
 
 
 -- =========================================
--- 8. APPOINTMENT SLOT
--- Available time slots assigned to staff
--- =========================================
-CREATE TABLE IF NOT EXISTS Appointment_Slot (
-    slot_id INTEGER PRIMARY KEY,
-    service_id INTEGER NOT NULL,
-    staff_id INTEGER NOT NULL,
-    appointment_date TEXT NOT NULL,
-    start_time TEXT NOT NULL,
-    end_time TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'Available'
-        CHECK (
-            status IN ('Available', 'Booked')
-        ), 
-
-    FOREIGN KEY (service_id)
-        REFERENCES Service(service_id),
-
-    FOREIGN KEY (staff_id)
-        REFERENCES Staff(staff_id),
-
-    CHECK (end_time > start_time),
-
-    UNIQUE (staff_id, appointment_date, start_time)
-);
-
-
--- =========================================
 -- 9. APPOINTMENT
--- A booking made against an appointment slot
--- child_id is NULL for maternal-only appointments
 -- =========================================
 CREATE TABLE IF NOT EXISTS Appointment (
     appointment_id INTEGER PRIMARY KEY,
-    slot_id INTEGER NOT NULL UNIQUE,
-    mother_id INTEGER NOT NULL,
-    child_id INTEGER,
+    user_id TEXT NOT NULL,
+    appointment_date TEXT NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'Confirmed'
         CHECK (
             status IN (
@@ -166,14 +117,8 @@ CREATE TABLE IF NOT EXISTS Appointment (
         )
     ),
 
-    FOREIGN KEY (slot_id)
-        REFERENCES Appointment_Slot(slot_id),
-
-    FOREIGN KEY (mother_id)
-        REFERENCES Mother(mother_id),
-
-    FOREIGN KEY (child_id)
-        REFERENCES Child(child_id)
+    FOREIGN KEY (user_id)
+        REFERENCES User(user_id)
 );
 
 
@@ -184,7 +129,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
 -- =========================================
 CREATE TABLE IF NOT EXISTS Child_Vaccination (
     child_vaccination_id INTEGER PRIMARY KEY,
-    child_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
     vaccination_id INTEGER NOT NULL,
     appointment_id INTEGER UNIQUE,
     due_date TEXT NOT NULL,
@@ -194,8 +139,8 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
             status IN ('Upcoming', 'Completed')
         ), 
 
-    FOREIGN KEY (child_id)
-        REFERENCES Child(child_id),
+    FOREIGN KEY (user_id)
+        REFERENCES User(user_id),
 
     FOREIGN KEY (vaccination_id)
         REFERENCES Vaccination(vaccination_id),
@@ -213,7 +158,7 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
 -- =========================================
 CREATE TABLE IF NOT EXISTS Notification (
     notification_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
     appointment_id INTEGER,
     child_vaccination_id INTEGER,
     title TEXT NOT NULL,
