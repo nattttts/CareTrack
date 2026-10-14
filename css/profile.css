@@ -279,6 +279,31 @@ img {
     color: #ffffff;
 }
 
+/* =========================================
+   RESET PASSWORD BUTTON
+   ========================================= */
+.reset-password-button {
+    display: block;
+    width: fit-content;
+    padding: 6px 12px;
+    margin: 20px auto 0;
+    position: relative;
+    left: 60%;
+    transform: translateX(-50%);
+
+    border: 1px solid #f9528e;
+    border-radius: 8px;
+    background: #f9528e;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.reset-password-button:hover {
+    background: #e81f67;
+}
 
 /* =========================================
    SMALL EDIT BUTTON
@@ -454,58 +479,6 @@ textarea.profile-input {
 
 
 /* =========================================
-   FOOTER
-   ========================================= */
-
-.profile-footer {
-    min-height: 100px;
-
-    margin-top: 35px;
-
-    padding: 25px 35px;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    background-color: #FFF0F6;
-
-    border-radius: 15px 15px 0 0;
-}
-
-
-.profile-footer div {
-    display: flex;
-
-    flex-direction: column;
-
-    line-height: 1.3;
-
-    color: #183153;
-
-    font-size: 16px;
-}
-
-
-.profile-footer strong {
-    color: #f9528e;
-
-    font-size: 18px;
-}
-
-
-.profile-footer p {
-    margin: 0;
-
-    color: #718096;
-
-    font-size: 12px;
-}
-
-
-/* =========================================
    RESPONSIVE
    ========================================= */
 
@@ -541,18 +514,12 @@ textarea.profile-input {
         align-self: flex-end;
     }
 
+    .reset-password-button {
+        align-self: flex-end;
+    }
 
     .profile-title h2 {
         font-size: 27px;
-    }
-
-
-    .profile-footer {
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 15px;
     }
 
 }
