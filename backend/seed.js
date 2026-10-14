@@ -41,34 +41,25 @@ const future7 = dateOffset(7);
 const insert = {
     user: db.prepare(`
         INSERT INTO User
-            (user_id, email, password_hash, role)
-        VALUES (?, ?, ?, ?)
+            (user_id, full_name, email, password_hash, role, account_status)
+        VALUES (?, ?, ?, ?, ?, ?)
     `),
 
     staff: db.prepare(`
         INSERT INTO Staff
-            (staff_id, user_id, full_name, position,
-             phone_no, account_status)
-        VALUES (?, ?, ?, ?, ?, ?)
+            (staff_id, user_id, position, phone_no)
+        VALUES (?, ?, ?, ?)
     `),
 
     mother: db.prepare(`
         INSERT INTO Mother
-            (mother_id, user_id, full_name, ic_number,
-             date_of_birth, phone_no, address)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `),
-
-    contact: db.prepare(`
-        INSERT INTO Emergency_Contact
-            (contact_id, mother_id, name, relationship, phone_no)
-        VALUES (?, ?, ?, ?, ?)
+            (mother_id, user_id, date_of_birth, address, phone_no, contact_name, relationship, contact_phone_no)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `),
 
     child: db.prepare(`
         INSERT INTO Child
-            (child_id, mother_id, full_name, mykid_number,
-             date_of_birth, gender)
+            (child_id, user_id, date_of_birth, gender, guardian_name, phone_no)
         VALUES (?, ?, ?, ?, ?, ?)
     `),
 
@@ -84,39 +75,27 @@ const insert = {
         VALUES (?, ?, ?, ?, ?)
     `),
 
-    slot: db.prepare(`
-        INSERT INTO Appointment_Slot
-            (slot_id, service_id, staff_id, appointment_date,
-             start_time, end_time, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `),
-
     appointment: db.prepare(`
         INSERT INTO Appointment
-            (appointment_id, slot_id, mother_id, child_id,
-             status, reschedule_status)
-        VALUES (?, ?, ?, ?, ?, ?)
+            (appointment_id, user_id, appointment_date, start_time, end_time, status, reschedule_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `),
 
     childVaccination: db.prepare(`
         INSERT INTO Child_Vaccination
-            (child_vaccination_id, child_id, vaccination_id,
-             appointment_id, due_date, dose, status)
+            (child_vaccination_id, user_id, vaccination_id, appointment_id, due_date, dose, status)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `),
 
     notification: db.prepare(`
         INSERT INTO Notification
-            (notification_id, user_id, appointment_id,
-             child_vaccination_id, title, message,
-             notification_type, is_read)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (notification_id, user_id, appointment_id, child_vaccination_id, title, message, is_read)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `),
 
     queue: db.prepare(`
         INSERT INTO Queue_Entry
-            (queue_entry_id, appointment_id, queue_number, 
-             check_in_time, status, called_at, visit_at,
+            (queue_entry_id, appointment_id, queue_number, check_in_time, status, called_at, visit_at,
              completed_at, skipped_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
@@ -129,13 +108,16 @@ const seed = db.transaction(() => {
     // Replace placeholder hashes when auth is built.
     // =========================================
     const users = [
-        [1, "admin@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "admin"],
-        [2, "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff"],
-        [3, "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff"],
-        [4, "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff"],
-        [5, "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"],
-        [6, "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"],
-        [7, "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"]
+        ["1", "Admin", "admin@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "admin", "Active"],
+        ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active"],
+        ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active"],
+        ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Inactive"],
+        ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active"],
+        ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother"],
+        ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive"],
+        ["260901-07-0002", "Jennie Low", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active"],
+        ["260902-07-0003", "Tan Yi Xing", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active"],
+        ["260903-07-0007", "Ali bin Ahmad", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active"]
     ];
 
     users.forEach(row => insert.user.run(...row));
@@ -144,9 +126,9 @@ const seed = db.transaction(() => {
     // 2. STAFF
     // =========================================
     const staff = [
-        [1, 2, "Aisha Rahman", "Doctor", "012-3001001", "Active"],
-        [2, 3, "Mei Ling Tan", "Nurse", "012-3001002", "Active"],
-        [3, 4, "Ming Chong Lim", "Doctor", "012-3001003", "Inactive"]
+        [1, "920102-07-0002",  "Doctor", "012-3001001"],
+        [2, "930103-07-0004",  "Nurse", "012-3001002",],
+        [3, "940104-07-0005",  "Doctor", "012-3001003"]
     ];
 
     staff.forEach(row => insert.staff.run(...row));
@@ -155,34 +137,20 @@ const seed = db.transaction(() => {
     // 3. MOTHERS
     // =========================================
     const mothers = [
-        [1, 5, "Sarah Lim", "TEST-MY-0001", "1998-04-12",
-            "012-4001001", "10 Example Street, Penang"],
-        [2, 6, "Nur Aina", "TEST-MY-0002", "1996-08-23",
-            "012-4001002", "20 Sample Avenue, Penang"],
-        [3, 7, "Priya Kumar", "TEST-MY-0003", "2000-01-17",
-            "012-4001003", "30 Demo Road, Penang"]
+        [1, "950105-07-0006", "1995-01-05", "10 Example Street, Penang", "012-4001001"],
+        [2, "960106-07-0008", "1996-01-06", "20 Sample Avenue, Penang", "012-4001002"],
+        [3, "970107-07-0010", "1997-01-07", "30 Demo Road, Penang", "012-4001003"]
     ];
 
     mothers.forEach(row => insert.mother.run(...row));
 
     // =========================================
-    // 4. EMERGENCY CONTACTS
-    // =========================================
-    const contacts = [
-        [1, 1, "Alex Lim", "Spouse", "012-5001001"],
-        [2, 2, "Farah Hassan", "Sibling", "012-5001002"],
-        [3, 3, "Arun Kumar", "Spouse", "012-5001003"]
-    ];
-
-    contacts.forEach(row => insert.contact.run(...row));
-
-    // =========================================
     // 5. CHILDREN
     // =========================================
     const children = [
-        [1, 1, "Ethan Lim", "TEST-CHILD-0001", "2025-02-10", "Male"],
-        [2, 2, "Sofia Aina", "TEST-CHILD-0002", "2024-06-15", "Female"],
-        [3, 1, "Olivia Lim", "TEST-CHILD-0003", "2026-01-08", "Female"]
+        [1, "260901-07-0002", "2026-09-01", "Female", "Amelie Chong", "012-4001001"],
+        [2, "260902-07-0003", "2026-09-02", "Female", "Beatrice Chew", "012-4001002"],
+        [3, "260903-07-0007", "2026-09-03", "Female", "Nurul binti Rashid", "012-4001003"]
     ];
 
     children.forEach(row => insert.child.run(...row));
@@ -201,11 +169,9 @@ const seed = db.transaction(() => {
     // 7. VACCINATION CATALOGUE
     // =========================================
     const vaccines = [
-        [1, "BCG", "Bacillus Calmette-Guerin", 1, 0],
-        [2, "Hepatitis B", "Hepatitis B", 1, 0],
-        [3, "DTaP-IPV-HepB-Hib", "Diphteria-Tetanus-Pertussis-Polio-Hepatitis B-Haemophilus influenzae type B", 3, 1],
-        [4, "MMR", "Measles, Mumps, Rubella", 2, 0],
-        [5, "PCV", "Pneumococcal", 2, 1]
+        [1, "DTaP-IPV-HepB-Hib", "Diphteria-Tetanus-Pertussis-Polio-Hepatitis B-Haemophilus influenzae type B", 3, 1],
+        [2, "MMR", "Measles, Mumps, Rubella", 2, 0],
+        [3, "PCV", "Pneumococcal", 2, 1]
     ];
 
     vaccines.forEach(row => insert.vaccine.run(...row));
@@ -227,14 +193,12 @@ const seed = db.transaction(() => {
         [9, 2, 2, future7, "14:00", "14:30", "Available"]
     ];
 
-    slots.forEach(row => insert.slot.run(...row));
-
     // =========================================
     // 9. APPOINTMENTS
     // reschedule_status: None / Pending / Approved / Rejected
     // =========================================
     const appointments = [
-        [1, 1, 1, null, "Completed", "None"],
+        [1, "950105-07-0006", "2026-10-14", "09:00", "09:30", "Completed", "None"],
         [2, 2, 2, null, "Missed", "None"],
         [3, 3, 1, null, "Confirmed", "Pending"],
         [4, 4, 1, 1, "Confirmed", "None"],
