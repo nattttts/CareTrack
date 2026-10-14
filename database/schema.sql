@@ -161,15 +161,9 @@ CREATE TABLE IF NOT EXISTS Notification (
     user_id TEXT NOT NULL,
     appointment_id INTEGER,
     child_vaccination_id INTEGER,
+    
     title TEXT NOT NULL,
     message TEXT NOT NULL,
-    notification_type TEXT NOT NULL
-        CHECK (
-            notification_type IN (
-                'maternal_appointment',
-                'child_vaccination'
-            )
-        ),
     is_read INTEGER NOT NULL DEFAULT 0
         CHECK (is_read IN (0, 1)),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
