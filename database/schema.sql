@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS Child (
     
     guardian_name TEXT NOT NULL,
     guardian_email TEXT NOT NULL,
-    phone_no TEXT NOT NULL,
+    phone_no TEXT NOT NULL
 );
 
 
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS Notification (
     user_id TEXT NOT NULL,
     appointment_id INTEGER,
     child_vaccination_id INTEGER,
-    
+
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     is_read INTEGER NOT NULL DEFAULT 0
