@@ -16,10 +16,10 @@ app.get("/api/staff", (req, res) => {
         const staff = db.prepare(`
             SELECT
                 Staff.staff_id,
-                Staff.full_name,
+                User.full_name,
                 User.email,
                 Staff.position,
-                Staff.account_status,
+                User.account_status,
                 User.created_at
             FROM Staff
             INNER JOIN User
