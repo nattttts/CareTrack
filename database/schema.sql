@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS Child (
     gender TEXT NOT NULL,
     
     guardian_name TEXT NOT NULL,
-    guardian_email TEXT NOT NULL,
     phone_no TEXT NOT NULL
 );
 
