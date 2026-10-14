@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS Mother (
 -- =========================================
 CREATE TABLE IF NOT EXISTS Child (
     child_id INTEGER PRIMARY KEY,
+    user_id TEXT NOT NULL UNIQUE,
     date_of_birth TEXT NOT NULL,
     gender TEXT NOT NULL,
     
