@@ -84,30 +84,124 @@ a {
     font-size: 14px;
 }
 
-/* ================= SEARCH ================= */
-.search-card {
+/* ================= MOTHER AND CHILD TAB ================= */
+.patient-tabs {
+    width: 400px;
+    margin: 0 auto 18px;
+    display: flex;
+    background: var(--white);
+    border: 1px solid #efdde5;
+    border-radius: 9px;
+    overflow: hidden;
+}
+
+.patient-tab {
+    min-width: 200px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: none;
+    background: var(--white);
+    color: #53657d;
+    font-size: 12px;
+    font-weight: 500;
+    transition: 0.2s;
+
+}
+
+.patient-tab + .patient-tab {
+    border-left: 1px solid #f0e4e9;
+}
+
+.patient-tab:hover {
+    color: var(--caretrack-pink);
+    background: #fff7fa;
+}
+
+.patient-tab.active {
+    color: var(--white);
+    background: var(--caretrack-pink);
+    font-weight: 600;
+}
+
+/* ================= MOTHER & CHILD PANEL ================= */
+/* Section Heading */
+.section-heading {
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.section-heading h2 {
+    margin: 0 0 6px;
+    color: var(--text-dark);
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.section-heading p {
+    margin: 0;
+    color: var(--text-medium);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Add Button */
+.add-button {
+    min-height: 46px;
+    padding: 0 22px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    border: none;
+    border-radius: 10px;
+    background: var(--caretrack-pink);
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.add-button:hover {
+    background: var(--caretrack-pink-dark);
+    border-color: var(--caretrack-pink-dark);
+}
+
+/* ================= FILTER ================= */
+.filter-card {
     max-width: 1250px;
     margin: 0 auto 18px;
-    padding: 5px;
+    padding: 18px;
 
     background: var(--white);
     border: 1px solid #f0dfe6;
     border-radius: 10px;
     box-shadow: 0 3px 12px rgba(120, 50, 80, 0.04);
-} 
-
-.search {
-    margin: 18px;
 }
 
-.form-control {
+.form-label {
+    margin-bottom: 6px;
+    color: #405777;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
     min-height: 41px;
     border-color: #dfd9de;
     color: #405777;
-    font-size: 14px; 
+    font-size: 12px; 
 }
 
-.form-control:focus {
+.form-control:focus,
+.form-select:focus {
     border-color: #f1c9df;
     box-shadow: 0 0 0 3px rgba(235, 117, 202, 0.08);
 }
@@ -118,145 +212,162 @@ a {
     color: var(--caretrack-pink);
 }
 
-/* ================= CONTENT CARD ================= */
-.content-card,
-.history-card,
-.child-card {
-    max-width: 1250px;
-    margin: 0 auto 18px;
+.reset-button {
+    min-height: 41px;
+    border: 1px solid var(--caretrack-pink);
+    color: var(--caretrack-pink);
+    background: var(--white);
+    font-size: 12px;
+}
 
+.reset-button:hover {
+    color: var(--white);
+    background: var(--caretrack-pink);
+}
+
+/* ================= MOTHER & CHILD TABLE ================= */
+.table-card {
+    max-width: 1250px;
+    margin: 0 auto 24px;
     overflow: hidden;
 
-    background: var(--white);
+    background: #ffffff;
     border: 1px solid #f0dfe6;
     border-radius: 11px;
     box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
 }
 
-.section-header,
-.history-card-header,
-.child-card-header {
-    padding: 18px 20px;
-    border-bottom: 1px solid #f0e5ea;
-}
-
-.section-header h3,
-.history-card-header h3,
-.child-card-header h3 {
-    margin: 0 0 4px;
-    color: var(--text-dark);
-    font-size: 17px;
-    font-weight: 600;
-}
-
-.section-header p,
-.history-card-header p,
-.child-card-header p {
-    margin: 0;
-    color: #78879a;
-    font-size: 12px;
-}
-
-/* ================= COMMON TABLE ================= */
-.mother-table,
-.history-table,
-.child-table {
+.management-table {
     width: 100%; 
     min-width: 1000px;
 } 
 
-.mother-table thead th,
-.history-table thead th,
-.child-table thead th {
+.management-table thead th {
     padding: 14px 18px;
 
     background: var(--caretrack-pink-light);
     border-bottom: 1px solid #f6d1df;
     color: #9e3b60;
 
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
 
     text-transform: uppercase;
     white-space: nowrap; 
 }
 
-.mother-table tbody tr,
-.history-table tbody tr,
-.child-table tbody tr {
-    height: 58px;
-}
-
-.mother-table tbody td,
-.history-table tbody td,
-.child-table tbody td {
+.management-table tbody td {
     padding: 10px 18px;
     border-bottom: 1px solid #f3e8ed;
-    font-size: 14px;
+    color: #536780;
+    font-size: 12px;
     vertical-align: middle;
-    color: var(--text-dark);
 }
 
-.mother-table tbody td p,
-.history-table tbody td p,
-.child-table tbody td p {
+.management-table tbody td p {
     margin: 0;
-    line-height: 1.4;
 }
 
-/* ================= MOTHER TABLE ================= */
-.mother-table tbody tr:hover {
+.management-table tbody tr:hover {
     background: #fffafd;
 }
 
-/* Mother Name */
-.mother-table .mother-name {
+/* ================= MOTHER TABLE ================= */
+.mother-name, .child-name {
+    color: var(--text-dark);
+}
+
+/* Account Status */
+.status-badge {
+    padding: 6px 12px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    border-radius: 20px;
+    font-size: 11px;
     font-weight: 600;
 }
 
-/* Pregnancy */
-.pregnancy-status {
-    padding: 6px 10px;
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.active-status {
+    background: #def7e9;
+    color: #07854d;
+}
+
+.active-status .status-dot {
+    background: #0a9b5a;
+}
+
+.inactive-status {
+    background: #edf0f4;
+    color: #607087;
+}
+
+.inactive-status .status-dot {
+    background: #77879b;
+}
+
+/* ================= ACTIONS ================= */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.action-button {
+    min-width: 42px;
+    height: 34px;
+    padding: 0 8px;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 5px;
 
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
+    border-radius: 6px;
+    background: var(--white);
+    font-size: 11px;
+    transition: 0.2s;
 }
 
-.pregnancy-status.pregnant {
-    color: var(--caretrack-pink-dark);
+.action-button i {
+    font-size: 14px;
+}
+
+.view-button,
+.edit-button {
+    color: var(--caretrack-pink);
+    border: 1px solid var(--caretrack-pink);
+}
+
+.view-button:hover,
+.edit-button:hover {
     background: var(--caretrack-pink-light);
 }
 
-.pregnancy-status.not-pregnant {
-    color: #16804e;
-    background: #eaf8f0;
+.deactivate-button {
+    color: #d93445;
+    border: 1px solid #f1a6ae;
 }
 
-/* Children */
-.children-count {
-    margin: 0;
-    font-weight: 600;
-    text-align: center;
+.deactivate-button:hover {
+    background: #fff0f2;
 }
 
-/* View Button */
-.view-button {
-    padding: 5px 13px;
-    border-radius: 7px;
-    font-size: 13px;
-
-    color: var(--white);
-    border: 1px solid var(--caretrack-pink);
-    background-color: var(--caretrack-pink);
+.activate-button {
+    color: #07854d;
+    border: 1px solid #8bd5b2;
 }
 
-.view-button:hover {
-    border-color: var(--caretrack-pink-dark);
-    background-color: var(--caretrack-pink-dark);
+.activate-button:hover {
+    background: #edfff5;
 }
 
 /* ================= NO RESULTS ================= */
@@ -326,214 +437,268 @@ a {
     opacity: 0.45;
 }
 
-/* ================= PATIENT DETAILS ================= */
-.patient-details-section {
-    max-width: 1250px;
-    margin: 0 auto 18px;
+/* ================= ADD MODALS ================= */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 15px 45px rgba(20, 60, 100, 0.15);
 }
 
-/* ================= BACK BUTTON ================= */
-.detail-navigation {
-    margin-bottom: 18px;
+.modal-header {
+    padding: 22px 25px;
+    border-bottom: 1px solid #e3edf6;
 }
 
-.back-button {
-    border: 0;
-    background: transparent;
-    color: var(--caretrack-pink-dark);
-    font-weight: 700;
-}
-
-.back-button:hover {
-    color: #c91456;
-}
-
-/* ================= PATIENT PROFILE CARD ================= */
-.patient-profile-card {
-    background: var(--white);
-    border: 1px solid #f0dfe6;
-    border-radius: 11px;
-    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
-
-    padding: 22px 24px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    margin-bottom: 20px;
-}
-
-.patient-profile-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.patient-avatar img {
-    width: 45px;
-    height: 45px;
-}
-
-.patient-profile-card h2 {
-    margin: 0 0 5px;
-    font-size: 21px;
-    font-weight: 700;
-}
-
-.patient-profile-subtitle {
-    color: var(--text-medium);
-    font-size: 13px;
-}
-
-.detail-pregnancy-badge {
-    padding: 6px 10px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.detail-pregnancy-badge.pregnant {
-    color: var(--caretrack-pink-dark);
-    background: var(--caretrack-pink-light);
-}
-
-.detail-pregnancy-badge.not-pregnant {
-    color: #16804e;
-    background: #eaf8f0;
-}
-
-/* ================= DETAIL CARDS ================= */
-.detail-card {
-    background: var(--white);
-    border: 1px solid #f0dfe6;
-    border-radius: 11px;
-    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
-
-    padding: 24px;
-    margin-bottom: 20px;
-}
-
-.detail-card-header {
-    margin-bottom: 22px;
-}
-
-.detail-card-header h3 {
-    margin: 0 0 5px;
-    font-size: 17px;
-    font-weight: 700;
-}
-
-.detail-card-header p {
+.modal-title {
     margin: 0;
-    color: var(--text-medium);
-    font-size: 13px;
+    color: #142d58;
+    font-size: 20px;
+    font-weight: 700;
 }
 
-/* ================= INFORMATION GRID ================= */
-.information-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px 30px;
-}
-
-.information-item {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.information-label {
-    color: var(--caretrack-pink-dark);
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.information-item strong {
-    color: var(--text-dark);
-    font-size: 15px;
-    font-weight: 600;
-}
-
-/* ================= HEALTHCARE HISTORY ================= */
-.status-badge {
-    padding: 6px 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-/* Completed */
-.status-badge.completed {
-    color: #16804e;
-    background: #eaf8f0;
-}
-
-/* Upcoming */
-.status-badge.upcoming {
-    color: #b77a00;
-    background: #fff5dc;
-}
-
-/* ================= REGISTERED CHILDREN ================= */
-.child-name {
-    font-weight: 600;
-}
-
-/* ================= NO REGISTERED CHILDREN ================= */
-.no-children-message {
-    text-align: center;
-    padding: 30px 20px;
-    border-radius: 10px;
-}
-
-.no-children-message i {
-    display: block;
-    color: var(--caretrack-pink);
-    font-size: 35px;
-    margin-bottom: 10px;
-}
-
-.no-children-message strong {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-.no-children-message p {
+.modal-subtitle {
+    margin: 5px 0 0;
+    color: #6a7f99;
     font-size: 12px;
 }
 
-/* ================= VACCINATION INFORMATION ================= */
-.vaccination-info {
-    max-width: 1250px;
-    margin: 0 auto;
+.modal-body {
+    padding: 25px;
+}
 
-    background: var(--white);
-    border: 1px solid #f0dfe6;
-    border-radius: 11px;
-    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
-    padding: 15px;
+.modal-body h6 {
+    margin-top: 28px;
+    margin-bottom: 16px;
+
+    color: var(--caretrack-pink-dark);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Remove top margin from the first section title */
+.modal-body h6:first-child {
+    margin-top: 0;
+}
+
+.modal-footer {
+    padding: 15px 25px;
+    border-top: 1px solid #e3edf6;
+}
+
+.modal-add-button {
+    border: 1px solid #f9528e;
+    background: #f9528e;
+}
+
+.modal-add-button:hover {
+    background: #e81f67;
+    border-color: #e81f67;
+}
+
+.modal-save-changes-button {
+    border: 1px solid #f9528e;
+    background: #f9528e;
+}
+
+.modal-save-changes-button:hover {
+    background: #e81f67;
+    border-color: #e81f67;
+}
+
+/* Status Options */
+.status-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.status-options .form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.status-options label {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.status-options label strong {
+    font-size: 12px;
+    color: #243f66;
+}
+
+.status-options label small {
+    margin-top: 2px;
+    color: #71849c;
+    font-size: 10px;
+}
+
+.form-check-input {
+    margin-top: 2px;
+}
+
+/* System Role */
+.system-role-note {
+    padding: 12px 14px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+
+    border-radius: 7px;
+    background: #fee6ef;
+    color: #f9528e;
+    font-size: 11px;
+}
+
+.system-role-note i {
+    font-size: 16px;
+}
+
+.system-role-note span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.system-role-note small {
+    color: #d93670;
+}
+
+/* Cancel Button */
+.cancel-button {
+    border: 1px solid #d4e1ee;
+    color: #526a86;
+    background: #ffffff;
+}
+
+.cancel-button:hover {
+    background: #f5f8fb;
+}
+
+/* ================= SCROLLABLE ADD FORMS ================= */
+.form-modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Only the form content scrolls */
+.form-modal-content form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.form-modal-content .modal-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Keep the buttons fixed at the bottom */
+.form-modal-content .modal-footer {
+    flex-shrink: 0;
+}
+
+/* ================= VIEW MODALS ================= */
+.view-profile {
+    padding-bottom: 22px;
+    text-align: center;
+    border-bottom: 1px solid #e3edf6;
+}
+
+.view-profile h4 {
+    margin-bottom: 9px;
+    font-size: 18px;
+    color: #142d58;
+}
+
+.detail-list {
+    margin-top: 20px;
+}
+
+.detail-list > div {
+    padding: 11px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.detail-list > div:last-child {
+    border-bottom: none;
+}
+
+.detail-list span {
+    color: #70839a;
+    font-size: 11px;
+}
+
+.detail-list strong {
+    text-align: right;
+    color: #29486e;
+    font-size: 12px;
+}
+
+/* ================= DEACTIVATE MODAL ================= */
+.deactivate-modal .modal-body {
+    padding: 30px 28px;
+}
+
+.warning-icon {
+    width: 62px;
+    height: 62px;
+
+    margin: 0 auto 17px;
 
     display: flex;
     align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fff0d5;
+
+    color: #e28a00;
+}
+
+.warning-icon i {
+    font-size: 27px;
+}
+
+.deactivate-modal h4 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    color: #142d58;
+}
+
+.deactivate-modal p {
+    margin-bottom: 9px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #627895;
+}
+
+.deactivate-modal .warning-text {
+    color: #8b6b36;
+}
+
+.confirmation-buttons {
+    margin-top: 22px;
+    display: flex;
+    justify-content: center;
     gap: 10px;
 }
 
-.information-icon {
-    color: var(--caretrack-pink);
-    font-size: 20px;
-    line-height: 1;
-}
-
-.vaccination-info p {
-    margin: 0;
-    color: #718096;
-    font-size: 13px;
+.confirmation-buttons button {
+    min-width: 110px;
 }
 
 /* ================= RESPONSIVE ================= */
@@ -568,6 +733,22 @@ a {
     
     .page-heading p {
         font-size: 13px;
+    }
+
+    .patient-tabs {
+        width: 300px;
+    }
+
+    .patient-tab {
+        min-width: 150px;
+        font-size: 11px;
+
+    }
+
+    .add-button {
+        min-height: 40px;
+        padding: 0 15px; 
+        font-size: 12px;
     }
 
     .form-control {

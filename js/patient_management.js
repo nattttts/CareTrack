@@ -1,539 +1,828 @@
-// PATIENT DATA
-// Temporary mock data for UI prototype
-// Later this data can be replaced with database data
+// ================= SAMPLE DATA =================
 
-
-const patients = [
-
-    // ================= 1. Pregnant + No Children =================
+let mothers = [
     {
         id: 1,
-        name: "Nurul Syazwani",
-        ic: "960315-07-1234",
-        dob: "15 March 1996",
+        fullName: "Jane Tan",
+        icNumber: "950815-07-1122",
+        dob: "1995-08-15",
         phone: "012-345 6789",
-        email: "nurul.syazwani@example.com",
-        address: "3-20-5, Elit Height, Jalan Mayang Pasir 5, 11950 Bayan Lepas, Pulau Pinang.",
-
-        pregnant: true,
-
-        children: [],
-
-        history: [
-            {
-                date: "15 Sep 2026",
-                type: "Maternal Follow-up",
-                child:"-",
-                status: "Completed"
-            },
-            {
-                date: "29 Sep 2026",
-                type: "Maternal Follow-up",
-                child:"-",
-                status: "Completed"
-            },
-            {
-                date: "15 Oct 2026",
-                type: "Maternal Follow-up",
-                child:"-",
-                status: "Upcoming"
-            }
-        ]
+        email: "janetan@gmail.com",
+        address: "123, Taman Mutiara, Bayan Lepas, Pulau Pinang",
+        emergencyName: "Lim Yong Ming",
+        emergencyRelationship: "Husband",
+        emergencyPhone: "011-745 8526",
+        status: "Active",
+        dateCreated: "2026-10-07"
     },
-
-    // ================= 2. Pregnant + Has Children =================
     {
         id: 2,
-        name: "Siti Aminah",
-        ic: "951007-07-0178",
-        dob: "7 October 1995",
-        phone: "013-456 7890",
-        email: "siti.aminah@example.com",
-        address: "123, Lorong Damar 2, Taman Mutiara, Jalan Besar 2, 11900 Bayan Lepas, Pulau Pinang.",
-
-        pregnant: true,
-
-        children: [
-            {
-                name: "Ammar",
-                mykid: "240617-07-1429",
-                dob: "17 June 2024",
-                age: "2 years old",
-                gender: "Male"
-            }
-        ],
-
-        history: [
-            {
-                date: "24 August 2024",
-                type: "Child Vaccination",
-                child: "Ammar",
-                status: "Completed"
-            },
-            {
-                date: "14 October 2024",
-                type: "Child Vaccination",
-                child: "Ammar",
-                status: "Completed"
-            },
-            {
-                date: "14 Sep 2026",
-                type: "Maternal Follow-up",
-                child:"-",
-                status: "Completed"
-            },
-            {
-                date: "16 Oct 2026",
-                type: "Maternal Follow-up",
-                child:"-",
-                status: "Upcoming"
-            }
-        ]
-    },
-
-    // ================= 3. Not Pregnant + Has Children =================
-    {
-        id: 3,
-        name: "Aisyah Hamid",
-        ic: "930210-07-3458",
-        dob: "10 February 1993",
-        phone: "016-789 0123",
-        email: "aisyah.hamid@example.com",
-        address: "8, Taman Maju 2, Jalan Tengah, 11900 Bayan Lepas, Pulau Pinang.",
-
-        pregnant: false,
-
-        children: [
-            {
-                name: "Zaleha",
-                mykid: "251224-07-5678",
-                dob: "24 December 2025",
-                age: "1 year old",
-                gender: "Female"
-            }
-        ],
-
-        history: [
-            {
-                date: "25 May 2025",
-                type: "Maternal Follow-up",
-                child:"-",
-                status: "Completed"
-            },
-             {
-                date: "14 June 2025",
-                type: "Maternal Follow-up",
-                child:"-",
-                status: "Completed"
-            },
-            {
-                date: "18 Sep 2026",
-                type: "Child Vaccination",
-                child: "Zaleha",
-                status: "Completed"
-            },
-            {
-                date: "18 Oct 2026",
-                type: "Child Vaccination",
-                child: "Zaleha",
-                status: "Upcoming"
-            }
-        ]
+        fullName: "Nur Aisyah",
+        icNumber: "990420-07-3344",
+        dob: "1999-04-20",
+        phone: "017-445 3756",
+        email: "aisyah123@gmail.com",
+        address: "Bayan Lepas, Pulau Pinang",
+        emergencyName: "Ahmad Rahman",
+        emergencyRelationship: "Husband",
+        emergencyPhone: "016-222 3344",
+        status: "Inactive",
+        dateCreated: "2026-09-15"
     }
-
 ];
 
-
-// ================= ELEMENTS =================
-
-const patientTableBody = document.getElementById("motherTableBody");
-
-const patientSearch = document.getElementById("patientSearch");
-
-const patientCount = document.getElementById("patientCount");
-
-const noResults = document.getElementById("noResults");
-
-const searchSection = document.getElementById("searchSection");
-
-const patientListSection = document.getElementById("patientListSection");
-
-const patientDetailsSection = document.getElementById("patientDetailsSection");
-
-const noChildrenMessage = document.getElementById("noChildrenMessage");
-
-const childrenTableContainer = document.getElementById("childrenTableContainer");
-
-const childTableBody = document.getElementById("childTableBody");
-
-const backToPatients = document.getElementById("backToPatients");
-
-
-// ================= RENDER PATIENT LIST =================
-
-function renderPatients(patientList) {
-
-    patientTableBody.innerHTML = "";
-
-    patientCount.textContent =
-        `Showing ${patientList.length} ${
-            patientList.length === 1 ? "patient" : "patients"
-        }`;
-
-    // No results
-    if (patientList.length === 0) {
-
-        noResults.hidden = false;
-
-        return;
+let children = [
+    {
+        id: 1,
+        fullName: "Alice Tan",
+        myKidNumber: "260612-07-0248",
+        dob: "2026-06-12",
+        gender: "Female",
+        guardianName: "Jane Tan",
+        guardianPhone: "012-345 6789",
+        guardianEmail: "janetan@gmail.com",
+        status: "Active",
+        dateCreated: "2026-06-14"
+    },
+    {
+        id: 2,
+        fullName: "Adam Rahman",
+        myKidNumber: "250315-07-0456",
+        dob: "2025-03-15",
+        gender: "Male",
+        guardianName: "Nur Aisyah",
+        guardianPhone: "017-445 3756",
+        guardianEmail: "aisyah123@gmail.com",
+        status: "Inactive",
+        dateCreated: "2025-03-20"
     }
+];
 
-    noResults.hidden = true;
+// ================= HELPER FUNCTIONS =================
 
-    // Render patients
-    patientList.forEach(patient => {
+// Escape user-provided text before inserting it into HTML.
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
 
-        const row = document.createElement("tr");
+function formatDate(dateString) {
+    if (!dateString) return "-";
 
-        // Pregnancy
-        let pregnancyHTML;
+    const date = new Date(`${dateString}T00:00:00`);
 
-        if (patient.pregnant) {
-
-            pregnancyHTML = `
-                <p class="pregnancy-status pregnant">
-                    Pregnant
-                </p>
-            `;
-
-        } else {
-
-            pregnancyHTML = `
-                <p class="pregnancy-status not-pregnant">
-                    Not Pregnant
-                </p>
-            `;
-        }
-
-        // Children Count
-        const childrenCount = patient.children.length;
-
-        const childrenHTML = `
-            <p class="children-count">
-                ${childrenCount}
-            </p>
-        `;
-
-        // Row
-        row.innerHTML = `
-
-            <td>
-                <p class="mother-name">${patient.name}</p>
-            </td>
-
-            <td>
-                <p>${patient.ic}</p>
-            </td>
-
-            <td>
-                <p>${patient.phone}</p>
-            </td>
-
-            <td class="pregnancy-column">
-                ${pregnancyHTML}
-            </td>
-
-            <td>
-                ${childrenHTML}
-            </td>
-
-            <td class="actions-column">
-
-                <button
-                    type="button"
-                    class="view-button"
-                    data-patient-id="${patient.id}"
-                >
-                    View Profile
-                </button>
-
-            </td>
-        `;
-
-        patientTableBody.appendChild(row);
-
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
     });
+}
 
-    // View Profile buttons
-    document.querySelectorAll(".view-button")
-        .forEach(button => {
+function createStatusBadge(status) {
+    const active = status === "Active";
 
-            button.addEventListener("click", function () {
+    return `
+        <span class="status-badge ${active ? "active-status" : "inactive-status"}">
+            <span class="status-dot"></span>
+            ${escapeHTML(status)}
+        </span>
+    `;
+}
 
-                const patientId = Number(this.dataset.patientId);
+// ================= RENDER MOTHER TABLE =================
 
-                showPatientDetails(patientId);
+function renderMothers() {
+    const tableBody = document.getElementById("motherTableBody");
 
+    tableBody.innerHTML = mothers.map(mother => `
+        <tr class="mother-row" data-id="${mother.id}">
+            <td>
+                <strong class="mother-name">
+                    ${escapeHTML(mother.fullName)}
+                </strong>
+            </td>
+
+            <td>${escapeHTML(mother.icNumber)}</td>
+            <td>${escapeHTML(mother.phone)}</td>
+            <td>${createStatusBadge(mother.status)}</td>
+            <td>${formatDate(mother.dateCreated)}</td>
+
+            <td>
+                <div class="action-buttons">
+                    <button type="button"
+                        class="action-button view-button"
+                        data-action="view"
+                        data-id="${mother.id}">
+                        <i class="bi bi-eye"></i>
+                        <span>View</span>
+                    </button>
+
+                    <button type="button"
+                        class="action-button edit-button"
+                        data-action="edit"
+                        data-id="${mother.id}">
+                        <i class="bi bi-pencil"></i>
+                        <span>Edit</span>
+                    </button>
+
+                    <button type="button"
+                        class="action-button ${mother.status === "Active" ? "deactivate-button" : "activate-button"}"
+                        data-action="toggle-status"
+                        data-id="${mother.id}">
+                        <i class="bi ${mother.status === "Active" ? "bi-person-x" : "bi-person-check"}"></i>
+                        <span>${mother.status === "Active" ? "Deactivate" : "Activate"}</span>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join("");
+
+    filterMothers();
+}
+
+// ================= RENDER CHILD TABLE =================
+
+function renderChildren() {
+    const tableBody = document.getElementById("childTableBody");
+
+    tableBody.innerHTML = children.map(child => `
+        <tr class="child-row" data-id="${child.id}">
+            <td>
+                <strong class="child-name">
+                    ${escapeHTML(child.fullName)}
+                </strong>
+            </td>
+
+            <td>${escapeHTML(child.myKidNumber)}</td>
+            <td>${escapeHTML(child.gender)}</td>
+            <td>${escapeHTML(child.guardianName)}</td>
+            <td>${createStatusBadge(child.status)}</td>
+            <td>${formatDate(child.dateCreated)}</td>
+
+            <td>
+                <div class="action-buttons">
+                    <button type="button"
+                        class="action-button view-button"
+                        data-action="view"
+                        data-id="${child.id}">
+                        <i class="bi bi-eye"></i>
+                        <span>View</span>
+                    </button>
+
+                    <button type="button"
+                        class="action-button edit-button"
+                        data-action="edit"
+                        data-id="${child.id}">
+                        <i class="bi bi-pencil"></i>
+                        <span>Edit</span>
+                    </button>
+
+                    <button type="button"
+                        class="action-button ${child.status === "Active" ? "deactivate-button" : "activate-button"}"
+                        data-action="toggle-status"
+                        data-id="${child.id}">
+                        <i class="bi ${child.status === "Active" ? "bi-person-x" : "bi-person-check"}"></i>
+                        <span>${child.status === "Active" ? "Deactivate" : "Activate"}</span>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join("");
+
+    filterChildren();
+}
+
+// ================= MOTHER SEARCH & FILTER =================
+
+function filterMothers() {
+    const keyword = document
+        .getElementById("motherSearch")
+        .value.toLowerCase().trim();
+
+    const status = document.getElementById("motherStatusFilter").value;
+
+    let visibleCount = 0;
+
+    document.querySelectorAll("#motherTableBody .mother-row")
+        .forEach(row => {
+            const mother = mothers.find(
+                item => item.id === Number(row.dataset.id)
+            );
+
+            if (!mother) return;
+
+            const matchesSearch = [
+                mother.fullName,
+                mother.icNumber,
+                mother.phone,
+                mother.email
+            ].some(value =>
+                String(value ?? "").toLowerCase().includes(keyword)
+            );
+
+            const matchesStatus =
+                status === "all" || mother.status === status;
+
+            const visible = matchesSearch && matchesStatus;
+
+            row.hidden = !visible;
+
+            if (visible) visibleCount++;
+        });
+
+    // Update record count
+    document.getElementById("motherCount").textContent =
+        `Showing ${visibleCount} of ${mothers.length} mothers`;
+
+    // Show or hide the no-results message
+    document.getElementById("noMotherResults").hidden =
+        visibleCount > 0;
+
+    // Hide the table header when there are no matching records
+    document.querySelector("#motherTableBody")
+        .closest("table").querySelector("thead").hidden =
+        visibleCount === 0;
+}
+
+
+// ================= CHILD SEARCH & FILTER =================
+
+function filterChildren() {
+    const keyword = document
+        .getElementById("childSearch")
+        .value.toLowerCase().trim();
+
+    const status = document.getElementById("childStatusFilter").value;
+
+    let visibleCount = 0;
+
+    document.querySelectorAll("#childTableBody .child-row")
+        .forEach(row => {
+            const child = children.find(
+                item => item.id === Number(row.dataset.id)
+            );
+
+            if (!child) return;
+
+            const matchesSearch = [
+                child.fullName,
+                child.myKidNumber,
+                child.gender,
+                child.guardianName,
+                child.guardianPhone,
+                child.guardianEmail
+            ].some(value =>
+                String(value ?? "").toLowerCase().includes(keyword)
+            );
+
+            const matchesStatus =
+                status === "all" || child.status === status;
+
+            const visible = matchesSearch && matchesStatus;
+
+            row.hidden = !visible;
+
+            if (visible) visibleCount++;
+        });
+
+    // Update record count
+    document.getElementById("childCount").textContent =
+        `Showing ${visibleCount} of ${children.length} children`;
+
+    // Show or hide the no-results message
+    document.getElementById("noChildResults").hidden =
+        visibleCount > 0;
+
+    // Hide the table header when there are no matching records
+    document.querySelector("#childTableBody")
+        .closest("table").querySelector("thead").hidden =
+        visibleCount === 0;
+}
+
+// ================= RESET FILTERS =================
+
+function resetMotherFilters() {
+    document.getElementById("motherSearch").value = "";
+    document.getElementById("motherStatusFilter").value = "all";
+
+    filterMothers();
+}
+
+function resetChildFilters() {
+    document.getElementById("childSearch").value = "";
+    document.getElementById("childStatusFilter").value = "all";
+
+    filterChildren();
+}
+
+// ================= TABS =================
+
+function setupTabs() {
+    const tabs = document.querySelectorAll(".patient-tab");
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(item => {
+                item.classList.remove("active");
+                item.setAttribute("aria-selected", "false");
             });
 
+            tab.classList.add("active");
+            tab.setAttribute("aria-selected", "true");
+
+            document.getElementById("motherPanel").hidden =
+                tab.dataset.tab !== "mothers";
+
+            document.getElementById("childPanel").hidden =
+                tab.dataset.tab !== "children";
         });
-
-}
-
-
-// ================= SEARCH PATIENTS =================
-
-function searchPatients() {
-
-    const keyword = patientSearch.value.trim().toLowerCase();
-
-    // Empty search
-    if (keyword === "") {
-        renderPatients(patients);
-        return;
-    }
-
-    // Search patient + child
-    const filteredPatients =
-        patients.filter(patient => {
-
-            const patientMatch =
-
-                patient.name
-                    .toLowerCase()
-                    .includes(keyword)
-
-                ||
-
-                patient.ic
-                    .toLowerCase()
-                    .includes(keyword)
-
-                ||
-
-                patient.phone
-                    .toLowerCase()
-                    .includes(keyword);
-
-
-            const childMatch =
-                patient.children.some(child =>
-                    child.name.toLowerCase().includes(keyword)
-                );
-
-            return patientMatch || childMatch;
-
-        });
-
-    renderPatients(filteredPatients);
-
-}
-
-
-// ================= SHOW PATIENT DETAILS =================
-
-function showPatientDetails(patientId) {
-
-    const patient =
-        patients.find(patient =>
-            patient.id === patientId
-        );
-
-
-    if (!patient) {
-        return;
-    }
-
-
-    // Basic Patient Information
-    document.getElementById("detailPatientName").textContent = patient.name;
-
-    document.getElementById("detailName").textContent = patient.name;
-
-    document.getElementById("detailIC").textContent = patient.ic;
-
-    document.getElementById("detailDOB").textContent = patient.dob;
-
-    document.getElementById("detailPhone").textContent = patient.phone;
-
-    document.getElementById("detailEmail").textContent = patient.email;
-
-    document.getElementById("detailAddress").textContent = patient.address;
-
-    document.getElementById("detailPatientType").textContent = "Mother";
-
-
-    // Pregnancy Badge
-    const pregnancyBadge =
-        document.getElementById("detailPregnancyBadge");
-
-    if (patient.pregnant) {
-
-        pregnancyBadge.innerHTML = `
-            <p class="detail-pregnancy-badge pregnant">Pregnant</p>
-        `;
-
-    } else {
-
-        pregnancyBadge.innerHTML = `
-            <p class="detail-pregnancy-badge not-pregnant">Not Pregnant</p>
-        `;
-    }
-
-    // Healthcare History
-    renderHealthcareHistory(patient.history);
-
-    // Registered Children
-    renderChildren(patient.children);
-  
-    // Switch to Details Page
-    searchSection.hidden = true;
-    patientListSection.hidden = true;
-    patientDetailsSection.hidden = false;
-
-    // Scroll to top
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
     });
-
 }
 
+// ================= INITIALISE PAGE =================
 
-// ================= RENDER HEALTHCARE HISTORY =================
+document.addEventListener("DOMContentLoaded", () => {
+    renderMothers();
+    renderChildren();
+    setupTabs();
+    setupActionButtons();
 
-function renderHealthcareHistory(history) {
+    document.getElementById("motherSearch")
+        .addEventListener("input", filterMothers);
 
-    const historyTableBody = document.getElementById("historyTableBody");
- 
-    historyTableBody.innerHTML = "";
+    document.getElementById("motherStatusFilter")
+        .addEventListener("change", filterMothers);
 
-    // No history
-    if (history.length === 0) {
+    document.getElementById("motherResetFilters")
+        .addEventListener("click", resetMotherFilters);
 
-        historyTableBody.innerHTML = `
-            <tr>
-                <td colspan="4">
-                    No healthcare history available.
-                </td>
-            </tr>
-        `;
+    document.getElementById("childSearch")
+        .addEventListener("input", filterChildren);
 
-        return;
-    }
+    document.getElementById("childStatusFilter")
+        .addEventListener("change", filterChildren);
 
-    history.forEach(record => {
+    document.getElementById("childResetFilters")
+        .addEventListener("click", resetChildFilters);
+});
 
-        const row = document.createElement("tr");
+// ================= VIEW & EDIT =================
 
-        let statusClass = "completed";
+let editingMotherId = null;
+let editingChildId = null;
 
-        if (record.status === "Upcoming") {
-            statusClass = "upcoming";
+// ================= ACTIVATE / DEACTIVATE =================
+let pendingMotherId = null;
+let pendingChildId = null;
+
+// ================= VIEW MOTHER =================
+
+function viewMother(mother) {
+    const content = document.getElementById("motherViewContent");
+
+    content.innerHTML = `
+        <div class="view-profile">
+            <h4>${escapeHTML(mother.fullName)}</h4>
+            ${createStatusBadge(mother.status)}
+        </div>
+
+        <div class="detail-list">
+            <h6>Personal Information</h6>
+
+            <div><span>Full Name</span>
+                <strong>${escapeHTML(mother.fullName)}</strong></div>
+
+            <div><span>IC Number</span>
+                <strong>${escapeHTML(mother.icNumber)}</strong></div>
+
+            <div><span>Date of Birth</span>
+                <strong>${formatDate(mother.dob)}</strong></div>
+
+            <div><span>Phone Number</span>
+                <strong>${escapeHTML(mother.phone)}</strong></div>
+
+            <div><span>Email Address</span>
+                <strong>${escapeHTML(mother.email)}</strong></div>
+
+            <div><span>Home Address</span>
+                <strong>${escapeHTML(mother.address)}</strong></div>
+
+            <div><span>Date Created</span>
+                <strong>${formatDate(mother.dateCreated)}</strong></div>
+
+            <h6>Emergency Contact</h6>
+
+            <div><span>Emergency Contact Name</span>
+                <strong>${escapeHTML(mother.emergencyName)}</strong></div>
+
+            <div><span>Relationship</span>
+                <strong>${escapeHTML(mother.emergencyRelationship)}</strong></div>
+
+            <div><span>Emergency Contact Phone Number</span>
+                <strong>${escapeHTML(mother.emergencyPhone)}</strong></div>
+        </div>
+    `;
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("viewMotherModal")
+    ).show();
+}
+
+// ================= VIEW CHILD =================
+
+function viewChild(child) {
+    const content = document.getElementById("childViewContent");
+
+    content.innerHTML = `
+        <div class="view-profile">
+            <h4>${escapeHTML(child.fullName)}</h4>
+            ${createStatusBadge(child.status)}
+        </div>
+
+        <div class="detail-list">
+            <h6>Child Information</h6>
+
+            <div><span>Full Name</span>
+                <strong>${escapeHTML(child.fullName)}</strong></div>
+
+            <div><span>MyKid Number</span>
+                <strong>${escapeHTML(child.myKidNumber)}</strong></div>
+
+            <div><span>Date of Birth</span>
+                <strong>${formatDate(child.dob)}</strong></div>
+
+            <div><span>Gender</span>
+                <strong>${escapeHTML(child.gender)}</strong></div>
+
+            <div><span>Date Created</span>
+                <strong>${formatDate(child.dateCreated)}</strong></div>
+
+            <h6>Guardian's Contact</h6>
+
+            <div><span>Guardian Name</span>
+                <strong>${escapeHTML(child.guardianName)}</strong></div>
+
+            <div><span>Guardian Phone Number</span>
+                <strong>${escapeHTML(child.guardianPhone)}</strong></div>
+
+            <div><span>Guardian Email</span>
+                <strong>${escapeHTML(child.guardianEmail)}</strong></div>
+        </div>
+    `;
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("viewChildModal")
+    ).show();
+}
+
+// ================= OPEN EDIT MOTHER =================
+
+function editMother(mother) {
+    editingMotherId = mother.id;
+    editingChildId = null;
+
+    const form = document.getElementById("addMotherForm");
+    const inputs = form.querySelectorAll(".modal-body input.form-control");
+
+    // Input order: name, IC, DOB, phone, email,
+    // address, emergency name, relationship, emergency phone.
+    inputs[0].value = mother.fullName;
+    inputs[1].value = mother.icNumber;
+    inputs[2].value = mother.dob;
+    inputs[3].value = mother.phone;
+    inputs[4].value = mother.email;
+    inputs[5].value = mother.address;
+    inputs[6].value = mother.emergencyName;
+    inputs[7].value = mother.emergencyRelationship;
+    inputs[8].value = mother.emergencyPhone;
+
+    document.getElementById("motherActiveStatus").checked =
+        mother.status === "Active";
+
+    document.getElementById("motherInactiveStatus").checked =
+        mother.status === "Inactive";
+
+    document.getElementById("addMotherModalLabel").textContent =
+        "Edit Mother";
+
+    form.querySelector('[type="submit"]').textContent = "Save Changes";
+
+    // Open modal
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("addMotherModal")
+    ).show();
+}
+
+// ================= OPEN EDIT CHILD =================
+
+function editChild(child) {
+    editingChildId = child.id;
+    editingMotherId = null;
+
+    const form = document.getElementById("addChildForm");
+    const inputs = form.querySelectorAll(".modal-body input.form-control");
+    const genderSelect = form.querySelector(".modal-body select.form-select");
+
+    // Input order: name, MyKid, DOB, guardian name,
+    // guardian phone, guardian email.
+    inputs[0].value = child.fullName;
+    inputs[1].value = child.myKidNumber;
+    inputs[2].value = child.dob;
+    inputs[3].value = child.guardianName;
+    inputs[4].value = child.guardianPhone;
+    inputs[5].value = child.guardianEmail;
+
+    genderSelect.value = child.gender;
+
+    document.getElementById("childActiveStatus").checked =
+        child.status === "Active";
+
+    document.getElementById("childInactiveStatus").checked =
+        child.status === "Inactive";
+
+    document.getElementById("addChildModalLabel").textContent =
+        "Edit Child";
+
+    form.querySelector('[type="submit"]').textContent = "Save Changes";
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("addChildModal")
+    ).show();
+}
+
+// // ================= RESET FORM AFTER MODAL CLOSE =================
+
+function resetMotherEditForm() {
+    editingMotherId = null;
+
+    const form = document.getElementById("addMotherForm");
+
+    document.getElementById("addMotherModalLabel").textContent = "Add Mother";
+
+    form.querySelector('[type="submit"]').textContent = "Add Mother";
+    form.reset();
+}
+
+function resetChildEditForm() {
+    editingChildId = null;
+
+    const form = document.getElementById("addChildForm");
+
+    document.getElementById("addChildModalLabel").textContent = "Add Child";
+
+    form.querySelector('[type="submit"]').textContent = "Add Child";
+    form.reset();
+}
+
+// ================= HANDLE VIEW,EDIT & DEACTIVATE BUTTONS =================
+
+function setupActionButtons() {
+    document.addEventListener("click", event => {
+        const button = event.target.closest("[data-action]");
+
+        if (!button) return;
+
+        const action = button.dataset.action;
+        const id = Number(button.dataset.id);
+
+        // Mother actions
+        if (button.closest("#motherTableBody")) {
+            const mother = mothers.find(item => item.id === id);
+            if (!mother) return;
+
+            if (action === "view") {
+                viewMother(mother);
+            }
+
+            if (action === "edit") {
+                editMother(mother);
+            }
+
+            if (action === "toggle-status") {
+                openMotherStatusModal(mother);
+            }
         }
 
-        row.innerHTML = `
+        // Child actions
+        if (button.closest("#childTableBody")) {
+            const child = children.find(item => item.id === id);
+            if (!child) return;
 
-            <td>
-                <p>${record.date}</p>
-            </td>
+            if (action === "view") {
+                viewChild(child);
+            }
 
-            <td>
-                <p>${record.type}</p>
-            </td>
+            if (action === "edit") {
+                editChild(child);
+            }
 
-            <td>
-                <p>${record.child}</p>
-            </td>
-
-            <td>
-                <p class="status-badge ${statusClass}">${record.status}</p>
-            </td>
-
-        `;
-
-        historyTableBody.appendChild(row);
-
+            if (action === "toggle-status") {
+                openChildStatusModal(child);
+            }
+        }
     });
-
 }
 
 
-// ================= RENDER REGISTERED CHILDREN =================
+// ================= SAVE MOTHER EDIT =================
 
-function renderChildren(children) {
+document.getElementById("addMotherForm").addEventListener("submit", event => {
+    if (editingMotherId === null) return;
 
-    childTableBody.innerHTML = "";
+    event.preventDefault();
 
-    // No Children
-    if (children.length === 0) {
-        noChildrenMessage.style.display = "block";
-        childrenTableContainer.style.display = "none";
-        return;
-    }
+    const form = event.currentTarget;
+    const inputs = form.querySelectorAll(".modal-body input.form-control");
 
-    noChildrenMessage.style.display = "none";
-    childrenTableContainer.style.display = "block";
+    const mother = mothers.find(item => item.id === editingMotherId);
+    if (!mother) return;
 
-    // Has Children
-    children.forEach(child => {
-
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-
-            <td>
-                <p class="child-name">${child.name}</p>
-            </td>
-
-            <td>
-                <p>${child.mykid}</p>
-            </td>
-
-            <td>
-                <p>${child.dob}</p>
-            </td>
-
-            <td>
-                <p>${child.age}</p>
-            </td>
-
-            <td>
-                <p>${child.gender}</p>
-            </td>
-
-        `;
-
-        childTableBody.appendChild(row);
-
+    Object.assign(mother, {
+        fullName: inputs[0].value.trim(),
+        icNumber: inputs[1].value.trim(),
+        dob: inputs[2].value,
+        phone: inputs[3].value.trim(),
+        email: inputs[4].value.trim(),
+        address: inputs[5].value.trim(),
+        emergencyName: inputs[6].value.trim(),
+        emergencyRelationship: inputs[7].value.trim(),
+        emergencyPhone: inputs[8].value.trim(),
+        status: document.getElementById("motherActiveStatus").checked
+            ? "Active"
+            : "Inactive"
     });
 
-}
+    renderMothers();
 
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("addMotherModal")
+    ).hide();
+});
 
-// ================= BACK TO PATIENT LIST =================
+// ================= SAVE CHILD EDIT =================
 
-backToPatients.addEventListener("click", function () {
+document.getElementById("addChildForm").addEventListener("submit", event => {
+    if (editingChildId === null) return;
 
-    patientDetailsSection.hidden = true;
+    event.preventDefault();
 
-    searchSection.hidden = false;
+    const form = event.currentTarget;
+    const inputs = form.querySelectorAll(".modal-body input.form-control");
+    const genderSelect = form.querySelector(".modal-body select.form-select");
 
-    patientListSection.hidden = false;
+    const child = children.find(item => item.id === editingChildId);
+    if (!child) return;
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+    Object.assign(child, {
+        fullName: inputs[0].value.trim(),
+        myKidNumber: inputs[1].value.trim(),
+        dob: inputs[2].value,
+        gender: genderSelect.value,
+        guardianName: inputs[3].value.trim(),
+        guardianPhone: inputs[4].value.trim(),
+        guardianEmail: inputs[5].value.trim(),
+        status: document.getElementById("childActiveStatus").checked
+            ? "Active"
+            : "Inactive"
     });
 
+    renderChildren();
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("addChildModal")
+    ).hide();
 });
 
 
-// ================= SEARCH EVENT =================
+// Reset forms when the modal closes
+document.getElementById("addMotherModal").addEventListener(
+    "hidden.bs.modal",
+    resetMotherEditForm
+);
 
-patientSearch.addEventListener("input", searchPatients);
+document.getElementById("addChildModal").addEventListener(
+    "hidden.bs.modal",
+    resetChildEditForm
+);
+
+// ================= OPEN MOTHER STATUS MODAL =================
+
+function openMotherStatusModal(mother) {
+    pendingMotherId = mother.id;
+
+    const isActive = mother.status === "Active";
+
+    document.getElementById("deactivateMotherModalLabel").textContent =
+        isActive ? "Deactivate Mother Account?" : "Activate Mother Account?";
+
+    document.getElementById("motherStatusTargetName").textContent =
+        mother.fullName;
+
+    document.getElementById("motherStatusWarning").textContent =
+        isActive
+            ? "The mother member will no longer be able to log in to the system."
+            : "The mother member will be able to log in to the system again.";
+
+    const confirmButton =
+        document.getElementById("confirmMotherStatusButton");
+
+    confirmButton.className = isActive
+        ? "btn btn-danger"
+        : "btn btn-success";
+
+    confirmButton.innerHTML = isActive
+        ? '<i class="bi bi-person-x"></i> Deactivate'
+        : '<i class="bi bi-person-check"></i> Activate';
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("deactivateMotherModal")
+    ).show();
+}
 
 
-// ================= INITIAL LOAD =================
+// ================= OPEN CHILD STATUS MODAL =================
 
-renderPatients(patients);
+function openChildStatusModal(child) {
+    pendingChildId = child.id;
+
+    const isActive = child.status === "Active";
+
+    document.getElementById("deactivateChildModalLabel").textContent =
+        isActive ? "Deactivate Child Account?" : "Activate Child Account?";
+
+    document.getElementById("childStatusTargetName").textContent =
+        child.fullName;
+
+    document.getElementById("childStatusWarning").textContent =
+        isActive
+            ? "The child member will no longer be able to log in to the system."
+            : "The child member will be able to log in to the system again.";
+
+    const confirmButton =
+        document.getElementById("confirmChildStatusButton");
+
+    confirmButton.className = isActive
+        ? "btn btn-danger"
+        : "btn btn-success";
+
+    confirmButton.innerHTML = isActive
+        ? '<i class="bi bi-person-x"></i> Deactivate'
+        : '<i class="bi bi-person-check"></i> Activate';
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("deactivateChildModal")
+    ).show();
+}
+
+// ================= CONFIRM MOTHER STATUS CHANGE =================
+
+document.getElementById("confirmMotherStatusButton")
+    .addEventListener("click", () => {
+
+        const mother = mothers.find(
+            item => item.id === pendingMotherId
+        );
+
+        if (!mother) return;
+
+        mother.status = mother.status === "Active"
+            ? "Inactive"
+            : "Active";
+
+        renderMothers();
+
+        bootstrap.Modal.getOrCreateInstance(
+            document.getElementById("deactivateMotherModal")
+        ).hide();
+
+        pendingMotherId = null;
+    });
+
+// ================= CONFIRM CHILD STATUS CHANGE =================
+
+document.getElementById("confirmChildStatusButton")
+    .addEventListener("click", () => {
+
+        const child = children.find(
+            item => item.id === pendingChildId
+        );
+
+        if (!child) return;
+
+        child.status = child.status === "Active"
+            ? "Inactive"
+            : "Active";
+
+        renderChildren();
+
+        bootstrap.Modal.getOrCreateInstance(
+            document.getElementById("deactivateChildModal")
+        ).hide();
+
+        pendingChildId = null;
+    });
