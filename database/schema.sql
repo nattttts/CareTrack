@@ -8,7 +8,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS User (
     user_id TEXT PRIMARY KEY,
     full_name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL
         CHECK (role IN ('mother', 'child', 'staff', 'admin')),
@@ -101,10 +101,8 @@ CREATE TABLE IF NOT EXISTS Appointment (
         CHECK (
             status IN (
                 'Confirmed',
-                'Pending Reschedule',
                 'Completed',
-                'Missed',
-                'Cancelled'
+                'Missed'
             )
         ),
     reschedule_status TEXT NOT NULL DEFAULT 'None'
