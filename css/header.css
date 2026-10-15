@@ -53,49 +53,30 @@ body {
     box-shadow: 0 0 0 2px rgba(249, 82, 142, 1);
 }
 
-.nav-btn {
-    display: flex;
-    gap: 12px; /* Space between Register and Login button */
-}
-
-.nav-btn a {
+.loginBtn {
     text-decoration: none;
     padding: 10px 15px;
     border-radius: 8px;
     font-size: 14px;
+
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px; /* Space between icon and text */
-}
 
-.nav-btn img {
-    width: 20px;
-    height: 20px;
-}
-
-.registerBtn, .loginBtn {
     color: #f9528e;
     background: #FFFFFF;
     border: 1px solid #f9528e;
 }
 
-.registerBtn:hover, .loginBtn:hover {
+.loginBtn img {
+    width: 20px;
+    height: 20px;
+}
+
+.loginBtn:hover {
     color: #FFFFFF;
     background: #f9528e;
-}
-
-/* Switch register icon on hover */
-.register-hover {
-    display: none;
-}
-
-.registerBtn:hover .register-normal {
-    display: none;
-}
-
-.registerBtn:hover .register-hover {
-    display: block;
 }
 
 /* Switch login icon on hover */

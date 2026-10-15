@@ -199,23 +199,6 @@
     line-height: 2.0;
 }
 
-.register-now-btn {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 12px 25px;
-    color: #FFFFFF;
-    background: #f9528e;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-/* ================= CALL TO ACTION ================= */
-.register-now-btn:hover {
-    background: #e81f67;
-}
-
 /* ================= RESPONSIVE ================= */
 @media (max-width: 1000px) {
 
