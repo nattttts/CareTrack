@@ -1,3 +1,5 @@
+import { showToast } from "./popup_message.js";
+
 let allStaff = [];
 
 async function loadStaff() {
@@ -345,9 +347,11 @@ document
             // Refresh the staff table
             await loadStaff();
 
+            showToast("Staff added successfully!", "success");
 
         } catch (error) {
             console.error("Error adding staff:", error);
+            showToast(error.message, "error");
             
 
         } finally {
