@@ -21,16 +21,20 @@ async function loadStaff() {
             const row = document.createElement("tr");
             row.classList.add("staff-row");
 
+            row.dataset.search = [
+                staff.full_name,
+                staff.email,
+                staff.position
+            ].join(" ").toLowerCase();
+
+            row.dataset.status = staff.account_status;
+
             row.innerHTML = `
                 <td>
-                    <div class="staff-info">
-                        <div>
-                            <strong>${staff.full_name}</strong>
-                            <span>${staff.position}</span>
-                        </div>
-                    </div>
+                    <strong>${staff.full_name}</strong>
                 </td>
 
+                <td>${staff.user_id}</td>
                 <td>${staff.email}</td>
                 <td>${staff.position}</td>
                 <td>
@@ -50,7 +54,6 @@ async function loadStaff() {
                 })}</td>
                 <td>
                     <div class="action-buttons">
-                        <!-- We'll connect the action buttons later -->
                         <button type="button" class="action-button view-button">
                             <i class="bi bi-eye"></i>
                             <span>View</span>
@@ -60,19 +63,37 @@ async function loadStaff() {
                             <i class="bi bi-pencil"></i>
                             <span>Edit</span>
                         </button>
-
-                        <button type="button" class="action-button deactivate-button">
-                            <i class="bi bi-person-x"></i>
-                            <span>Deactivate</span>
+                        
+                        <button
+                            type="button"
+                            class="action-button ${
+                                staff.account_status === "Active"
+                                    ? "deactivate-button"
+                                    : "activate-button"
+                            }"
+                        >
+                            <i class="bi ${
+                                staff.account_status === "Active"
+                                    ? "bi-person-x"
+                                    : "bi-person-check"
+                            }"></i>
+                            <span>${
+                                staff.account_status === "Active"
+                                    ? "Deactivate"
+                                    : "Activate"
+                            }</span>
                         </button>
+
                     </div>
                 </td>
             `;
 
+            row.dataset.staffId = staff.staff_id;
+
             tableBody.appendChild(row);
         });
 
-        searchStaff();
+        applyStaffFilters();
 
     } catch (error) {
         console.error("Error loading staff:", error);
@@ -87,12 +108,14 @@ async function loadStaff() {
 }
 
 
-function searchStaff() {
+function applyStaffFilters() {
     const searchInput = document
         .getElementById("staffSearch")
         .value
         .toLowerCase()
         .trim();
+
+    const selectedStatus = document.getElementById("statusFilter").value;
 
     const rows = document.querySelectorAll(
         "#staffTableBody .staff-row"
@@ -101,10 +124,14 @@ function searchStaff() {
     let visibleCount = 0;
 
     rows.forEach(row => {
-        // Read the staff data stored on this row
-        const searchableText = row.textContent.toLowerCase();
+        const matchesSearch =
+            row.dataset.search.includes(searchInput);
 
-        const matches = searchableText.includes(searchInput);
+        const matchesStatus =
+            selectedStatus === "" ||
+            row.dataset.status === selectedStatus;
+
+        const matches = matchesSearch && matchesStatus;
 
         row.style.display = matches ? "" : "none";
 
@@ -113,17 +140,166 @@ function searchStaff() {
         }
     });
 
-    // Show the message when there are no matching rows
     const noStaffFound = document.getElementById("noStaffFound");
-    noStaffFound.hidden = visibleCount > 0;
 
-    // Update the footer
-    const staffCount = document.getElementById("staffCount");
-    staffCount.textContent =
+    if (noStaffFound) {
+        noStaffFound.hidden = visibleCount > 0;
+    }
+
+    document.getElementById("staffCount").textContent =
         `Showing ${visibleCount} of ${allStaff.length} staff`;
 }
 
 
-document.getElementById("staffSearch").addEventListener("input", searchStaff);
+
+const staffTableBody = document.getElementById("staffTableBody");
+
+let selectedStaff = null;
+
+staffTableBody.addEventListener("click", function (event) {
+    const button = event.target.closest("button");
+
+    if (!button || !staffTableBody.contains(button)) {
+        return;
+    }
+
+    const row = button.closest(".staff-row");
+
+    if (!row) {
+        return;
+    }
+
+    const staff = allStaff.find(
+        item => String(item.staff_id) === row.dataset.staffId
+    );
+
+    if (!staff) {
+        return;
+    }
+
+    selectedStaff = staff;
+
+    // VIEW STAFF
+    if (button.classList.contains("view-button")) {
+        document.getElementById("viewStaffProfileName").textContent =
+            staff.full_name;
+
+        document.getElementById("viewStaffName").textContent =
+            staff.full_name;
+        
+        document.getElementById("viewStaffICNumber").textContent =
+            staff.user_id;
+
+        document.getElementById("viewStaffEmail").textContent =
+            staff.email;
+
+        document.getElementById("viewStaffPhone").textContent =
+            staff.phone_no || "—";
+
+        document.getElementById("viewStaffPosition").textContent =
+            staff.position;
+        
+        document.getElementById("viewStaffDate").textContent =
+            new Date(staff.created_at).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+
+        const statusBadge =
+            document.getElementById("viewStaffProfileStatus");
+
+        statusBadge.classList.toggle(
+            "active-status",
+            staff.account_status === "Active"
+        );
+
+        statusBadge.classList.toggle(
+            "inactive-status",
+            staff.account_status === "Inactive"
+        );
+
+        document.getElementById("viewStaffProfileStatusText").textContent =
+            staff.account_status;
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("viewStaffModal")
+            )
+            .show();
+    }
+
+    // EDIT STAFF
+    else if (button.classList.contains("edit-button")) {
+        document.getElementById("editStaffId").value =
+            staff.staff_id;
+
+        document.getElementById("editStaffName").value =
+            staff.full_name;
+
+        document.getElementById("editStaffICNumber").value =
+            staff.user_id;
+
+        document.getElementById("editStaffEmail").value =
+            staff.email;
+
+        document.getElementById("editStaffPhone").value =
+            staff.phone_no || "";
+
+        document.getElementById("editStaffPosition").value =
+            staff.position;
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("editStaffModal")
+            )
+            .show();
+    }
+
+    // ACTIVATE / DEACTIVATE
+    else if (
+        button.classList.contains("activate-button") ||
+        button.classList.contains("deactivate-button")
+    ) {
+        const isActive = staff.account_status === "Active";
+
+        document.getElementById("deactivateModalLabel").textContent =
+            isActive
+                ? "Deactivate Staff Account?"
+                : "Activate Staff Account?";
+
+        document.getElementById("statusStaffName").textContent = staff.full_name;
+
+        document.getElementById("statusAction").textContent =
+            isActive ? "deactivate" : "activate";
+
+        document.getElementById("statusWarningText").textContent =
+            isActive
+                ? "The staff member will no longer be able to log in to the system."
+                : "The staff member will be able to log in to the system again.";
+
+        const confirmButton = document.getElementById(
+            "confirmStaffStatusButton"
+        );
+
+        confirmButton.className = isActive
+            ? "btn btn-danger"
+            : "btn btn-success";
+
+        confirmButton.innerHTML = isActive
+            ? '<i class="bi bi-person-x"></i> Deactivate'
+            : '<i class="bi bi-person-check"></i> Activate';
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("deactivateModal")
+            )
+            .show();
+    }
+});
+
+
+document.getElementById("staffSearch").addEventListener("input", applyStaffFilters);
+document.getElementById("statusFilter").addEventListener("change", applyStaffFilters);
 
 document.addEventListener("DOMContentLoaded", loadStaff);

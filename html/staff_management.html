@@ -139,6 +139,7 @@
                         <thead>
                             <tr>
                                 <th>Staff Name</th>
+                                <th>IC Number</th>
                                 <th>Email</th>
                                 <th>Position</th>
                                 <th>Account Status</th>
@@ -151,7 +152,7 @@
 
                         <tbody id="staffTableBody">
                             <tr id="noStaffFound" hidden>
-                                <td colspan="6" class="text-center py-4">
+                                <td colspan="7" class="text-center py-4">
                                     No matching staff found.
                                 </td>
                             </tr>
@@ -339,47 +340,43 @@
 
                 <div class="modal-body">
                     <div class="view-profile">
-                        <img
-                            src="../icons/user.png"
-                            alt="Dr. Amir Rahman"
-                            class="view-avatar"
-                        >
-                        <h4>Dr. Amir Rahman</h4>
-                        <span class="status-badge active-status">
+                        <h4 id="viewStaffProfileName"></h4>
+
+                        <span id="viewStaffProfileStatus" class="status-badge">
                             <span class="status-dot"></span>
-                            Active
+                            <span id="viewStaffProfileStatusText"></span>
                         </span>
                     </div>
 
                     <div class="staff-detail-list">
                         <div>
                             <span>Full Name</span>
-                            <strong>Dr. Amir Rahman</strong>
+                            <strong id="viewStaffName"></strong>
+                        </div>
+
+                        <div>
+                            <span>IC Number</span>
+                            <strong id="viewStaffICNumber"></strong>
                         </div>
 
                         <div>
                             <span>Email</span>
-                            <strong>amir.rahman@caretrack.my</strong>
+                            <strong id="viewStaffEmail"></strong>
                         </div>
 
                         <div>
                             <span>Phone Number</span>
-                            <strong>+60 12 345 6789</strong>
+                            <strong id="viewStaffPhone"></strong>
                         </div>
 
                         <div>
                             <span>Position</span>
-                            <strong>Doctor</strong>
-                        </div>
-
-                        <div>
-                            <span>System Role</span>
-                            <strong>Healthcare Staff</strong>
+                            <strong id="viewStaffPosition"></strong>
                         </div>
 
                         <div>
                             <span>Date Created</span>
-                            <strong>15 Apr 2025</strong>
+                            <strong id="viewStaffDate"></strong>
                         </div>
 
                     </div>
@@ -421,49 +418,49 @@
                     ></button>
                 </div>
 
-                <form>
+                <form id="editStaffForm">
                     <div class="modal-body">
                         <div class="row g-4">
+                            
+                            <input type="hidden" id="editStaffId">
+
                             <div class="col-md-6">
                                 <label class="form-label">Full Name</label>
                                 <input
-                                    type="text"
+                                    type="text" id="editStaffName"
                                     class="form-control"
-                                    value="Dr. Amir Rahman"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">IC Number</label>
+                                <input
+                                    type="text" id="editStaffICNumber"
+                                    class="form-control"
                                 >
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Email Address</label>
                                 <input
-                                    type="email"
+                                    type="email" id="editStaffEmail"
                                     class="form-control"
-                                    value="amir.rahman@caretrack.my"
                                 >
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Phone Number</label>
                                 <input
-                                    type="tel"
+                                    type="tel" id="editStaffPhone"
                                     class="form-control"
-                                    value="+60 12 345 6789"
                                 >
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Position</label>
-                                <select class="form-select">
-                                    <option selected>Doctor</option>
-                                    <option>Nurse</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Account Status</label>
-                                <select class="form-select">
-                                    <option selected>Active</option>
-                                    <option>Inactive</option>
+                                <select id="editStaffPosition" class="form-select">
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Nurse">Nurse</option>
                                 </select>
                             </div>
 
@@ -472,7 +469,7 @@
                                     <i class="bi bi-info-circle"></i>
                                     <span>
                                         <strong>System Role:</strong>
-                                        Healthcare Staff
+                                        Staff
                                         <small>
                                             Staff position does not change
                                             the system role.
@@ -526,16 +523,14 @@
                     </div>
 
                     <h4 id="deactivateModalLabel">
-                        Deactivate Staff Account?
+                        Deactivate 
                     </h4>
                     <p>
-                        Are you sure you want to deactivate
-                        <strong>Dr. Amir Rahman's</strong> account?
+                        Are you sure you want to
+                        <span id="statusAction">deactivate</span>
+                        <strong id="statusStaffName">this staff member</strong>'s account?
                     </p>
-                    <p class="warning-text">
-                        The staff member will no longer be able
-                        to log in to the system.
-                    </p>
+                    <p class="warning-text" id="statusWarningText"></p>
 
                     <div class="confirmation-buttons">
                         <button
@@ -549,7 +544,7 @@
                         <button
                             type="button"
                             class="btn btn-danger"
-                            data-bs-dismiss="modal"
+                            id="confirmStaffStatusButton"
                         >
                             <i class="bi bi-person-x"></i>
                             Deactivate

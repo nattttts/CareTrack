@@ -215,47 +215,6 @@ a {
     border-bottom: none;
 }
 
-
-/* Staff Information */
-
-.staff-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.staff-avatar {
-    width: 43px;
-    height: 43px;
-
-    flex-shrink: 0;
-
-    border-radius: 50%;
-
-    object-fit: cover;
-
-    background: #edf6ff;
-}
-
-.staff-info strong,
-.staff-info span {
-    display: block;
-}
-
-.staff-info strong {
-    margin-bottom: 3px;
-
-    font-size: 13px;
-
-    color: #142d58;
-}
-
-.staff-info span {
-    font-size: 11px;
-    color: #69809c;
-}
-
-
 /* ================= STATUS ================= */
 
 .status-badge {
@@ -535,19 +494,6 @@ a {
     text-align: center;
 
     border-bottom: 1px solid #e3edf6;
-}
-
-.view-avatar {
-    width: 80px;
-    height: 80px;
-
-    margin: 0 auto 12px;
-
-    border-radius: 50%;
-
-    object-fit: cover;
-
-    background: #edf6ff;
 }
 
 .view-profile h4 {
