@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const db = require("./database");
@@ -5,6 +6,22 @@ const db = require("./database");
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve HTML files
+app.use(express.static(path.join(__dirname, "../html")));
+
+// Serve CSS files
+app.use("/css", express.static(path.join(__dirname, "../css")));
+
+// Serve JavaScript files
+app.use("/js", express.static(path.join(__dirname, "../js")));
+
+// Serve icon files
+app.use("/icons", express.static(path.join(__dirname, "../icons")));
+
+// Serve image files
+app.use("/images", express.static(path.join(__dirname, "../images")));
+
 const PORT = 3000;
 
 app.get("/", (req, res) => {
