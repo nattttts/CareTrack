@@ -128,7 +128,7 @@
 
                                 <div class="card-heading">
                                     <div class="card-icon">
-                                        <img src="../icons/pregnant.png" alt="Pregnant">
+                                        <img src="../icons/appointment.png" alt="Pregnant">
                                     </div>
 
                                     <div class="card-title">
@@ -183,172 +183,6 @@
 
                             </div>
 
-                        </section>
-
-                        <!-- ================= CURRENT QUEUE ================= -->
-                        <section class="dashboard-card queue-card">
-                            
-                            <div class="dashboard-card-header">
-
-                                <div class="card-heading">
-                                    <div class="card-icon">
-                                        <img src="../icons/queue.png" alt="Queue">
-                                    </div>
-
-                                    <div>
-                                        <h3>Current Queue</h3>
-                                        <p>Your current clinic queue status</p>
-                                    </div>
-                                </div>
-
-                                <a href="queue.html" class="view-all-link">
-                                    View All
-                                    <i class="bi bi-arrow-right"></i>
-                                </a>
-
-                            </div>
-
-                            <!-- ================= NOT CHECKED IN ================= -->
-                            <div class="queue-not-checked-in d-none">
-
-                                <div class="queue-status-header">
-
-                                    <div class="queue-status-icon warning">
-                                        <img src="../icons/info.png" alt="Information">
-                                    </div>
-
-                                    <div>
-                                        <h3>Not Checked In</h3>
-                                        <p>You are not currently checked in for your appointment.</p>
-                                    </div>
-                                </div>
-
-                                <div class="queue-message">
-                                    <i class="bi bi-hospital"></i>
-                                    <div>
-                                        <strong>Check in at the clinic</strong>
-                                        <p>
-                                            Please complete check-in at the clinic when you arrive for your appointment.
-                                            Your queue information will appear here after check-in.
-                                        </p>
-                                    </div>
-                                </div>  
-
-                            </div>
-
-                            <div class="queue-checked-in">
-
-                                <div class="queue-status">
-                                    <h4>Your Queue Status</h4>
-                                    <span id="queueStatusBadge" class="queue-status-badge waiting">Waiting</span>
-                                </div>
-
-                                <!-- Queue Number -->
-                                <div class="queue-number-section">
-                                    <h6>Your Queue Number</h6>
-                                    <p id="queueNumber">1058</p>
-                                </div>
-
-                                <!-- Queue Details -->
-                                <div class="queue-details row g-3">
-
-                                    <div class="col-12 col-md-6">
-                                        <div class="queue-detail">
-                                            <img src="../icons/queue.png" alt="Queue">
-
-                                            <div>
-                                                <h6>Queue Position</h6>
-                                                <strong id="queuePosition">4th</strong>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <div class="queue-detail">
-                                            <img src="../icons/clock.png" alt="Clock">
-
-                                            <div>
-                                                <h6>Estimated Waiting Time</h6>
-                                                <strong id="waitingTime">~20 min</strong>
-                                            </div>
-                                        </div>
-                                    </div>
-                            
-                                </div>
-
-                            </div>
-
-                        </section>
-
-                    </div>
-                </div>
-
-                <!-- Left Column -->
-                <div class="col-12 col-lg-6">
-                    <div class="dashboard-column">
-
-                        <!-- ================= UPCOMING VACCINATION ================= -->
-                        <section class="dashboard-card vaccination-card">
-
-                            <div class="dashboard-card-header">
-
-                                <div class="card-heading">
-                                    <div class="card-icon">
-                                        <img src="../icons/syringe.png" alt="Vaccination">
-                                    </div>
-
-                                    <div>
-                                        <h3>Upcoming Vaccination</h3>
-                                        <p>Your child's next vaccination</p>
-                                    </div>
-                                </div>
-
-                                <a href="child_vaccination.html" class="view-all-link">
-                                    View All
-                                    <i class="bi bi-arrow-right"></i>
-                                </a>
-
-                            </div>
-
-                            <div class="card-content">
-
-                                <div class="appointment-name">
-                                    <h4>DTP - IPV - Hib (Dose 1)</h4>
-                                    <p class="mother-name">Child: Emma Tan</p>
-                                </div>
-
-                                <div class="appointment-detail row g-3">
-
-                                    <div class="col-12 col-md-6">
-                                        <div class="detail-item">
-
-                                            <img src="../icons/appointment.png" alt="Appointment">
-
-                                            <div class="detail-item-info">
-                                                <span class="detail-label">Date</span>
-                                                <strong>15 Oct 2026</strong>
-                                            </div>
-
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <div class="detail-item">
-
-                                            <img src="../icons/clock.png" alt="Clock">
-
-                                            <div class="detail-item-info">
-                                                <span class="detail-label">Time</span>
-                                                <strong>2:30 PM</strong>
-                                            </div>
-
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                            
                         </section>
 
                         <!-- ================= NOTIFICATION ================= -->
@@ -448,6 +282,107 @@
 
                         </section>
 
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-12 col-lg-6">
+                    <div class="dashboard-column">
+
+                        <!-- ================= CURRENT QUEUE ================= -->
+                        <section class="dashboard-card queue-card">
+                            
+                            <div class="dashboard-card-header">
+
+                                <div class="card-heading">
+                                    <div class="card-icon">
+                                        <img src="../icons/queue.png" alt="Queue">
+                                    </div>
+
+                                    <div>
+                                        <h3>Current Queue</h3>
+                                        <p>Your current clinic queue status</p>
+                                    </div>
+                                </div>
+
+                                <a href="queue.html" class="view-all-link">
+                                    View All
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+
+                            </div>
+
+                            <!-- ================= NOT CHECKED IN ================= -->
+                            <div class="queue-not-checked-in d-none">
+
+                                <div class="queue-status-header">
+
+                                    <div class="queue-status-icon warning">
+                                        <img src="../icons/info.png" alt="Information">
+                                    </div>
+
+                                    <div>
+                                        <h3>Not Checked In</h3>
+                                        <p>You are not currently checked in for your appointment.</p>
+                                    </div>
+                                </div>
+
+                                <div class="queue-message">
+                                    <i class="bi bi-hospital"></i>
+                                    <div>
+                                        <strong>Check in at the clinic</strong>
+                                        <p>
+                                            Please complete check-in at the clinic when you arrive for your appointment.
+                                            Your queue information will appear here after check-in.
+                                        </p>
+                                    </div>
+                                </div>  
+
+                            </div>
+
+                            <div class="queue-checked-in">
+
+                                <div class="queue-status">
+                                    <h4>Your Queue Status</h4>
+                                    <span id="queueStatusBadge" class="queue-status-badge waiting">Waiting</span>
+                                </div>
+
+                                <!-- Queue Number -->
+                                <div class="queue-number-section">
+                                    <h6>Your Queue Number</h6>
+                                    <p id="queueNumber">1058</p>
+                                </div>
+
+                                <!-- Queue Details -->
+                                <div class="queue-details row g-3">
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="queue-detail">
+                                            <img src="../icons/queue.png" alt="Queue">
+
+                                            <div>
+                                                <h6>Queue Position</h6>
+                                                <strong id="queuePosition">4th</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="queue-detail">
+                                            <img src="../icons/clock.png" alt="Clock">
+
+                                            <div>
+                                                <h6>Estimated Waiting Time</h6>
+                                                <strong id="waitingTime">~20 min</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                            
+                                </div>
+
+                            </div>
+
+                        </section>
                     </div>
                 </div>
 
