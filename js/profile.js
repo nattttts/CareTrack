@@ -7,7 +7,6 @@ function editProfile() {
     if (card.classList.contains("editing")) {
 
         // Get values from input boxes
-
         const name =
             document.getElementById("nameInput").value;
 
@@ -26,9 +25,7 @@ function editProfile() {
         const address =
             document.getElementById("addressInput").value;
 
-
         // Convert date into readable format
-
         let dob = dobInput;
 
         if (dobInput !== "") {
@@ -43,9 +40,7 @@ function editProfile() {
 
         }
 
-
         // Update displayed information
-
         document.getElementById("profileName").textContent = name;
 
         document.getElementById("headerProfileName").textContent = name;
@@ -64,7 +59,6 @@ function editProfile() {
 
 
         // Leave edit mode
-
         card.classList.remove("editing");
 
         button.innerHTML = "✎ Edit Profile";
@@ -74,7 +68,6 @@ function editProfile() {
     else {
 
         // Enter edit mode
-
         card.classList.add("editing");
 
         button.innerHTML = "✓ Save Changes";
@@ -82,8 +75,6 @@ function editProfile() {
     }
 
 }
-
-
 
 function editEmergency() {
 
@@ -96,7 +87,6 @@ function editEmergency() {
 
     if (emergencyCard.classList.contains("editing")) {
 
-
         const name =
             document.getElementById("emergencyNameInput").value;
 
@@ -106,9 +96,7 @@ function editEmergency() {
         const phone =
             document.getElementById("emergencyPhoneInput").value;
 
-
         // Update displayed information
-
         document.getElementById("emergencyNameText")
             .textContent = name;
 
@@ -128,13 +116,66 @@ function editEmergency() {
     }
 
     else {
-
         // Enter edit mode
-
         emergencyCard.classList.add("editing");
 
         button.innerHTML = "✓ Save";
 
     }
+
+}
+
+function resetPassword() {
+
+    // Ask for the current password
+    const currentPassword = prompt("Please Enter Your Current Password: ");
+
+    // User clicked Cancel
+    if (currentPassword === null) {
+        return;
+    }
+
+    if (currentPassword.trim() === "") {
+        alert("Please Enter Your Current Password: ");
+        return;
+    }
+
+    // Ask for the new password
+    const newPassword = prompt("Please Enter Your New Password: ");
+
+    if (newPassword === null) {
+        return;
+    }
+
+    if (newPassword.length < 8) {
+        alert("Your New Password MUST Contain At Least 8 CHARACTERS.");
+        return;
+    }
+
+    // Confirm the new password
+    const confirmPassword = prompt("Please Confirm Your New Password:");
+
+    if (confirmPassword === null) {
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert("The New Passwords DO NOT MATCH. Please Try Again.");
+        return;
+    }
+
+    if (currentPassword === newPassword) {
+        alert("Your New Password MUST Be Different From Your Current Password.");
+        return;
+    }
+
+    // Confirm the action
+    const confirmReset = confirm("Are You Sure You Want To Reset Your Password?");
+
+    if (!confirmReset) {
+        return;
+    }
+
+    alert("Password Validation Successful !!!");
 
 }
