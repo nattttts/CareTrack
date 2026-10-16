@@ -216,7 +216,7 @@
                     ></button>
                 </div>
 
-                <form>
+                <form id="addStaffForm">
                     <div class="modal-body">
                         <div class="row g-4">
 
@@ -225,6 +225,7 @@
                                 <label class="form-label">Full Name</label>
                                 <input
                                     type="text"
+                                    id="addStaffName"
                                     class="form-control"
                                     placeholder="Enter full name"
                                     required
@@ -236,6 +237,7 @@
                                 <label class="form-label">IC Number</label>
                                 <input
                                     type="text"
+                                    id="addStaffIC"
                                     class="form-control"
                                     placeholder="Enter IC number e.g. 990101-07-0001"
                                     required
@@ -247,6 +249,7 @@
                                 <label class="form-label">Email Address</label>
                                 <input
                                     type="email"
+                                    id="addStaffEmail"
                                     class="form-control"
                                     placeholder="Enter email address e.g. staff@caretrack.my"
                                     required
@@ -258,6 +261,7 @@
                                 <label class="form-label">Phone Number</label>
                                 <input
                                     type="tel"
+                                    id="addStaffPhoneNo"
                                     class="form-control"
                                     placeholder="Enter phone number e.g. 012-3456789"
                                     required
@@ -267,10 +271,10 @@
                             <!-- Position -->
                             <div class="col-md-6">
                                 <label class="form-label">Position</label>
-                                <select class="form-select" required>
-                                    <option selected disabled>Select position</option>
-                                    <option>Doctor</option>
-                                    <option>Nurse</option>
+                                <select class="form-select" id="addStaffPosition" required>
+                                    <option value="" selected disabled>Select position</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Nurse">Nurse</option>
                                 </select>
                             </div>
 

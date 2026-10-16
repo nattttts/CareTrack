@@ -151,7 +151,6 @@ function applyStaffFilters() {
 }
 
 
-
 const staffTableBody = document.getElementById("staffTableBody");
 
 let selectedStaff = null;
@@ -297,6 +296,65 @@ staffTableBody.addEventListener("click", function (event) {
             .show();
     }
 });
+
+// ADD STAFF
+document
+    .getElementById("addStaffForm")
+    .addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const submitButton = this.querySelector(
+            'button[type="submit"]'
+        );
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Adding...";
+
+        const staffData = {
+            full_name: document.getElementById("addStaffName").value,
+            user_id: document.getElementById("addStaffIC").value,
+            email: document.getElementById("addStaffEmail").value,
+            phone_no: document.getElementById("addStaffPhoneNo").value,
+            position: document.getElementById("addStaffPosition").value
+        };
+
+        try {
+            const response = await fetch("http://localhost:3000/api/staff", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(staffData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to add staff.");
+            }
+
+            // Close the modal and clear the form
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    document.getElementById("addStaffModal")
+                )
+                .hide();
+
+            this.reset();
+
+            // Refresh the staff table
+            await loadStaff();
+
+
+        } catch (error) {
+            console.error("Error adding staff:", error);
+            
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Add Staff";
+        }
+    });
 
 
 document.getElementById("staffSearch").addEventListener("input", applyStaffFilters);
