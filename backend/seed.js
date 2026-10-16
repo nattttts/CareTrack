@@ -18,8 +18,8 @@ if (userCount > 0) {
 const insert = {
     user: db.prepare(`
         INSERT INTO User
-            (user_id, full_name, email, password_hash, role, account_status)
-        VALUES (?, ?, ?, ?, ?, ?)
+            (user_id, full_name, email, password_hash, role, account_status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `),
 
     staff: db.prepare(`
@@ -85,16 +85,16 @@ const seed = db.transaction(() => {
     // Replace placeholder hashes when auth is built.
     // =========================================
     const users = [
-        ["1", "Admin", "admin@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "admin", "Active"],
-        ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active"],
-        ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active"],
-        ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Inactive"],
-        ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active"],
-        ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active"],
-        ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive"],
-        ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive"],
-        ["260801-07-0007", "Ali bin Ahmad", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active"],
-        ["260902-07-0003", "Tan Yi Xing", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active"]
+        ["1", "Admin", "admin@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "admin", "Active", "2025-11-01 12:00:00"],
+        ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00"],
+        ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00"],
+        ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Inactive", "2025-11-01 12:00:00"],
+        ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-02 12:00:00"],
+        ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-03 12:00:00"],
+        ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-11-10 12:00:00"],
+        ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-12-10 12:00:00"],
+        ["260801-07-0007", "Ali bin Ahmad", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-08-02 12:00:00"],
+        ["260902-07-0003", "Tan Yi Xing", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-09-03 12:00:00"]
     ];
 
     users.forEach(row => insert.user.run(...row));
