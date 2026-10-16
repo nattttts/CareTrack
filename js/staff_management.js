@@ -24,11 +24,6 @@ async function loadStaff() {
             row.innerHTML = `
                 <td>
                     <div class="staff-info">
-                        <img
-                            src="../icons/user.png"
-                            alt=""
-                            class="staff-avatar"
-                        >
                         <div>
                             <strong>${staff.full_name}</strong>
                             <span>${staff.position}</span>
