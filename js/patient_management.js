@@ -6,12 +6,12 @@ let mothers = [
         fullName: "Jane Tan",
         icNumber: "950815-07-1122",
         dob: "1995-08-15",
-        phone: "012-345 6789",
+        phone: "012-3456789",
         email: "janetan@gmail.com",
         address: "123, Taman Mutiara, Bayan Lepas, Pulau Pinang",
         emergencyName: "Lim Yong Ming",
         emergencyRelationship: "Husband",
-        emergencyPhone: "011-745 8526",
+        emergencyPhone: "011-7458526",
         status: "Active",
         dateCreated: "2026-10-07"
     },
@@ -20,12 +20,12 @@ let mothers = [
         fullName: "Nur Aisyah",
         icNumber: "990420-07-3344",
         dob: "1999-04-20",
-        phone: "017-445 3756",
+        phone: "017-4453756",
         email: "aisyah123@gmail.com",
         address: "Bayan Lepas, Pulau Pinang",
         emergencyName: "Ahmad Rahman",
         emergencyRelationship: "Husband",
-        emergencyPhone: "016-222 3344",
+        emergencyPhone: "016-2223344",
         status: "Inactive",
         dateCreated: "2026-09-15"
     }
@@ -39,7 +39,7 @@ let children = [
         dob: "2026-06-12",
         gender: "Female",
         guardianName: "Jane Tan",
-        guardianPhone: "012-345 6789",
+        guardianPhone: "012-3456789",
         guardianEmail: "janetan@gmail.com",
         status: "Active",
         dateCreated: "2026-06-14"
@@ -51,7 +51,7 @@ let children = [
         dob: "2025-03-15",
         gender: "Male",
         guardianName: "Nur Aisyah",
-        guardianPhone: "017-445 3756",
+        guardianPhone: "017-4453756",
         guardianEmail: "aisyah123@gmail.com",
         status: "Inactive",
         dateCreated: "2025-03-20"
@@ -501,12 +501,6 @@ function editMother(mother) {
     inputs[7].value = mother.emergencyRelationship;
     inputs[8].value = mother.emergencyPhone;
 
-    document.getElementById("motherActiveStatus").checked =
-        mother.status === "Active";
-
-    document.getElementById("motherInactiveStatus").checked =
-        mother.status === "Inactive";
-
     document.getElementById("addMotherModalLabel").textContent =
         "Edit Mother";
 
@@ -538,12 +532,6 @@ function editChild(child) {
     inputs[5].value = child.guardianEmail;
 
     genderSelect.value = child.gender;
-
-    document.getElementById("childActiveStatus").checked =
-        child.status === "Active";
-
-    document.getElementById("childInactiveStatus").checked =
-        child.status === "Inactive";
 
     document.getElementById("addChildModalLabel").textContent =
         "Edit Child";
@@ -652,9 +640,6 @@ document.getElementById("addMotherForm").addEventListener("submit", event => {
         emergencyName: inputs[6].value.trim(),
         emergencyRelationship: inputs[7].value.trim(),
         emergencyPhone: inputs[8].value.trim(),
-        status: document.getElementById("motherActiveStatus").checked
-            ? "Active"
-            : "Inactive"
     });
 
     renderMothers();
@@ -686,9 +671,6 @@ document.getElementById("addChildForm").addEventListener("submit", event => {
         guardianName: inputs[3].value.trim(),
         guardianPhone: inputs[4].value.trim(),
         guardianEmail: inputs[5].value.trim(),
-        status: document.getElementById("childActiveStatus").checked
-            ? "Active"
-            : "Inactive"
     });
 
     renderChildren();
