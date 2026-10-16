@@ -1,7 +1,7 @@
 
 export function showToast(message, type = "success") {
-    const toastElement = document.getElementById("staffToast");
-    const toastMessage = document.getElementById("staffToastMessage");
+    const toastElement = document.getElementById("appToast");
+    const toastMessage = document.getElementById("appToastMessage");
 
     if (!toastElement || !toastMessage) {
         console.error("Toast elements were not found on this page.");
