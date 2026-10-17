@@ -705,14 +705,16 @@ function openMotherStatusModal(mother) {
 
     document.getElementById("motherStatusTargetName").textContent =
         mother.fullName;
+    
+    document.getElementById("motherStatusAction").textContent =
+        isActive ? "deactivate" : "activate";
 
     document.getElementById("motherStatusWarning").textContent =
         isActive
             ? "The mother member will no longer be able to log in to the system."
             : "The mother member will be able to log in to the system again.";
 
-    const confirmButton =
-        document.getElementById("confirmMotherStatusButton");
+    const confirmButton = document.getElementById("confirmMotherStatusButton");
 
     confirmButton.className = isActive
         ? "btn btn-danger"
@@ -741,13 +743,15 @@ function openChildStatusModal(child) {
     document.getElementById("childStatusTargetName").textContent =
         child.fullName;
 
+    document.getElementById("childStatusAction").textContent =
+        isActive ? "deactivate" : "activate";
+
     document.getElementById("childStatusWarning").textContent =
         isActive
             ? "The child member will no longer be able to log in to the system."
             : "The child member will be able to log in to the system again.";
 
-    const confirmButton =
-        document.getElementById("confirmChildStatusButton");
+    const confirmButton = document.getElementById("confirmChildStatusButton");
 
     confirmButton.className = isActive
         ? "btn btn-danger"
