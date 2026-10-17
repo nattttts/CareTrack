@@ -476,7 +476,7 @@ a {
 }
 
 /* Remove top margin from the first section title */
-.modal-body h6:first-child {
+.modal-body h6:first-of-type {
     margin-top: 0;
 }
 

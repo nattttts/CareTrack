@@ -215,6 +215,7 @@
                                     <tr>
                                         <th>Mother</th>
                                         <th>IC Number</th>
+                                        <th>Email</th>
                                         <th>Phone.No</th>
                                         <th>Account Status</th>
                                         <th>Date Created</th>
@@ -602,6 +603,159 @@
 
     </div>
 
+    <!-- ================= EDIT MOTHER MODAL ================= -->
+    <div
+        class="modal fade"
+        id="editMotherModal"
+        tabindex="-1"
+        aria-labelledby="editMotherModalLabel"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content form-modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="editMotherModalLabel">
+                            Edit Mother
+                        </h5>
+                        <p class="modal-subtitle">Update the mother's account information.</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+
+                <form id="editMotherForm">
+                    <div class="modal-body">
+
+                        <input type="hidden" id="editMotherId">
+
+                        <!-- Personal Information -->
+                        <h6>Personal Information</h6>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="editMotherName" class="form-label">Full Name</label>
+                                <input
+                                    type="text" id="editMotherName"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editMotherICNumber" class="form-label">IC Number</label>
+                                <input
+                                    type="text" id="editMotherICNumber"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editMotherDOB" class="form-label">Date of Birth</label>
+                                <input
+                                    type="date" id="editMotherDOB"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editMotherPhone" class="form-label">Phone Number</label>
+                                <input
+                                    type="tel" id="editMotherPhone"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editMotherEmail" class="form-label">Email Address</label>
+                                <input
+                                    type="email" id="editMotherEmail"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editMotherAddress" class="form-label">Home Address</label>
+                                <input
+                                    type="text" id="editMotherAddress"
+                                    class="form-control"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Emergency Contact -->
+                        <h6>Emergency Contact</h6>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="editMotherEmergencyName" class="form-label">Emergency Contact Name</label>
+                                <input
+                                    type="text" id="editMotherEmergencyName"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editMotherRelationship" class="form-label">Relationship</label>
+                                <input
+                                    type="text" id="editMotherRelationship"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editMotherEmergencyPhone" class="form-label">Emergency Contact Phone Number</label>
+                                <input
+                                    type="tel" id="editMotherEmergencyPhone"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-12">
+                                <div class="system-role-note">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span>
+                                        <strong>System Role:</strong>
+                                        Mother
+                                        <small>
+                                            Mother account role cannot be changed here.
+                                        </small>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-light cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary modal-save-changes-button">
+                            Save Changes
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
     <!-- ================= MOTHER DEACTIVATE CONFIRMATION MODAL ================= -->
     <div
         class="modal fade"
@@ -839,6 +993,143 @@
                 <div class="modal-body">
                     <div id="childViewContent"></div>
                 </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= EDIT CHILD MODAL ================= -->
+    <div
+        class="modal fade"
+        id="editChildModal"
+        tabindex="-1"
+        aria-labelledby="editChildModalLabel"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content form-modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="editChildModalLabel">
+                            Edit Child
+                        </h5>
+                        <p class="modal-subtitle">
+                            Update the child's account information.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+
+                <form id="editChildForm">
+                    <div class="modal-body">
+                            
+                        <input type="hidden" id="editChildId">
+
+                        <!-- Child Information -->
+                        <h6>Child Information</h6>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="editChildName" class="form-label">Full Name</label>
+                                <input
+                                    type="text" id="editChildName"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editChildMyKid" class="form-label">MyKid Number</label>
+                                <input
+                                    type="text" id="editChildMyKid"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editChildDOB" class="form-label">Date of Birth</label>
+                                <input
+                                    type="date" id="editChildDOB"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editChildGender" class="form-label">Gender</label>
+                                <select id="editChildGender" class="form-select">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Guardian Contact -->
+                        <h6>Guardian's Contact</h6>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="editChildGuardianName" class="form-label">Guardian Name</label>
+                                <input
+                                    type="text" id="editChildGuardianName"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editChildGuardianPhone" class="form-label">Guardian Phone Number</label>
+                                <input
+                                    type="tel" id="editChildGuardianPhone"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editChildGuardianEmail" class="form-label">Guardian Email</label>
+                                <input
+                                    type="email" id="editChildGuardianEmail"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="col-12">
+                                <div class="system-role-note">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span>
+                                        <strong>System Role:</strong>
+                                        Child
+                                        <small>
+                                            Child account role cannot be changed here.
+                                        </small>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-light cancel-button"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary modal-save-changes-button">
+                            Save Changes
+                        </button>
+                    </div>
+
+                </form>
 
             </div>
 

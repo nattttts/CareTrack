@@ -108,6 +108,7 @@ function renderMothers() {
             </td>
 
             <td>${escapeHTML(mother.icNumber)}</td>
+            <td>${escapeHTML(mother.email)}</td>
             <td>${escapeHTML(mother.phone)}</td>
             <td>${createStatusBadge(mother.status)}</td>
             <td>${formatDate(mother.dateCreated)}</td>
@@ -371,11 +372,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .addEventListener("click", resetChildFilters);
 });
 
-// ================= VIEW & EDIT =================
-
-let editingMotherId = null;
-let editingChildId = null;
-
 // ================= ACTIVATE / DEACTIVATE =================
 let pendingMotherId = null;
 let pendingChildId = null;
@@ -483,88 +479,37 @@ function viewChild(child) {
 // ================= OPEN EDIT MOTHER =================
 
 function editMother(mother) {
-    editingMotherId = mother.id;
-    editingChildId = null;
+    document.getElementById("editMotherId").value = mother.id;
+    document.getElementById("editMotherName").value = mother.fullName;
+    document.getElementById("editMotherICNumber").value = mother.icNumber;
+    document.getElementById("editMotherDOB").value = mother.dob;
+    document.getElementById("editMotherPhone").value = mother.phone;
+    document.getElementById("editMotherEmail").value = mother.email;
+    document.getElementById("editMotherAddress").value = mother.address;
+    document.getElementById("editMotherEmergencyName").value = mother.emergencyName;
+    document.getElementById("editMotherRelationship").value = mother.emergencyRelationship;
+    document.getElementById("editMotherEmergencyPhone").value = mother.emergencyPhone;
 
-    const form = document.getElementById("addMotherForm");
-    const inputs = form.querySelectorAll(".modal-body input.form-control");
-
-    // Input order: name, IC, DOB, phone, email,
-    // address, emergency name, relationship, emergency phone.
-    inputs[0].value = mother.fullName;
-    inputs[1].value = mother.icNumber;
-    inputs[2].value = mother.dob;
-    inputs[3].value = mother.phone;
-    inputs[4].value = mother.email;
-    inputs[5].value = mother.address;
-    inputs[6].value = mother.emergencyName;
-    inputs[7].value = mother.emergencyRelationship;
-    inputs[8].value = mother.emergencyPhone;
-
-    document.getElementById("addMotherModalLabel").textContent =
-        "Edit Mother";
-
-    form.querySelector('[type="submit"]').textContent = "Save Changes";
-
-    // Open modal
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("addMotherModal")
-    ).show();
+    bootstrap.Modal
+        .getOrCreateInstance(document.getElementById("editMotherModal"))
+        .show();
 }
 
 // ================= OPEN EDIT CHILD =================
 
 function editChild(child) {
-    editingChildId = child.id;
-    editingMotherId = null;
+    document.getElementById("editChildId").value = child.id;
+    document.getElementById("editChildName").value = child.fullName;
+    document.getElementById("editChildMyKid").value = child.myKidNumber;
+    document.getElementById("editChildDOB").value = child.dob;
+    document.getElementById("editChildGender").value = child.gender;
+    document.getElementById("editChildGuardianName").value = child.guardianName;
+    document.getElementById("editChildGuardianPhone").value = child.guardianPhone;
+    document.getElementById("editChildGuardianEmail").value = child.guardianEmail;
 
-    const form = document.getElementById("addChildForm");
-    const inputs = form.querySelectorAll(".modal-body input.form-control");
-    const genderSelect = form.querySelector(".modal-body select.form-select");
-
-    // Input order: name, MyKid, DOB, guardian name,
-    // guardian phone, guardian email.
-    inputs[0].value = child.fullName;
-    inputs[1].value = child.myKidNumber;
-    inputs[2].value = child.dob;
-    inputs[3].value = child.guardianName;
-    inputs[4].value = child.guardianPhone;
-    inputs[5].value = child.guardianEmail;
-
-    genderSelect.value = child.gender;
-
-    document.getElementById("addChildModalLabel").textContent =
-        "Edit Child";
-
-    form.querySelector('[type="submit"]').textContent = "Save Changes";
-
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("addChildModal")
-    ).show();
-}
-
-// // ================= RESET FORM AFTER MODAL CLOSE =================
-
-function resetMotherEditForm() {
-    editingMotherId = null;
-
-    const form = document.getElementById("addMotherForm");
-
-    document.getElementById("addMotherModalLabel").textContent = "Add Mother";
-
-    form.querySelector('[type="submit"]').textContent = "Add Mother";
-    form.reset();
-}
-
-function resetChildEditForm() {
-    editingChildId = null;
-
-    const form = document.getElementById("addChildForm");
-
-    document.getElementById("addChildModalLabel").textContent = "Add Child";
-
-    form.querySelector('[type="submit"]').textContent = "Add Child";
-    form.reset();
+    bootstrap.Modal
+        .getOrCreateInstance(document.getElementById("editChildModal"))
+        .show();
 }
 
 // ================= HANDLE VIEW,EDIT & DEACTIVATE BUTTONS =================
@@ -617,20 +562,18 @@ function setupActionButtons() {
 }
 
 
-// ================= SAVE MOTHER EDIT =================
+// ================= ADD MOTHER =================
 
 document.getElementById("addMotherForm").addEventListener("submit", event => {
-    if (editingMotherId === null) return;
-
     event.preventDefault();
 
     const form = event.currentTarget;
     const inputs = form.querySelectorAll(".modal-body input.form-control");
 
-    const mother = mothers.find(item => item.id === editingMotherId);
-    if (!mother) return;
-
-    Object.assign(mother, {
+    const newMother = {
+        id: mothers.length > 0
+            ? Math.max(...mothers.map(mother => mother.id)) + 1
+            : 1,
         fullName: inputs[0].value.trim(),
         icNumber: inputs[1].value.trim(),
         dob: inputs[2].value,
@@ -640,30 +583,65 @@ document.getElementById("addMotherForm").addEventListener("submit", event => {
         emergencyName: inputs[6].value.trim(),
         emergencyRelationship: inputs[7].value.trim(),
         emergencyPhone: inputs[8].value.trim(),
-    });
+        status: "Active",
+        dateCreated: new Date().toISOString().split("T")[0]
+    };
+
+    mothers.push(newMother);
 
     renderMothers();
+    form.reset();
 
     bootstrap.Modal.getOrCreateInstance(
         document.getElementById("addMotherModal")
     ).hide();
 });
 
-// ================= SAVE CHILD EDIT =================
+// ================= EDIT MOTHER =================
+
+document.getElementById("editMotherForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const id = Number(document.getElementById("editMotherId").value);
+    const mother = mothers.find(m => m.id === id);
+
+    if (!mother) {
+        return;
+    }
+
+    Object.assign(mother, {
+        fullName: document.getElementById("editMotherName").value.trim(),
+        icNumber: document.getElementById("editMotherICNumber").value.trim(),
+        dob: document.getElementById("editMotherDOB").value,
+        phone: document.getElementById("editMotherPhone").value.trim(),
+        email: document.getElementById("editMotherEmail").value.trim(),
+        address: document.getElementById("editMotherAddress").value.trim(),
+        emergencyName: document.getElementById("editMotherEmergencyName").value.trim(),
+        emergencyRelationship: document.getElementById("editMotherRelationship").value.trim(),
+        emergencyPhone: document.getElementById("editMotherEmergencyPhone").value.trim()
+    });
+
+    renderMothers();
+
+    bootstrap.Modal
+        .getOrCreateInstance(document.getElementById("editMotherModal"))
+        .hide();
+});
+
+
+// ================= ADD CHILD =================
 
 document.getElementById("addChildForm").addEventListener("submit", event => {
-    if (editingChildId === null) return;
-
     event.preventDefault();
 
     const form = event.currentTarget;
     const inputs = form.querySelectorAll(".modal-body input.form-control");
     const genderSelect = form.querySelector(".modal-body select.form-select");
 
-    const child = children.find(item => item.id === editingChildId);
-    if (!child) return;
-
-    Object.assign(child, {
+    const newChild = {
+        id: children.length > 0
+            ? Math.max(...children.map(child => child.id)) + 1
+            : 1,
         fullName: inputs[0].value.trim(),
         myKidNumber: inputs[1].value.trim(),
         dob: inputs[2].value,
@@ -671,9 +649,14 @@ document.getElementById("addChildForm").addEventListener("submit", event => {
         guardianName: inputs[3].value.trim(),
         guardianPhone: inputs[4].value.trim(),
         guardianEmail: inputs[5].value.trim(),
-    });
+        status: "Active",
+        dateCreated: new Date().toISOString().split("T")[0]
+    };
+
+    children.push(newChild);
 
     renderChildren();
+    form.reset();
 
     bootstrap.Modal.getOrCreateInstance(
         document.getElementById("addChildModal")
@@ -681,16 +664,34 @@ document.getElementById("addChildForm").addEventListener("submit", event => {
 });
 
 
-// Reset forms when the modal closes
-document.getElementById("addMotherModal").addEventListener(
-    "hidden.bs.modal",
-    resetMotherEditForm
-);
+// ================= EDIT CHILD =================
 
-document.getElementById("addChildModal").addEventListener(
-    "hidden.bs.modal",
-    resetChildEditForm
-);
+document.getElementById("editChildForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const id = Number(document.getElementById("editChildId").value);
+    const child = children.find(c => c.id === id);
+
+    if (!child) {
+        return;
+    }
+
+    Object.assign(child, {
+        fullName: document.getElementById("editChildName").value.trim(),
+        myKidNumber: document.getElementById("editChildMyKid").value.trim(),
+        dob: document.getElementById("editChildDOB").value,
+        gender: document.getElementById("editChildGender").value,
+        guardianName: document.getElementById("editChildGuardianName").value.trim(),
+        guardianPhone: document.getElementById("editChildGuardianPhone").value.trim(),
+        guardianEmail: document.getElementById("editChildGuardianEmail").value.trim()
+    });
+
+    renderChildren();
+
+    bootstrap.Modal
+        .getOrCreateInstance(document.getElementById("editChildModal"))
+        .hide();
+});
 
 // ================= OPEN MOTHER STATUS MODAL =================
 
