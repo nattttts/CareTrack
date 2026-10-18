@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS Staff (
 
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
+        ON UPDATE CASCADE
 );
 
 
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS Mother (
 
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
+        ON UPDATE CASCADE
 );
 
 -- =========================================
@@ -60,7 +62,11 @@ CREATE TABLE IF NOT EXISTS Child (
     gender TEXT NOT NULL,
     
     guardian_name TEXT NOT NULL,
-    phone_no TEXT NOT NULL
+    phone_no TEXT NOT NULL,
+
+    FOREIGN KEY (user_id)
+        REFERENCES User(user_id)
+        ON UPDATE CASCADE
 );
 
 
@@ -117,6 +123,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
 
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
+        ON UPDATE CASCADE
 );
 
 
@@ -138,7 +145,8 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
         ), 
 
     FOREIGN KEY (user_id)
-        REFERENCES User(user_id),
+        REFERENCES User(user_id)
+        ON UPDATE CASCADE,
 
     FOREIGN KEY (vaccination_id)
         REFERENCES Vaccination(vaccination_id),
@@ -167,7 +175,8 @@ CREATE TABLE IF NOT EXISTS Notification (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id)
-        REFERENCES User(user_id),
+        REFERENCES User(user_id)
+        ON UPDATE CASCADE,
 
     FOREIGN KEY (appointment_id)
         REFERENCES Appointment(appointment_id),
