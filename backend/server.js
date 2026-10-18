@@ -239,6 +239,142 @@ app.get("/api/children", (req, res) => {
     }
 });
 
+
+app.patch("/api/staff/:staffId", (req, res) => {
+    const staffId = Number(req.params.staffId);
+
+    const {
+        user_id,
+        full_name,
+        email,
+        phone_no,
+        position
+    } = req.body;
+
+    // Validate staff ID
+    if (!Number.isInteger(staffId) || staffId <= 0) {
+        return res.status(400).json({
+            message: "Invalid staff ID."
+        });
+    }
+
+    // Validate required fields
+    if (
+        typeof user_id !== "string" ||
+        typeof full_name !== "string" ||
+        typeof email !== "string" ||
+        typeof phone_no !== "string" ||
+        typeof position !== "string"
+    ) {
+        return res.status(400).json({
+            message: "Please provide all required staff details."
+        });
+    }
+
+    const newIC = user_id.trim();
+    const name = full_name.trim();
+    const normalizedEmail = email.trim();
+    const phone = phone_no.trim();
+
+    if (!newIC || !name || !normalizedEmail || !phone || !position) {
+        return res.status(400).json({
+            message: "All fields are required."
+        });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+        return res.status(400).json({
+            message: "Please enter a valid email address."
+        });
+    }
+
+    if (!["Doctor", "Nurse"].includes(position)) {
+        return res.status(400).json({
+            message: "Please select a valid staff position."
+        });
+    }
+
+    try {
+        // Find the existing staff account
+        const existingStaff = db.prepare(`
+            SELECT Staff.user_id
+            FROM Staff
+            WHERE Staff.staff_id = ?
+        `).get(staffId);
+
+        if (!existingStaff) {
+            return res.status(404).json({
+                message: "Staff member not found."
+            });
+        }
+
+        // Check whether the new IC belongs to another account
+        const duplicateIC = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE user_id = ?
+              AND user_id != ?
+        `).get(newIC, existingStaff.user_id);
+
+        if (duplicateIC) {
+            return res.status(409).json({
+                message: "This IC number is already registered."
+            });
+        }
+
+        // Check whether another account uses this email
+        const duplicateEmail = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE LOWER(TRIM(email)) = LOWER(?)
+            AND user_id != ?
+        `).get(normalizedEmail, existingStaff.user_id);
+
+        if (duplicateEmail) {
+            return res.status(409).json({
+                message: "This email is already used by another account."
+            });
+        }
+
+        // Update everything in one transaction
+        const updateStaff = db.transaction(() => {
+            db.prepare(`
+                UPDATE User
+                SET user_id = ?,
+                    full_name = ?,
+                    email = ?
+                WHERE user_id = ?
+            `).run(
+                newIC,
+                name,
+                normalizedEmail,
+                existingStaff.user_id
+            );
+
+            db.prepare(`
+                UPDATE Staff
+                SET phone_no = ?,
+                    position = ?
+                WHERE staff_id = ?
+            `).run(phone, position, staffId);
+        });
+
+        updateStaff();
+
+        return res.status(200).json({
+            message: "Staff details updated successfully."
+        });
+
+    } catch (error) {
+        console.error("Error updating staff:", error);
+
+        return res.status(500).json({
+            message: "Failed to update staff details."
+        });
+    }
+});
+
+
 // Update a staff account's status (Active or Inactive)
 app.patch("/api/staff/:staffId/status", (req, res) => {
     const staffId = Number(req.params.staffId);

@@ -362,6 +362,86 @@ document
         }
     });
 
+
+document.getElementById("editStaffForm").addEventListener(
+    "submit",
+    async function (event) {
+        event.preventDefault();
+
+        const form = this;
+        const submitButton = form.querySelector(
+            'button[type="submit"]'
+        );
+
+        const staffId = document.getElementById(
+            "editStaffId"
+        ).value;
+
+        const staffData = {
+            user_id: document.getElementById(
+                "editStaffICNumber"
+            ).value.trim(),
+
+            full_name: document.getElementById(
+                "editStaffName"
+            ).value.trim(),
+
+            email: document.getElementById(
+                "editStaffEmail"
+            ).value.trim(),
+
+            phone_no: document.getElementById(
+                "editStaffPhone"
+            ).value.trim(),
+
+            position: document.getElementById(
+                "editStaffPosition"
+            ).value
+        };
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Saving...";
+
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/staff/${staffId}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(staffData)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Failed to update staff details."
+                );
+            }
+
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById("editStaffModal")
+            ).hide();
+
+            await loadStaff();
+
+            showToast(result.message, "success");
+
+        } catch (error) {
+            console.error("Error updating staff:", error);
+            showToast(error.message, "error");
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Save Changes";
+        }
+    }
+);
+
 // Confirm activation or deactivation
 document
     .getElementById("confirmStaffStatusButton")
@@ -421,7 +501,6 @@ document
             confirmButton.disabled = false;
         }
     });
-
 
 document.getElementById("staffSearch").addEventListener("input", applyStaffFilters);
 document.getElementById("statusFilter").addEventListener("change", applyStaffFilters);
