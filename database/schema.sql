@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS User (
     role TEXT NOT NULL
         CHECK (role IN ('mother', 'child', 'staff', 'admin')),
     account_status TEXT NOT NULL DEFAULT 'Active',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    password_set INTEGER NOT NULL DEFAULT 0
+        CHECK (password_set IN (0, 1))
 );
 
 
@@ -32,9 +34,26 @@ CREATE TABLE IF NOT EXISTS Staff (
         ON UPDATE CASCADE
 );
 
+-- =========================================
+-- 3. USER INVITATION TOKEN
+-- Stores tokens used to activate new accounts
+-- =========================================
+CREATE TABLE IF NOT EXISTS Invitation_Token (
+    invitation_id INTEGER PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TEXT NOT NULL,
+    used_at TEXT,
+    revoked_at TEXT,
+
+    FOREIGN KEY (user_id)
+        REFERENCES User(user_id)
+        ON UPDATE CASCADE
+);
 
 -- =========================================
--- 3. MOTHER
+-- 4. MOTHER
 -- Mother/patient profile
 -- =========================================
 CREATE TABLE IF NOT EXISTS Mother (
@@ -95,7 +114,7 @@ CREATE TABLE IF NOT EXISTS Vaccination (
 
 
 -- =========================================
--- 9. APPOINTMENT
+-- 8. APPOINTMENT
 -- =========================================
 CREATE TABLE IF NOT EXISTS Appointment (
     appointment_id INTEGER PRIMARY KEY,
@@ -128,7 +147,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
 
 
 -- =========================================
--- 10. CHILD VACCINATION
+-- 9. CHILD VACCINATION
 -- Tracks a child's vaccine/dose and due date
 -- appointment_id links to its associated booking
 -- =========================================
@@ -157,7 +176,7 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
 
 
 -- =========================================
--- 11. NOTIFICATION
+-- 10. NOTIFICATION
 -- Each user can receive multiple notifications.
 -- A notification may refer to an appointment,
 -- a vaccination record, or both.
@@ -187,7 +206,7 @@ CREATE TABLE IF NOT EXISTS Notification (
 
 
 -- =========================================
--- 12. QUEUE ENTRY
+-- 11. QUEUE ENTRY
 -- Created when a patient checks in
 -- =========================================
 CREATE TABLE IF NOT EXISTS Queue_Entry (
