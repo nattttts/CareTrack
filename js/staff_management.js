@@ -40,21 +40,41 @@ async function loadStaff() {
                 <td>${staff.email}</td>
                 <td>${staff.position}</td>
                 <td>
-                    <span class="status-badge ${
-                        staff.account_status === "Active"
-                            ? "active-status"
-                            : "inactive-status"
-                    }">
-                        <span class="status-dot"></span>
-                        ${staff.account_status}
-                    </span>
+                    <div class="account-status-group">
+                        <span class="status-badge ${
+                            staff.account_status === "Active"
+                                ? "active-status"
+                                : "inactive-status"
+                        }">
+                            <span class="status-dot"></span>
+                            ${staff.account_status}
+                        </span>
+
+                        <span class="password-status ${
+                            Number(staff.password_set) === 1
+                                ? "password-set"
+                                : "password-not-set"
+                        }">
+                            <i class="bi ${
+                                Number(staff.password_set) === 1
+                                    ? "bi-check-circle"
+                                    : "bi-clock"
+                            }"></i>
+
+                            ${
+                                Number(staff.password_set) === 1
+                                    ? "Password set"
+                                    : "Password not set"
+                            }
+                        </span>
+                    </div>
                 </td>
                 <td>${new Date(staff.created_at).toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric"
                 })}</td>
-                <td>
+                <td class="staff-actions-cell">
                     <div class="action-buttons">
                         <button type="button" class="action-button view-button">
                             <i class="bi bi-eye"></i>
@@ -65,7 +85,7 @@ async function loadStaff() {
                             <i class="bi bi-pencil"></i>
                             <span>Edit</span>
                         </button>
-                        
+
                         <button
                             type="button"
                             class="action-button ${
@@ -79,14 +99,29 @@ async function loadStaff() {
                                     ? "bi-person-x"
                                     : "bi-person-check"
                             }"></i>
+
                             <span>${
                                 staff.account_status === "Active"
                                     ? "Deactivate"
                                     : "Activate"
                             }</span>
                         </button>
-
                     </div>
+
+                    ${
+                        Number(staff.password_set) !== 1
+                            ? `
+                                <button
+                                    type="button"
+                                    class="action-button resend-invitation-button"
+                                    data-staff-id="${staff.staff_id}"
+                                >
+                                    <i class="bi bi-envelope"></i>
+                                    <span>Resend Invitation</span>
+                                </button>
+                            `
+                            : ""
+                    }
                 </td>
             `;
 
@@ -101,7 +136,7 @@ async function loadStaff() {
         console.error("Error loading staff:", error);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center">
+                <td colspan="7" class="text-center">
                     Unable to load staff records.
                 </td>
             </tr>
