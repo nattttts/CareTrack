@@ -230,7 +230,7 @@
                         </div>
 
                         <!-- NO RESULTS -->
-                        <div id="noMotherResults" class="no-results" hidden>
+                        <div id="noMotherFound" class="no-results" hidden>
                             <i class="bi bi-person-fill-x"></i>
                             <h5>No mother records found</h5>
                             <p>Try changing your search or filter options.</p>
@@ -353,7 +353,7 @@
                         </div>
 
                         <!-- NO RESULTS -->
-                        <div id="noChildResults" class="no-results" hidden>
+                        <div id="noChildFound" class="no-results" hidden>
                             <i class="bi bi-person-fill-x"></i>
                             <h5>No child records found</h5>
                             <p>Try changing your search or filter options.</p>
@@ -594,7 +594,68 @@
                 </div>
 
                 <div class="modal-body">
-                    <div id="motherViewContent"></div>
+                    <div class="view-profile">
+                        <h4 id="viewMotherProfileName"></h4>
+
+                        <span id="viewMotherProfileStatus" class="status-badge">
+                            <span class="status-dot"></span>
+                            <span id="viewMotherProfileStatusText"></span>
+                        </span>
+                    </div>
+
+                    <div class="detail-list">
+                        <h6>Personal Information</h6>
+                        <div>
+                            <span>Full Name</span>
+                            <strong id="viewMotherName"></strong>
+                        </div>
+
+                        <div>
+                            <span>IC Number</span>
+                            <strong id="viewMotherICNumber"></strong>
+                        </div>
+
+                        <div>
+                            <span>Date of Birth</span>
+                            <strong id="viewMotherDOB"></strong>
+                        </div>
+
+                        <div>
+                            <span>Phone Number</span>
+                            <strong id="viewMotherPhone"></strong>
+                        </div>
+
+                        <div>
+                            <span>Email Address</span>
+                            <strong id="viewMotherEmail"></strong>
+                        </div>
+
+                        <div>
+                            <span>Home Address</span>
+                            <strong id="viewMotherAddress"></strong>
+                        </div>
+
+                        <div>
+                            <span>Date Created</span>
+                            <strong id="viewMotherDate"></strong>
+                        </div>
+
+                        <h6>Emergency Contact</h6>
+                        <div>
+                            <span>Emergency Contact Name</span>
+                            <strong id="viewMotherContactName"></strong>
+                        </div>
+
+                        <div>
+                            <span>Relationship</span>
+                            <strong id="viewMotherRelationship"></strong>
+                        </div>
+
+                        <div>
+                            <span>Emergency Contact Phone Number</span>
+                            <strong id="viewMotherContactPhone"></strong>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -992,14 +1053,68 @@
                 </div>
 
                 <div class="modal-body">
-                    <div id="childViewContent"></div>
+                    <div class="view-profile">
+                        <h4 id="viewChildProfileName"></h4>
+
+                        <span id="viewChildProfileStatus" class="status-badge">
+                            <span class="status-dot"></span>
+                            <span id="viewChildProfileStatusText"></span>
+                        </span>
+                    </div>
+
+                    <div class="detail-list">
+                        <h6>Child Information</h6>
+                        <div>
+                            <span>Full Name</span>
+                            <strong id="viewChildName"></strong>
+                        </div>
+
+                        <div>
+                            <span>MyKid Number</span>
+                            <strong id="viewChildMyKidNumber"></strong>
+                        </div>
+
+                        <div>
+                            <span>Date of Birth</span>
+                            <strong id="viewChildDOB"></strong>
+                        </div>
+
+                        <div>
+                            <span>Gender</span>
+                            <strong id="viewChildGender"></strong>
+                        </div>
+
+                        <div>
+                            <span>Date Created</span>
+                            <strong id="viewChildDate"></strong>
+                        </div>
+
+                        <h6>Guardian's Contact</h6>
+                        <div>
+                            <span>Guardian Name</span>
+                            <strong id="viewChildGuardianName"></strong>
+                        </div>
+
+                        <div>
+                            <span>Guardian Phone Number</span>
+                            <strong id="viewChildGuardianPhone"></strong>
+                        </div>
+
+                        <div>
+                            <span>Guardian Email</span>
+                            <strong id="viewChildGuardianEmail"></strong>
+                        </div>
+                    </div>
                 </div>
+
+                
 
             </div>
 
         </div>
 
     </div>
+
 
     <!-- ================= EDIT CHILD MODAL ================= -->
     <div

@@ -1,62 +1,505 @@
-// ================= SAMPLE DATA =================
+let allMother = [];
+let allChild = [];
 
-let mothers = [
-    {
-        id: 1,
-        fullName: "Jane Tan",
-        icNumber: "950815-07-1122",
-        dob: "1995-08-15",
-        phone: "012-3456789",
-        email: "janetan@gmail.com",
-        address: "123, Taman Mutiara, Bayan Lepas, Pulau Pinang",
-        emergencyName: "Lim Yong Ming",
-        emergencyRelationship: "Husband",
-        emergencyPhone: "011-7458526",
-        status: "Active",
-        dateCreated: "2026-10-07"
-    },
-    {
-        id: 2,
-        fullName: "Nur Aisyah",
-        icNumber: "990420-07-3344",
-        dob: "1999-04-20",
-        phone: "017-4453756",
-        email: "aisyah123@gmail.com",
-        address: "Bayan Lepas, Pulau Pinang",
-        emergencyName: "Ahmad Rahman",
-        emergencyRelationship: "Husband",
-        emergencyPhone: "016-2223344",
-        status: "Inactive",
-        dateCreated: "2026-09-15"
-    }
-];
+// ================= LOAD MOTHER =================
+async function loadMother() {
+    const tableBody = document.getElementById("motherTableBody");
 
-let children = [
-    {
-        id: 1,
-        fullName: "Alice Tan",
-        myKidNumber: "260612-07-0248",
-        dob: "2026-06-12",
-        gender: "Female",
-        guardianName: "Jane Tan",
-        guardianPhone: "012-3456789",
-        guardianEmail: "janetan@gmail.com",
-        status: "Active",
-        dateCreated: "2026-06-14"
-    },
-    {
-        id: 2,
-        fullName: "Adam Rahman",
-        myKidNumber: "250315-07-0456",
-        dob: "2025-03-15",
-        gender: "Male",
-        guardianName: "Nur Aisyah",
-        guardianPhone: "017-4453756",
-        guardianEmail: "aisyah123@gmail.com",
-        status: "Inactive",
-        dateCreated: "2025-03-20"
+    try {
+        const response = await fetch("http://localhost:3000/api/mothers");
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve mother records.");
+        }
+
+        const motherList = await response.json();
+        
+        allMother = motherList;
+
+        // Remove old rows, but keep the "no matching staff" message
+        tableBody.querySelectorAll(".mother-row").forEach(row => row.remove());
+
+        motherList.forEach(mother => {
+            const row = document.createElement("tr");
+            row.classList.add("mother-row");
+
+            row.dataset.search = [
+                mother.full_name,
+                mother.user_id,
+                mother.email,
+                mother.phone_no
+            ].join(" ").toLowerCase();
+
+            row.dataset.status = mother.account_status;
+
+            row.innerHTML = `
+                <td>
+                    <strong>${mother.full_name}</strong>
+                </td>
+
+                <td>${mother.user_id}</td>
+                <td>${mother.email}</td>
+                <td>${mother.phone_no}</td>
+                <td>
+                    <span class="status-badge ${
+                        mother.account_status === "Active"
+                            ? "active-status"
+                            : "inactive-status"
+                    }">
+                        <span class="status-dot"></span>
+                        ${mother.account_status}
+                    </span>
+                </td>
+                <td>${new Date(mother.created_at).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                })}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button type="button" class="action-button view-button">
+                            <i class="bi bi-eye"></i>
+                            <span>View</span>
+                        </button>
+
+                        <button type="button" class="action-button edit-button">
+                            <i class="bi bi-pencil"></i>
+                            <span>Edit</span>
+                        </button>
+                        
+                        <button
+                            type="button"
+                            class="action-button ${
+                                mother.account_status === "Active"
+                                    ? "deactivate-button"
+                                    : "activate-button"
+                            }"
+                        >
+                            <i class="bi ${
+                                mother.account_status === "Active"
+                                    ? "bi-person-x"
+                                    : "bi-person-check"
+                            }"></i>
+                            <span>${
+                                mother.account_status === "Active"
+                                    ? "Deactivate"
+                                    : "Activate"
+                            }</span>
+                        </button>
+
+                    </div>
+                </td>
+            `;
+
+            row.dataset.motherId = mother.mother_id;
+
+            tableBody.appendChild(row);
+        });
+
+        applyMotherFilters();
+
+    } catch (error) {
+        console.error("Error loading mothers:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    Unable to load mother records.
+                </td>
+            </tr>
+        `;
     }
-];
+}
+
+// ================= LOAD CHILD =================
+async function loadChild() {
+    const tableBody = document.getElementById("childTableBody");
+
+    try {
+        const response = await fetch("http://localhost:3000/api/children");
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve child records.");
+        }
+
+        const childList = await response.json();
+        
+        allChild = childList;
+
+        // Remove old rows, but keep the "no matching staff" message
+        tableBody.querySelectorAll(".child-row").forEach(row => row.remove());
+
+        childList.forEach(child => {
+            const row = document.createElement("tr");
+            row.classList.add("child-row");
+
+            row.dataset.search = [
+                child.full_name,
+                child.user_id,
+                child.gender,
+                child.guardian_name
+            ].join(" ").toLowerCase();
+
+            row.dataset.status = child.account_status;
+
+            row.innerHTML = `
+                <td>
+                    <strong>${child.full_name}</strong>
+                </td>
+
+                <td>${child.user_id}</td>
+                <td>${child.gender}</td>
+                <td>${child.guardian_name}</td>
+                
+                <td>
+                    <span class="status-badge ${
+                        child.account_status === "Active"
+                            ? "active-status"
+                            : "inactive-status"
+                    }">
+                        <span class="status-dot"></span>
+                        ${child.account_status}
+                    </span>
+                </td>
+                <td>${new Date(child.created_at).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                })}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button type="button" class="action-button view-button">
+                            <i class="bi bi-eye"></i>
+                            <span>View</span>
+                        </button>
+
+                        <button type="button" class="action-button edit-button">
+                            <i class="bi bi-pencil"></i>
+                            <span>Edit</span>
+                        </button>
+                        
+                        <button
+                            type="button"
+                            class="action-button ${
+                                child.account_status === "Active"
+                                    ? "deactivate-button"
+                                    : "activate-button"
+                            }"
+                        >
+                            <i class="bi ${
+                                child.account_status === "Active"
+                                    ? "bi-person-x"
+                                    : "bi-person-check"
+                            }"></i>
+                            <span>${
+                                child.account_status === "Active"
+                                    ? "Deactivate"
+                                    : "Activate"
+                            }</span>
+                        </button>
+
+                    </div>
+                </td>
+            `;
+
+            row.dataset.childId = child.child_id;
+
+            tableBody.appendChild(row);
+        });
+
+        applyChildFilters();
+
+    } catch (error) {
+        console.error("Error loading children:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    Unable to load child records.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// ================= MOTHER SEARCH & FILTER =================
+function applyMotherFilters() {
+    const searchInput = document
+        .getElementById("motherSearch")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const selectedStatus = document.getElementById("motherStatusFilter").value;
+
+    const rows = document.querySelectorAll(
+        "#motherTableBody .mother-row"
+    );
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const matchesSearch =
+            row.dataset.search.includes(searchInput);
+
+        const matchesStatus =
+            selectedStatus === "all" ||
+            row.dataset.status === selectedStatus;
+
+        const matches = matchesSearch && matchesStatus;
+
+        row.style.display = matches ? "" : "none";
+
+        if (matches) {
+            visibleCount++;
+        }
+    });
+
+    const noMotherFound = document.getElementById("noMotherFound");
+
+    if (noMotherFound) {
+        noMotherFound.hidden = visibleCount > 0;
+    }
+
+    document.getElementById("motherCount").textContent =
+        `Showing ${visibleCount} of ${allMother.length} mother`;
+}
+
+// ================= CHILD SEARCH & FILTER =================
+function applyChildFilters() {
+    const searchInput = document
+        .getElementById("childSearch")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const selectedStatus = document.getElementById("childStatusFilter").value;
+
+    const rows = document.querySelectorAll(
+        "#childTableBody .child-row"
+    );
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const matchesSearch =
+            row.dataset.search.includes(searchInput);
+
+        const matchesStatus =
+            selectedStatus === "all" ||
+            row.dataset.status === selectedStatus;
+
+        const matches = matchesSearch && matchesStatus;
+
+        row.style.display = matches ? "" : "none";
+
+        if (matches) {
+            visibleCount++;
+        }
+    });
+
+    const noChildFound = document.getElementById("noChildFound");
+
+    if (noChildFound) {
+        noChildFound.hidden = visibleCount > 0;
+    }
+
+    document.getElementById("childCount").textContent =
+        `Showing ${visibleCount} of ${allChild.length} child`;
+}
+
+// ================= RESET FILTERS =================
+function resetMotherFilters() {
+    document.getElementById("motherSearch").value = "";
+    document.getElementById("motherStatusFilter").value = "all";
+    applyMotherFilters();
+}
+
+function resetChildFilters() {
+    document.getElementById("childSearch").value = "";
+    document.getElementById("childStatusFilter").value = "all";
+    applyChildFilters();
+}
+
+const motherTableBody = document.getElementById("motherTableBody");
+
+let selectedMother = null;
+
+motherTableBody.addEventListener("click", function (event) {
+    const button = event.target.closest("button");
+
+    if (!button || !motherTableBody.contains(button)) {
+        return;
+    }
+
+    const row = button.closest(".mother-row");
+
+    if (!row) {
+        return;
+    }
+
+    const mother = allMother.find(
+        item => String(item.mother_id) === row.dataset.motherId
+    );
+
+    if (!mother) {
+        return;
+    }
+
+    selectedMother = mother;
+
+    // VIEW MOTHER
+    if (button.classList.contains("view-button")) {
+        document.getElementById("viewMotherProfileName").textContent =
+            mother.full_name;
+                
+        document.getElementById("viewMotherName").textContent =
+            mother.full_name;
+        
+        document.getElementById("viewMotherICNumber").textContent =
+            mother.user_id;
+        
+        document.getElementById("viewMotherDOB").textContent =
+            new Date(`${mother.date_of_birth}T00:00:00`).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+
+        document.getElementById("viewMotherPhone").textContent =
+            mother.phone_no || "—";
+
+        document.getElementById("viewMotherEmail").textContent =
+            mother.email;
+
+        document.getElementById("viewMotherAddress").textContent =
+            mother.address;
+
+        document.getElementById("viewMotherContactName").textContent =
+            mother.contact_name;
+        
+        document.getElementById("viewMotherRelationship").textContent =
+            mother.relationship;
+        
+        document.getElementById("viewMotherContactPhone").textContent =
+            mother.contact_phone_no || "—";
+
+        document.getElementById("viewMotherDate").textContent =
+            new Date(mother.created_at).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+
+        const statusBadge =
+            document.getElementById("viewMotherProfileStatus");
+
+        statusBadge.classList.toggle(
+            "active-status",
+            mother.account_status === "Active"
+        );
+
+        statusBadge.classList.toggle(
+            "inactive-status",
+            mother.account_status === "Inactive"
+        );
+
+        document.getElementById("viewMotherProfileStatusText").textContent =
+            mother.account_status;
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("viewMotherModal")
+            )
+            .show();
+    }
+});
+
+const childTableBody = document.getElementById("childTableBody");
+
+let selectedChild = null;
+
+childTableBody.addEventListener("click", function (event) {
+    const button = event.target.closest("button");
+
+    if (!button || !childTableBody.contains(button)) {
+        return;
+    }
+
+    const row = button.closest(".child-row");
+
+    if (!row) {
+        return;
+    }
+
+    const child = allChild.find(
+        item => String(item.child_id) === row.dataset.childId
+    );
+
+    if (!child) {
+        return;
+    }
+
+    selectedChild = child;
+
+    // VIEW CHILD
+    if (button.classList.contains("view-button")) {
+        document.getElementById("viewChildProfileName").textContent =
+            child.full_name;
+                
+        document.getElementById("viewChildName").textContent =
+            child.full_name;
+        
+        document.getElementById("viewChildMyKidNumber").textContent =
+            child.user_id;
+
+        document.getElementById("viewChildDOB").textContent =
+            new Date(`${child.date_of_birth}T00:00:00`).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+
+        document.getElementById("viewChildGender").textContent =
+            child.gender;
+
+        document.getElementById("viewChildGuardianName").textContent =
+            child.guardian_name;
+
+        document.getElementById("viewChildGuardianPhone").textContent =
+            child.phone_no || "—";
+
+        document.getElementById("viewChildGuardianEmail").textContent =
+            child.email; 
+
+        document.getElementById("viewChildDate").textContent =
+            new Date(child.created_at).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+
+        const statusBadge =
+            document.getElementById("viewChildProfileStatus");
+
+        statusBadge.classList.toggle(
+            "active-status",
+            child.account_status === "Active"
+        );
+
+        statusBadge.classList.toggle(
+            "inactive-status",
+            child.account_status === "Inactive"
+        );
+
+        document.getElementById("viewChildProfileStatusText").textContent =
+            child.account_status;
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("viewChildModal")
+            )
+            .show();
+    }
+});
 
 // ================= HELPER FUNCTIONS =================
 
@@ -71,18 +514,6 @@ function escapeHTML(value) {
     })[character]);
 }
 
-function formatDate(dateString) {
-    if (!dateString) return "-";
-
-    const date = new Date(`${dateString}T00:00:00`);
-
-    return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    });
-}
-
 function createStatusBadge(status) {
     const active = status === "Active";
 
@@ -92,233 +523,6 @@ function createStatusBadge(status) {
             ${escapeHTML(status)}
         </span>
     `;
-}
-
-// ================= RENDER MOTHER TABLE =================
-
-function renderMothers() {
-    const tableBody = document.getElementById("motherTableBody");
-
-    tableBody.innerHTML = mothers.map(mother => `
-        <tr class="mother-row" data-id="${mother.id}">
-            <td>
-                <strong class="mother-name">
-                    ${escapeHTML(mother.fullName)}
-                </strong>
-            </td>
-
-            <td>${escapeHTML(mother.icNumber)}</td>
-            <td>${escapeHTML(mother.email)}</td>
-            <td>${escapeHTML(mother.phone)}</td>
-            <td>${createStatusBadge(mother.status)}</td>
-            <td>${formatDate(mother.dateCreated)}</td>
-
-            <td>
-                <div class="action-buttons">
-                    <button type="button"
-                        class="action-button view-button"
-                        data-action="view"
-                        data-id="${mother.id}">
-                        <i class="bi bi-eye"></i>
-                        <span>View</span>
-                    </button>
-
-                    <button type="button"
-                        class="action-button edit-button"
-                        data-action="edit"
-                        data-id="${mother.id}">
-                        <i class="bi bi-pencil"></i>
-                        <span>Edit</span>
-                    </button>
-
-                    <button type="button"
-                        class="action-button ${mother.status === "Active" ? "deactivate-button" : "activate-button"}"
-                        data-action="toggle-status"
-                        data-id="${mother.id}">
-                        <i class="bi ${mother.status === "Active" ? "bi-person-x" : "bi-person-check"}"></i>
-                        <span>${mother.status === "Active" ? "Deactivate" : "Activate"}</span>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join("");
-
-    filterMothers();
-}
-
-// ================= RENDER CHILD TABLE =================
-
-function renderChildren() {
-    const tableBody = document.getElementById("childTableBody");
-
-    tableBody.innerHTML = children.map(child => `
-        <tr class="child-row" data-id="${child.id}">
-            <td>
-                <strong class="child-name">
-                    ${escapeHTML(child.fullName)}
-                </strong>
-            </td>
-
-            <td>${escapeHTML(child.myKidNumber)}</td>
-            <td>${escapeHTML(child.gender)}</td>
-            <td>${escapeHTML(child.guardianName)}</td>
-            <td>${createStatusBadge(child.status)}</td>
-            <td>${formatDate(child.dateCreated)}</td>
-
-            <td>
-                <div class="action-buttons">
-                    <button type="button"
-                        class="action-button view-button"
-                        data-action="view"
-                        data-id="${child.id}">
-                        <i class="bi bi-eye"></i>
-                        <span>View</span>
-                    </button>
-
-                    <button type="button"
-                        class="action-button edit-button"
-                        data-action="edit"
-                        data-id="${child.id}">
-                        <i class="bi bi-pencil"></i>
-                        <span>Edit</span>
-                    </button>
-
-                    <button type="button"
-                        class="action-button ${child.status === "Active" ? "deactivate-button" : "activate-button"}"
-                        data-action="toggle-status"
-                        data-id="${child.id}">
-                        <i class="bi ${child.status === "Active" ? "bi-person-x" : "bi-person-check"}"></i>
-                        <span>${child.status === "Active" ? "Deactivate" : "Activate"}</span>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join("");
-
-    filterChildren();
-}
-
-// ================= MOTHER SEARCH & FILTER =================
-
-function filterMothers() {
-    const keyword = document
-        .getElementById("motherSearch")
-        .value.toLowerCase().trim();
-
-    const status = document.getElementById("motherStatusFilter").value;
-
-    let visibleCount = 0;
-
-    document.querySelectorAll("#motherTableBody .mother-row")
-        .forEach(row => {
-            const mother = mothers.find(
-                item => item.id === Number(row.dataset.id)
-            );
-
-            if (!mother) return;
-
-            const matchesSearch = [
-                mother.fullName,
-                mother.icNumber,
-                mother.phone,
-                mother.email
-            ].some(value =>
-                String(value ?? "").toLowerCase().includes(keyword)
-            );
-
-            const matchesStatus =
-                status === "all" || mother.status === status;
-
-            const visible = matchesSearch && matchesStatus;
-
-            row.hidden = !visible;
-
-            if (visible) visibleCount++;
-        });
-
-    // Update record count
-    document.getElementById("motherCount").textContent =
-        `Showing ${visibleCount} of ${mothers.length} mothers`;
-
-    // Show or hide the no-results message
-    document.getElementById("noMotherResults").hidden =
-        visibleCount > 0;
-
-    // Hide the table header when there are no matching records
-    document.querySelector("#motherTableBody")
-        .closest("table").querySelector("thead").hidden =
-        visibleCount === 0;
-}
-
-
-// ================= CHILD SEARCH & FILTER =================
-
-function filterChildren() {
-    const keyword = document
-        .getElementById("childSearch")
-        .value.toLowerCase().trim();
-
-    const status = document.getElementById("childStatusFilter").value;
-
-    let visibleCount = 0;
-
-    document.querySelectorAll("#childTableBody .child-row")
-        .forEach(row => {
-            const child = children.find(
-                item => item.id === Number(row.dataset.id)
-            );
-
-            if (!child) return;
-
-            const matchesSearch = [
-                child.fullName,
-                child.myKidNumber,
-                child.gender,
-                child.guardianName,
-                child.guardianPhone,
-                child.guardianEmail
-            ].some(value =>
-                String(value ?? "").toLowerCase().includes(keyword)
-            );
-
-            const matchesStatus =
-                status === "all" || child.status === status;
-
-            const visible = matchesSearch && matchesStatus;
-
-            row.hidden = !visible;
-
-            if (visible) visibleCount++;
-        });
-
-    // Update record count
-    document.getElementById("childCount").textContent =
-        `Showing ${visibleCount} of ${children.length} children`;
-
-    // Show or hide the no-results message
-    document.getElementById("noChildResults").hidden =
-        visibleCount > 0;
-
-    // Hide the table header when there are no matching records
-    document.querySelector("#childTableBody")
-        .closest("table").querySelector("thead").hidden =
-        visibleCount === 0;
-}
-
-// ================= RESET FILTERS =================
-
-function resetMotherFilters() {
-    document.getElementById("motherSearch").value = "";
-    document.getElementById("motherStatusFilter").value = "all";
-
-    filterMothers();
-}
-
-function resetChildFilters() {
-    document.getElementById("childSearch").value = "";
-    document.getElementById("childStatusFilter").value = "all";
-
-    filterChildren();
 }
 
 // ================= TABS =================
@@ -348,25 +552,24 @@ function setupTabs() {
 // ================= INITIALISE PAGE =================
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderMothers();
-    renderChildren();
+    loadMother();
+    loadChild();
     setupTabs();
-    setupActionButtons();
 
     document.getElementById("motherSearch")
-        .addEventListener("input", filterMothers);
+        .addEventListener("input", applyMotherFilters);
 
     document.getElementById("motherStatusFilter")
-        .addEventListener("change", filterMothers);
+        .addEventListener("change", applyMotherFilters);
 
     document.getElementById("motherResetFilters")
         .addEventListener("click", resetMotherFilters);
 
     document.getElementById("childSearch")
-        .addEventListener("input", filterChildren);
+        .addEventListener("input", applyChildFilters);
 
     document.getElementById("childStatusFilter")
-        .addEventListener("change", filterChildren);
+        .addEventListener("change", applyChildFilters);
 
     document.getElementById("childResetFilters")
         .addEventListener("click", resetChildFilters);
@@ -375,106 +578,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================= ACTIVATE / DEACTIVATE =================
 let pendingMotherId = null;
 let pendingChildId = null;
-
-// ================= VIEW MOTHER =================
-
-function viewMother(mother) {
-    const content = document.getElementById("motherViewContent");
-
-    content.innerHTML = `
-        <div class="view-profile">
-            <h4>${escapeHTML(mother.fullName)}</h4>
-            ${createStatusBadge(mother.status)}
-        </div>
-
-        <div class="detail-list">
-            <h6>Personal Information</h6>
-
-            <div><span>Full Name</span>
-                <strong>${escapeHTML(mother.fullName)}</strong></div>
-
-            <div><span>IC Number</span>
-                <strong>${escapeHTML(mother.icNumber)}</strong></div>
-
-            <div><span>Date of Birth</span>
-                <strong>${formatDate(mother.dob)}</strong></div>
-
-            <div><span>Phone Number</span>
-                <strong>${escapeHTML(mother.phone)}</strong></div>
-
-            <div><span>Email Address</span>
-                <strong>${escapeHTML(mother.email)}</strong></div>
-
-            <div><span>Home Address</span>
-                <strong>${escapeHTML(mother.address)}</strong></div>
-
-            <div><span>Date Created</span>
-                <strong>${formatDate(mother.dateCreated)}</strong></div>
-
-            <h6>Emergency Contact</h6>
-
-            <div><span>Emergency Contact Name</span>
-                <strong>${escapeHTML(mother.emergencyName)}</strong></div>
-
-            <div><span>Relationship</span>
-                <strong>${escapeHTML(mother.emergencyRelationship)}</strong></div>
-
-            <div><span>Emergency Contact Phone Number</span>
-                <strong>${escapeHTML(mother.emergencyPhone)}</strong></div>
-        </div>
-    `;
-
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("viewMotherModal")
-    ).show();
-}
-
-// ================= VIEW CHILD =================
-
-function viewChild(child) {
-    const content = document.getElementById("childViewContent");
-
-    content.innerHTML = `
-        <div class="view-profile">
-            <h4>${escapeHTML(child.fullName)}</h4>
-            ${createStatusBadge(child.status)}
-        </div>
-
-        <div class="detail-list">
-            <h6>Child Information</h6>
-
-            <div><span>Full Name</span>
-                <strong>${escapeHTML(child.fullName)}</strong></div>
-
-            <div><span>MyKid Number</span>
-                <strong>${escapeHTML(child.myKidNumber)}</strong></div>
-
-            <div><span>Date of Birth</span>
-                <strong>${formatDate(child.dob)}</strong></div>
-
-            <div><span>Gender</span>
-                <strong>${escapeHTML(child.gender)}</strong></div>
-
-            <div><span>Date Created</span>
-                <strong>${formatDate(child.dateCreated)}</strong></div>
-
-            <h6>Guardian's Contact</h6>
-
-            <div><span>Guardian Name</span>
-                <strong>${escapeHTML(child.guardianName)}</strong></div>
-
-            <div><span>Guardian Phone Number</span>
-                <strong>${escapeHTML(child.guardianPhone)}</strong></div>
-
-            <div><span>Guardian Email</span>
-                <strong>${escapeHTML(child.guardianEmail)}</strong></div>
-        </div>
-    `;
-
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("viewChildModal")
-    ).show();
-}
 
 // ================= OPEN EDIT MOTHER =================
 

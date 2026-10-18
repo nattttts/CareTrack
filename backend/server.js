@@ -173,6 +173,72 @@ app.post("/api/staff", (req, res) => {
     }
 });
 
+// Get all mothers
+app.get("/api/mothers", (req, res) => {
+    try {
+        const mothers = db.prepare(`
+            SELECT
+                Mother.mother_id,
+                User.user_id,
+                User.full_name,
+                User.email,
+                User.account_status,
+                User.created_at,
+                Mother.date_of_birth,
+                Mother.address,
+                Mother.phone_no,
+                Mother.contact_name,
+                Mother.relationship,
+                Mother.contact_phone_no
+            FROM Mother
+            INNER JOIN User
+                ON Mother.user_id = User.user_id
+            ORDER BY User.account_status, User.full_name
+        `).all();
+
+        res.json(mothers);
+
+    } catch (error) {
+        console.error("Error retrieving mothers:", error);
+
+        res.status(500).json({
+            message: "Failed to retrieve mother records."
+        });
+    }
+});
+
+// Get all children
+app.get("/api/children", (req, res) => {
+    try {
+        const children = db.prepare(`
+            SELECT
+                Child.child_id,
+                User.user_id,
+                User.full_name,
+                User.email,
+                User.account_status,
+                User.created_at,
+                Child.date_of_birth,
+                Child.gender,
+                Child.guardian_name,
+                Child.phone_no
+            FROM Child
+            INNER JOIN User
+                ON Child.user_id = User.user_id
+            ORDER BY User.account_status, User.full_name
+        `).all();
+
+        res.json(children);
+
+    } catch (error) {
+        console.error("Error retrieving children:", error);
+
+        res.status(500).json({
+            message: "Failed to retrieve child records."
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
     console.log("SQLite database connected!");
