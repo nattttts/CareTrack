@@ -56,7 +56,7 @@ app.get("/api/staff", (req, res) => {
     }
 });
 
-
+// Add a new staff
 app.post("/api/staff", (req, res) => {
     const { full_name, user_id, email, phone_no, position } = req.body;
 
@@ -235,6 +235,64 @@ app.get("/api/children", (req, res) => {
 
         res.status(500).json({
             message: "Failed to retrieve child records."
+        });
+    }
+});
+
+// Update a staff account's status (Active or Inactive)
+app.patch("/api/staff/:staffId/status", (req, res) => {
+    const staffId = Number(req.params.staffId);
+    const { account_status } = req.body;
+
+    // Validate the staff ID
+    if (!Number.isInteger(staffId) || staffId <= 0) {
+        return res.status(400).json({
+            message: "Invalid staff ID."
+        });
+    }
+
+    // Only allow these two account statuses
+    if (!["Active", "Inactive"].includes(account_status)) {
+        return res.status(400).json({
+            message: "Status must be Active or Inactive."
+        });
+    }
+
+    try {
+        // Check that the staff account exists
+        const staff = db.prepare(`
+            SELECT user_id
+            FROM Staff
+            WHERE staff_id = ?
+        `).get(staffId);
+
+        if (!staff) {
+            return res.status(404).json({
+                message: "Staff account not found."
+            });
+        }
+
+        // Update the account status in the User table
+        db.prepare(`
+            UPDATE User
+            SET account_status = ?
+            WHERE user_id = ?
+        `).run(account_status, staff.user_id);
+
+        const action = account_status === "Inactive"
+            ? "deactivated"
+            : "activated";
+
+        return res.status(200).json({
+            message: `Staff account ${action} successfully.`,
+            account_status
+        });
+
+    } catch (error) {
+        console.error("Error updating staff status:", error);
+
+        return res.status(500).json({
+            message: "Failed to update staff account status."
         });
     }
 });

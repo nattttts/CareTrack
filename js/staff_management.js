@@ -156,6 +156,7 @@ function applyStaffFilters() {
 const staffTableBody = document.getElementById("staffTableBody");
 
 let selectedStaff = null;
+let requestedStatus = null;
 
 staffTableBody.addEventListener("click", function (event) {
     const button = event.target.closest("button");
@@ -263,6 +264,7 @@ staffTableBody.addEventListener("click", function (event) {
         button.classList.contains("deactivate-button")
     ) {
         const isActive = staff.account_status === "Active";
+        requestedStatus = isActive ? "Inactive" : "Active";
 
         document.getElementById("deactivateModalLabel").textContent =
             isActive
@@ -357,6 +359,66 @@ document
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = "Add Staff";
+        }
+    });
+
+// Confirm activation or deactivation
+document
+    .getElementById("confirmStaffStatusButton")
+    .addEventListener("click", async function () {
+        if (!selectedStaff || !requestedStatus) {
+            return;
+        }
+
+        const confirmButton = this;
+
+        confirmButton.disabled = true;
+
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/staff/${selectedStaff.staff_id}/status`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        account_status: requestedStatus
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Failed to update staff status."
+                );
+            }
+
+            // Close the confirmation modal
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    document.getElementById("deactivateModal")
+                )
+                .hide();
+
+            // Refresh the table using the latest database records
+            await loadStaff();
+
+            // Display a success toast
+            showToast(result.message, "success");
+
+            // Clear the selection
+            selectedStaff = null;
+            requestedStatus = null;
+
+        } catch (error) {
+            console.error("Error updating staff status:", error);
+            showToast(error.message, "error");
+
+        } finally {
+            confirmButton.disabled = false;
         }
     });
 
