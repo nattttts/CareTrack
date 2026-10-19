@@ -188,11 +188,64 @@ function applyStaffFilters() {
 }
 
 
+async function resendInvitation(staffId, button) {
+    const originalText = button.innerHTML;
+
+    try {
+        // Prevent repeated clicks while the request is processing
+        button.disabled = true;
+        button.textContent = "Sending...";
+
+        // Ask the backend to generate a new invitation
+        const response = await fetch(
+            `http://localhost:3000/api/staff/${staffId}/resend-invitation`,
+            {
+                method: "POST"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to resend invitation."
+            );
+        }
+
+        alert(result.message);
+
+
+        // Development only: show the returned invitation URL
+        // if the backend provides one
+        if (result.developmentInvitationUrl) {
+            console.log(
+                "Development invitation URL:",
+                result.developmentInvitationUrl
+            );
+        }
+
+        // Refresh the staff table to reflect the latest account data
+        await loadStaff();
+
+    } catch (error) {
+        console.error("Error resending invitation:", error);
+        alert(error.message || "Failed to resend invitation.");
+    } finally {
+        // The original button may have been removed by loadStaff()
+        // Restore it only if it is still present on the page
+        if (button.isConnected) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+}
+
 const staffTableBody = document.getElementById("staffTableBody");
 
 let selectedStaff = null;
 let requestedStatus = null;
 
+// Handle action buttons
 staffTableBody.addEventListener("click", function (event) {
     const button = event.target.closest("button");
 
@@ -334,9 +387,15 @@ staffTableBody.addEventListener("click", function (event) {
             )
             .show();
     }
+    
+    // RESEND INVITATION
+    else if (button.classList.contains("resend-invitation-button")) {
+        resendInvitation(staff.staff_id, button);
+    }
+
 });
 
-// ADD STAFF
+// Add new staff
 document
     .getElementById("addStaffForm")
     .addEventListener("submit", async function (event) {
@@ -397,7 +456,7 @@ document
         }
     });
 
-
+// Update staff details
 document.getElementById("editStaffForm").addEventListener(
     "submit",
     async function (event) {
