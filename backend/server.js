@@ -2,6 +2,9 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const db = require("./database");
+const { createInvitation } = require("./invitation");
+const crypto = require("node:crypto");
+const { hashPassword } = require("./password");
 
 const app = express();
 app.use(cors());
@@ -26,6 +29,159 @@ const PORT = 3000;
 
 app.get("/", (req, res) => {
     res.send("CareTrack backend is working!");
+});
+
+// Set up password
+app.post("/api/set-password", async (req, res) => {
+    try {
+        const { token, password, confirmPassword } = req.body;
+
+        // Check that all required fields were submitted
+        if (
+            typeof token !== "string" ||
+            typeof password !== "string" ||
+            typeof confirmPassword !== "string"
+        ) {
+            return res.status(400).json({
+                message: "Please complete all required fields."
+            });
+        }
+
+        // Apply the password policy on the server
+        if (password.length < 12 || password.length > 128) {
+            return res.status(400).json({
+                message: "Your password must be between 12 and 128 characters."
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                message: "The passwords do not match."
+            });
+        }
+
+        // The invitation tokens are 32 random bytes encoded as 64 hex characters.
+        if (!/^[a-f0-9]{64}$/i.test(token)) {
+            return res.status(400).json({
+                message: "This invitation link is invalid or has expired."
+            });
+        }
+
+        // Hash the token before searching the database
+        // The database stores token_hash, not the original token
+        const tokenHash = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        // Find the invitation and the account it belongs to
+        const invitation = db.prepare(`
+            SELECT
+                Invitation_Token.invitation_id,
+                Invitation_Token.user_id,
+                Invitation_Token.expires_at,
+                Invitation_Token.used_at,
+                Invitation_Token.revoked_at,
+                User.password_set,
+                User.account_status
+            FROM Invitation_Token
+            INNER JOIN User
+                ON Invitation_Token.user_id = User.user_id
+            WHERE Invitation_Token.token_hash = ?
+        `).get(tokenHash);
+
+        // Return a generic message so account details are not exposed
+        if (
+            !invitation ||
+            invitation.used_at ||
+            invitation.revoked_at ||
+            new Date(invitation.expires_at).getTime() <= Date.now() ||
+            Number(invitation.password_set) === 1 ||
+            invitation.account_status !== "Active"
+        ) {
+            return res.status(400).json({
+                message: "This invitation link is invalid or has expired. Please request a new invitation."
+            });
+        }
+
+        // Hash the new password using Argon2id
+        const passwordHash = await hashPassword(password);
+
+        // Recheck the invitation inside a transaction before saving
+        // This prevents two simultaneous requests from using the same token
+        const completeSetup = db.transaction(() => {
+            const currentInvitation = db.prepare(`
+                SELECT
+                    Invitation_Token.user_id,
+                    Invitation_Token.expires_at,
+                    User.password_set,
+                    User.account_status
+                FROM Invitation_Token
+                INNER JOIN User
+                    ON Invitation_Token.user_id = User.user_id
+                WHERE Invitation_Token.invitation_id = ?
+                  AND Invitation_Token.token_hash = ?
+                  AND Invitation_Token.used_at IS NULL
+                  AND Invitation_Token.revoked_at IS NULL
+            `).get(invitation.invitation_id, tokenHash);
+
+            if (
+                !currentInvitation ||
+                new Date(currentInvitation.expires_at).getTime() <= Date.now() ||
+                Number(currentInvitation.password_set) !== 0 ||
+                currentInvitation.account_status !== "Active"
+            ) {
+                return false;
+            }
+
+            // Save the hash, not the original password
+            const updateUser = db.prepare(`
+                UPDATE User
+                SET password_hash = ?,
+                    password_set = 1
+                WHERE user_id = ?
+                  AND password_set = 0
+                  AND account_status = 'Active'
+            `).run(passwordHash, currentInvitation.user_id);
+
+            if (updateUser.changes !== 1) {
+                return false;
+            }
+
+            // Mark the invitation as used so it cannot be reused
+            const useToken = db.prepare(`
+                UPDATE Invitation_Token
+                SET used_at = CURRENT_TIMESTAMP
+                WHERE invitation_id = ?
+                  AND used_at IS NULL
+                  AND revoked_at IS NULL
+            `).run(invitation.invitation_id);
+
+            if (useToken.changes !== 1) {
+                throw new Error("Could not mark the invitation as used.");
+            }
+
+            return true;
+        });
+
+        const success = completeSetup();
+
+        if (!success) {
+            return res.status(400).json({
+                message: "This invitation link is invalid or has expired. Please request a new invitation."
+            });
+        }
+
+        return res.json({
+            message: "Your password has been set successfully. You can now log in."
+        });
+    } catch (error) {
+        console.error("Error setting password:", error);
+
+        return res.status(500).json({
+            message: "Unable to set your password right now. Please try again."
+        });
+    }
 });
 
 // Get all staff members
@@ -112,9 +268,11 @@ app.post("/api/staff", (req, res) => {
         }
 
         // TEMPORARY: Replace with a real password hash before implementing login
+        // The login route must reject accounts where password_set = 0
         const passwordHash = "TEMP_HASH_REPLACE_BEFORE_AUTH";
 
-        // Create both records together
+        // Create the user, staff profile and invitation together
+        // If any database operation fails, the transaction rolls back
         const createStaff = db.transaction(() => {
             db.prepare(`
                 INSERT INTO User (
@@ -123,9 +281,10 @@ app.post("/api/staff", (req, res) => {
                     email,
                     password_hash,
                     role,
-                    account_status
+                    account_status,
+                    password_set
                 )
-                VALUES (?, ?, ?, ?, 'staff', 'Active')
+                VALUES (?, ?, ?, ?, 'staff', 'Active', 0)
             `).run(
                 icNumber,
                 name,
@@ -145,16 +304,39 @@ app.post("/api/staff", (req, res) => {
                 position,
                 phone
             );
+            
+            // Create an invitation for the newly created staff account.
+            // createInvitation() uses a nested transaction, which
+            // better-sqlite3 supports through a savepoint
+            const token = createInvitation(icNumber);
 
-            return result.lastInsertRowid;
+            return {
+                staffId: result.lastInsertRowid,
+                token
+            };
         });
 
-        const staffId = createStaff();
+        const { staffId, token } = createStaff();
 
-        return res.status(201).json({
+        // Construct the invitation URL for local testing
+        const baseUrl = (
+            process.env.APP_BASE_URL || `http://localhost:${PORT}`
+        ).replace(/\/+$/, "");
+
+        const invitationUrl =
+            `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
+
+        const response = {
             message: "Staff account created successfully.",
             staff_id: staffId
-        });
+        };
+
+        // Never return the usable invitation token in production
+        if (process.env.NODE_ENV !== "production") {
+            response.developmentInvitationUrl = invitationUrl;
+        }
+
+        return res.status(201).json(response);
 
     } catch (error) {
         console.error("Error creating staff:", error);
@@ -170,6 +352,68 @@ app.post("/api/staff", (req, res) => {
 
         return res.status(500).json({
             message: "Failed to create staff account."
+        });
+    }
+});
+
+// Resend invitation link for password setup
+app.post("/api/staff/:staffId/resend-invitation", (req, res) => {
+    try {
+        const staff = db.prepare(`
+            SELECT
+                Staff.user_id,
+                User.email,
+                User.password_set,
+                User.account_status
+            FROM Staff
+            INNER JOIN User
+                ON Staff.user_id = User.user_id
+            WHERE Staff.staff_id = ?
+        `).get(req.params.staffId);
+
+        if (!staff) {
+            return res.status(404).json({
+                message: "Staff account not found."
+            });
+        }
+
+        if (Number(staff.password_set) === 1) {
+            return res.status(409).json({
+                message: "This staff member has already set their password."
+            });
+        }
+
+        if (staff.account_status !== "Active") {
+            return res.status(409).json({
+                message: "Activate this staff account before sending an invitation."
+            });
+        }
+
+        const token = createInvitation(staff.user_id);
+
+        const baseUrl =
+            process.env.APP_BASE_URL || `http://localhost:${PORT}`;
+
+        const invitationUrl =
+            `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
+
+        // Temporary local testing only.
+        // Email delivery has not been integrated yet.
+        const response = {
+            message: "Invitation token created. Email delivery is not configured yet."
+        };
+
+        if (process.env.NODE_ENV !== "production") {
+            response.developmentInvitationUrl = invitationUrl;
+        }
+
+        return res.status(201).json(response);
+
+    } catch (error) {
+        console.error("Error creating staff invitation:", error);
+
+        return res.status(500).json({
+            message: "Failed to create the staff invitation."
         });
     }
 });
