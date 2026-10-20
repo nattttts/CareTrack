@@ -265,8 +265,7 @@ a {
     min-width: 1050px;
 }
 
-.appointment-table thead th,
-.slots-table thead th {
+.appointment-table thead th {
     padding: 14px 18px;
 
     background: var(--caretrack-pink-light);
@@ -283,8 +282,7 @@ a {
     white-space: nowrap;
 }
 
-.appointment-table tbody td,
-.slots-table tbody td {
+.appointment-table tbody td {
     padding: 15px 18px;
 
     border-bottom: 1px solid #f3e8ed;
@@ -296,13 +294,11 @@ a {
     vertical-align: middle;
 }
 
-.appointment-table tbody tr:last-child td,
-.slots-table tbody tr:last-child td {
+.appointment-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.appointment-table tbody tr:hover,
-.slots-table tbody tr:hover {
+.appointment-table tbody tr:hover {
     background: #fffafd;
 }
 
@@ -642,214 +638,6 @@ a {
 .pagination-button:disabled {
     opacity: 0.45;
 }
-
-
-/* =====================================================
-   MANAGE SLOTS HEADER
-===================================================== */
-
-.slots-card {
-    padding-top: 0;
-}
-
-.section-header {
-    padding: 20px 20px 18px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    border-bottom: 1px solid #f2e4e9;
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-}
-
-.section-icon {
-    width: 46px;
-    height: 46px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: var(--caretrack-pink-light);
-
-    border-radius: 50%;
-
-    color: var(--caretrack-pink);
-}
-
-.section-icon i {
-    font-size: 22px;
-}
-
-.section-title h3 {
-    margin: 0 0 4px;
-
-    color: var(--text-dark);
-
-    font-size: 19px;
-    font-weight: 700;
-}
-
-.section-title p {
-    margin: 0;
-
-    color: #718096;
-
-    font-size: 11px;
-}
-
-.add-slot-button {
-    min-height: 40px;
-
-    padding: 0 16px;
-
-    display: flex;
-    align-items: center;
-    gap: 7px;
-
-    color: #ffffff;
-
-    background: var(--caretrack-pink);
-
-    border: 1px solid var(--caretrack-pink);
-
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.add-slot-button:hover {
-    color: #ffffff;
-
-    background: var(--caretrack-pink-dark);
-
-    border-color: var(--caretrack-pink-dark);
-}
-
-
-/* =====================================================
-   SLOT FILTERS
-===================================================== */
-
-.slot-filters {
-    padding: 16px 18px;
-
-    display: grid;
-
-    grid-template-columns:
-        1fr
-        1fr
-        1.4fr
-        1fr
-        auto;
-
-    gap: 12px;
-
-    border-bottom: 1px solid #f2e4e9;
-}
-
-.slot-filter-button {
-    align-self: end;
-
-    min-height: 41px;
-
-    padding: 0 18px;
-
-    color: var(--caretrack-pink);
-
-    background: #ffffff;
-
-    border: 1px solid var(--caretrack-pink);
-
-    font-size: 11px;
-}
-
-.slot-filter-button:hover {
-    color: #ffffff;
-
-    background: var(--caretrack-pink);
-}
-
-
-/* =====================================================
-   SLOTS TABLE
-===================================================== */
-
-.slots-table {
-    min-width: 850px;
-}
-
-.slot-status {
-    padding: 6px 11px;
-
-    display: inline-block;
-
-    border-radius: 6px;
-
-    font-size: 10px;
-    font-weight: 600;
-}
-
-.slot-status.available {
-    color: #2271b1;
-
-    background: #edf6ff;
-}
-
-.slot-status.booked {
-    color: #16804e;
-
-    background: #eaf8f0;
-}
-
-
-/* =====================================================
-   SLOT ACTIONS
-===================================================== */
-
-.slot-actions {
-    display: flex;
-    gap: 6px;
-}
-
-.slot-action {
-    width: 31px;
-    height: 31px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: 1px solid #f1cad8;
-
-    border-radius: 6px;
-
-    background: #ffffff;
-
-    color: var(--caretrack-pink);
-
-    font-size: 13px;
-}
-
-.slot-action:hover {
-    background: var(--caretrack-pink-light);
-}
-
-.delete-slot {
-    color: #d94359;
-
-    border-color: #f0c4cb;
-}
-
-.delete-slot:hover {
-    background: #fff0f2;
-}
-
 
 /* =====================================================
    MODALS
@@ -1196,19 +984,6 @@ a {
    RESPONSIVE
 ===================================================== */
 
-@media (max-width: 1100px) {
-
-    .slot-filters {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .slot-filter-button {
-        width: 100%;
-    }
-
-}
-
-
 @media (max-width: 800px) {
 
     .main-content {
@@ -1237,12 +1012,6 @@ a {
         gap: 15px;
     }
 
-    .add-slot-button {
-        width: 100%;
-
-        justify-content: center;
-    }
-
 }
 
 
@@ -1265,10 +1034,6 @@ a {
 
     .appointment-tab i {
         display: none;
-    }
-
-    .slot-filters {
-        grid-template-columns: 1fr;
     }
 
 }
