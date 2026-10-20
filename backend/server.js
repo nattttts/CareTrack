@@ -5,6 +5,7 @@ const db = require("./database");
 const { createInvitation } = require("./invitation");
 const crypto = require("node:crypto");
 const { hashPassword } = require("./password");
+const { sendInvitationEmail } = require("./email");
 
 const app = express();
 app.use(cors());
@@ -214,7 +215,7 @@ app.get("/api/staff", (req, res) => {
 });
 
 // Add a new staff
-app.post("/api/staff", (req, res) => {
+app.post("/api/staff", async (req, res) => {
     const { full_name, user_id, email, phone_no, position } = req.body;
 
     // Validate required fields
@@ -325,15 +326,33 @@ app.post("/api/staff", (req, res) => {
 
         const invitationUrl =
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
+        
+        let emailPreviewUrl = null;
+        let emailError = false;
+
+        try {
+            const emailResult = await sendInvitationEmail(
+                staffEmail,
+                invitationUrl
+            );
+
+            emailPreviewUrl = emailResult.previewUrl;
+        } catch (error) {
+            emailError = true;
+            console.error("Failed to send staff invitation email:", error);
+        }
 
         const response = {
-            message: "Staff account created successfully.",
+            message: emailError
+                ? "Staff account created, but the invitation email could not be sent. Please resend it."
+                : "Staff account created and invitation email sent.",
             staff_id: staffId
         };
 
         // Never return the usable invitation token in production
         if (process.env.NODE_ENV !== "production") {
-            response.developmentInvitationUrl = invitationUrl;
+            response.emailPreviewUrl = emailPreviewUrl;
+            // response.developmentInvitationUrl = invitationUrl;
         }
 
         return res.status(201).json(response);
@@ -357,7 +376,7 @@ app.post("/api/staff", (req, res) => {
 });
 
 // Resend invitation link for password setup
-app.post("/api/staff/:staffId/resend-invitation", (req, res) => {
+app.post("/api/staff/:staffId/resend-invitation", async (req, res) => {
     try {
         const staff = db.prepare(`
             SELECT
@@ -397,17 +416,28 @@ app.post("/api/staff/:staffId/resend-invitation", (req, res) => {
         const invitationUrl =
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
 
-        // Temporary local testing only.
-        // Email delivery has not been integrated yet.
-        const response = {
-            message: "Invitation token created. Email delivery is not configured yet."
-        };
+        try {
+            const emailResult = await sendInvitationEmail(
+                staff.email,
+                invitationUrl
+            );
 
-        if (process.env.NODE_ENV !== "production") {
-            response.developmentInvitationUrl = invitationUrl;
+            const response = {
+                message: "Invitation email sent successfully."
+            };
+
+            if (process.env.NODE_ENV !== "production") {
+                response.emailPreviewUrl = emailResult.previewUrl;
+            }
+
+            return res.status(200).json(response);
+        } catch (error) {
+            console.error("Failed to resend staff invitation:", error);
+
+            return res.status(500).json({
+                message: "The new invitation was created, but the email could not be sent. Please try resending it."
+            });
         }
-
-        return res.status(201).json(response);
 
     } catch (error) {
         console.error("Error creating staff invitation:", error);
