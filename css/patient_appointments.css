@@ -85,28 +85,6 @@ img {
     color: #50698a;
 }
 
-
-/* Book Appointment */
-
-.book-button {
-    min-height: 48px;
-    background: #f9528e;
-    border-color: #f9528e;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.book-button img {
-    width: 19px;
-    height: 19px;
-}
-
-.book-button:hover {
-    background: #e81f67;
-    border-color: #e81f67;
-}
-
-
 /* ================= APPOINTMENTS CONTAINER ================= */
 
 .appointments-container {
@@ -530,10 +508,6 @@ img {
 
     .page-title h2 {
         font-size: 28px;
-    }
-
-    .book-button {
-        width: 100%;
     }
 
     .appointment-tabs {
