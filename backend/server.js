@@ -330,16 +330,10 @@ app.post("/api/staff", async (req, res) => {
         const invitationUrl =
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
         
-        let emailPreviewUrl = null;
         let emailError = false;
 
         try {
-            const emailResult = await sendInvitationEmail(
-                staffEmail,
-                invitationUrl
-            );
-
-            emailPreviewUrl = emailResult.previewUrl;
+            await sendInvitationEmail(staffEmail, invitationUrl);
         } catch (error) {
             emailError = true;
             console.error("Failed to send staff invitation email:", error);
@@ -351,12 +345,6 @@ app.post("/api/staff", async (req, res) => {
                 : "Staff account created and invitation email sent.",
             staff_id: staffId
         };
-
-        // Never return the usable invitation token in production
-        if (process.env.NODE_ENV !== "production") {
-            response.emailPreviewUrl = emailPreviewUrl;
-            // response.developmentInvitationUrl = invitationUrl;
-        }
 
         return res.status(201).json(response);
 
@@ -420,20 +408,12 @@ app.post("/api/staff/:staffId/resend-invitation", async (req, res) => {
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
 
         try {
-            const emailResult = await sendInvitationEmail(
-                staff.email,
-                invitationUrl
-            );
+            await sendInvitationEmail(staff.email, invitationUrl);
 
-            const response = {
+            return res.status(200).json({
                 message: "Invitation email sent successfully."
-            };
+            });
 
-            if (process.env.NODE_ENV !== "production") {
-                response.emailPreviewUrl = emailResult.previewUrl;
-            }
-
-            return res.status(200).json(response);
         } catch (error) {
             console.error("Failed to resend staff invitation:", error);
 

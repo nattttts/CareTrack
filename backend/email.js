@@ -1,30 +1,27 @@
 
 const nodemailer = require("nodemailer");
 
-// Create a temporary Ethereal test account and email transporter
-async function createTestTransporter() {
-    const testAccount = await nodemailer.createTestAccount();
+function createEmailTransporter() {
+    if (!process.env.EMAIL_USER ||
+        !process.env.EMAIL_APP_PASSWORD) {
+        throw new Error("Email credentials are not configured.");
+    }
 
-    const transporter = nodemailer.createTransport({
-        host: testAccount.smtp.host,
-        port: testAccount.smtp.port,
-        secure: testAccount.smtp.secure,
+    return nodemailer.createTransport({
+        service: "gmail",
         auth: {
-            user: testAccount.user,
-            pass: testAccount.pass
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_APP_PASSWORD
         }
     });
-
-    return { transporter, testAccount };
 }
 
-// Send a staff invitation email
+// Send an invitation email
 async function sendInvitationEmail(email, invitationUrl) {
-    const { transporter, testAccount } =
-        await createTestTransporter();
+    const transporter = createEmailTransporter();
 
     const info = await transporter.sendMail({
-        from: `"CareTrack" <${testAccount.user}>`,
+        from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Set Up Your CareTrack Account",
 
@@ -37,7 +34,7 @@ Please use the link below to set your password:
 ${invitationUrl}
 
 This invitation expires after 24 hours. If you did not expect
-this invitation, please contact the clinic administrator.
+this invitation, please contact the clinic.
 
 Regards,
 CareTrack Team`,
@@ -61,23 +58,15 @@ CareTrack Team`,
             </p>
             <p>This invitation expires after 24 hours.</p>
             <p>If you did not expect this invitation,
-               please contact the clinic administrator.</p>
+               please contact the clinic.</p>
             <p>Regards,<br>CareTrack Team</p>
         `
     });
 
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-
-    console.log("Invitation email sent to Ethereal.");
+    console.log("Invitation email accepted by Gmail.");
     console.log("Message ID:", info.messageId);
-    console.log("Preview email:", previewUrl);
 
-    return {
-        messageId: info.messageId,
-        previewUrl
-    };
+    return { messageId: info.messageId };
 }
 
-module.exports = {
-    sendInvitationEmail
-};
+module.exports = { sendInvitationEmail };
