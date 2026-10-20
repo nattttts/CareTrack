@@ -205,7 +205,7 @@ app.get("/api/staff", (req, res) => {
             FROM Staff
             INNER JOIN User
                 ON Staff.user_id = User.user_id
-            ORDER BY Staff.staff_id
+            ORDER BY User.account_status, User.full_name
         `).all();
 
         res.json(staff);
