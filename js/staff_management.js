@@ -187,6 +187,11 @@ function applyStaffFilters() {
         `Showing ${visibleCount} of ${allStaff.length} staff`;
 }
 
+function resetStaffFilters() {
+    document.getElementById("staffSearch").value = "";
+    document.getElementById("statusFilter").value = "";
+    applyStaffFilters();
+}
 
 async function resendInvitation(staffId, button) {
     const originalText = button.innerHTML;
@@ -598,5 +603,6 @@ document
 
 document.getElementById("staffSearch").addEventListener("input", applyStaffFilters);
 document.getElementById("statusFilter").addEventListener("change", applyStaffFilters);
+document.getElementById("staffResetFilters").addEventListener("click", resetStaffFilters);
 
 document.addEventListener("DOMContentLoaded", loadStaff);

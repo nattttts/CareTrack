@@ -163,6 +163,18 @@ a {
     color: #f9528e;
 }
 
+.reset-button {
+    min-height: 41px;
+    border: 1px solid #f9528e;
+    color: #f9528e;
+    background: #ffffff;
+    font-size: 12px;
+}
+
+.reset-button:hover {
+    color: #ffffff;
+    background: #f9528e;
+}
 
 /* ================= STAFF TABLE ================= */
 
