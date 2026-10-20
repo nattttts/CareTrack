@@ -1,5 +1,10 @@
+import { showToast } from "./popup_message.js";
+
 let allMother = [];
 let allChild = [];
+
+let requestedMotherStatus = null;
+let requestedChildStatus = null;
 
 // ================= LOAD MOTHER =================
 async function loadMother() {
@@ -16,7 +21,7 @@ async function loadMother() {
         
         allMother = motherList;
 
-        // Remove old rows, but keep the "no matching staff" message
+        // Remove old rows, but keep the "no matching mother" message
         tableBody.querySelectorAll(".mother-row").forEach(row => row.remove());
 
         motherList.forEach(mother => {
@@ -125,7 +130,7 @@ async function loadChild() {
         
         allChild = childList;
 
-        // Remove old rows, but keep the "no matching staff" message
+        // Remove old rows, but keep the "no matching child" message
         tableBody.querySelectorAll(".child-row").forEach(row => row.remove());
 
         childList.forEach(child => {
@@ -323,6 +328,7 @@ const motherTableBody = document.getElementById("motherTableBody");
 
 let selectedMother = null;
 
+// ================= HANDLE MOTHER ACTION BUTTONS =================
 motherTableBody.addEventListener("click", function (event) {
     const button = event.target.closest("button");
 
@@ -411,8 +417,112 @@ motherTableBody.addEventListener("click", function (event) {
             )
             .show();
     }
+
+    // ACTIVATE / DEACTIVATE
+    else if (
+        button.classList.contains("activate-button") ||
+        button.classList.contains("deactivate-button")
+    ) {
+        const isActive = mother.account_status === "Active";
+        requestedMotherStatus = isActive ? "Inactive" : "Active";
+
+        document.getElementById("deactivateMotherModalLabel").textContent =
+            isActive
+                ? "Deactivate Mother Account?"
+                : "Activate Mother Account?";
+
+        document.getElementById("statusMotherName").textContent = mother.full_name;
+
+        document.getElementById("motherStatusAction").textContent =
+            isActive ? "deactivate" : "activate";
+
+        document.getElementById("motherStatusWarning").textContent =
+            isActive
+                ? "The mother member will no longer be able to log in to the system."
+                : "The mother member will be able to log in to the system again.";
+
+        const confirmButton = document.getElementById(
+            "confirmMotherStatusButton"
+        );
+
+        confirmButton.className = isActive
+            ? "btn btn-danger"
+            : "btn btn-success";
+
+        confirmButton.innerHTML = isActive
+            ? '<i class="bi bi-person-x"></i> Deactivate'
+            : '<i class="bi bi-person-check"></i> Activate';
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("deactivateMotherModal")
+            )
+            .show();
+    }
 });
 
+// Confirm activation or deactivation
+document
+    .getElementById("confirmMotherStatusButton")
+    .addEventListener("click", async function () {
+        if (!selectedMother || !requestedMotherStatus) {
+            return;
+        }
+
+        const confirmButton = this;
+
+        confirmButton.disabled = true;
+
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/mother/${selectedMother.mother_id}/status`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        account_status: requestedMotherStatus
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Failed to update mother status."
+                );
+            }
+
+            // Close the confirmation modal
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    document.getElementById("deactivateMotherModal")
+                )
+                .hide();
+
+            // Refresh the table using the latest database records
+            await loadMother();
+
+            // Display a success toast
+            showToast(result.message, "success");
+
+            // Clear the selection
+            selectedMother = null;
+            requestedMotherStatus = null;
+
+        } catch (error) {
+            console.error("Error updating mother status:", error);
+            showToast(error.message, "error");
+
+        } finally {
+            confirmButton.disabled = false;
+        }
+    });
+
+
+// ================= HANDLE CHILD ACTION BUTTONS =================
 const childTableBody = document.getElementById("childTableBody");
 
 let selectedChild = null;
@@ -499,34 +609,111 @@ childTableBody.addEventListener("click", function (event) {
             )
             .show();
     }
+
+    // ACTIVATE / DEACTIVATE
+    else if (
+        button.classList.contains("activate-button") ||
+        button.classList.contains("deactivate-button")
+    ) {
+        const isActive = child.account_status === "Active";
+        requestedChildStatus = isActive ? "Inactive" : "Active";
+
+        document.getElementById("deactivateChildModalLabel").textContent =
+            isActive
+                ? "Deactivate Child Account?"
+                : "Activate Child Account?";
+
+        document.getElementById("statusChildName").textContent = child.full_name;
+
+        document.getElementById("childStatusAction").textContent =
+            isActive ? "deactivate" : "activate";
+
+        document.getElementById("childStatusWarning").textContent =
+            isActive
+                ? "The child member will no longer be able to log in to the system."
+                : "The child member will be able to log in to the system again.";
+
+        const confirmButton = document.getElementById(
+            "confirmChildStatusButton"
+        );
+
+        confirmButton.className = isActive
+            ? "btn btn-danger"
+            : "btn btn-success";
+
+        confirmButton.innerHTML = isActive
+            ? '<i class="bi bi-person-x"></i> Deactivate'
+            : '<i class="bi bi-person-check"></i> Activate';
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("deactivateChildModal")
+            )
+            .show();
+    }
 });
 
-// ================= HELPER FUNCTIONS =================
+// Confirm activation or deactivation
+document
+    .getElementById("confirmChildStatusButton")
+    .addEventListener("click", async function () {
+        if (!selectedChild || !requestedChildStatus) {
+            return;
+        }
 
-// Escape user-provided text before inserting it into HTML.
-function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, character => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[character]);
-}
+        const confirmButton = this;
 
-function createStatusBadge(status) {
-    const active = status === "Active";
+        confirmButton.disabled = true;
 
-    return `
-        <span class="status-badge ${active ? "active-status" : "inactive-status"}">
-            <span class="status-dot"></span>
-            ${escapeHTML(status)}
-        </span>
-    `;
-}
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/child/${selectedChild.child_id}/status`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        account_status: requestedChildStatus
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Failed to update child status."
+                );
+            }
+
+            // Close the confirmation modal
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    document.getElementById("deactivateChildModal")
+                )
+                .hide();
+
+            // Refresh the table using the latest database records
+            await loadChild();
+
+            // Display a success toast
+            showToast(result.message, "success");
+
+            // Clear the selection
+            selectedChild = null;
+            requestedChildStatus = null;
+
+        } catch (error) {
+            console.error("Error updating child status:", error);
+            showToast(error.message, "error");
+
+        } finally {
+            confirmButton.disabled = false;
+        }
+    });
 
 // ================= TABS =================
-
 function setupTabs() {
     const tabs = document.querySelectorAll(".patient-tab");
 
@@ -550,7 +737,6 @@ function setupTabs() {
 }
 
 // ================= INITIALISE PAGE =================
-
 document.addEventListener("DOMContentLoaded", () => {
     loadMother();
     loadChild();
@@ -574,345 +760,3 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("childResetFilters")
         .addEventListener("click", resetChildFilters);
 });
-
-// ================= ACTIVATE / DEACTIVATE =================
-let pendingMotherId = null;
-let pendingChildId = null;
-
-// ================= OPEN EDIT MOTHER =================
-
-function editMother(mother) {
-    document.getElementById("editMotherId").value = mother.id;
-    document.getElementById("editMotherName").value = mother.fullName;
-    document.getElementById("editMotherICNumber").value = mother.icNumber;
-    document.getElementById("editMotherDOB").value = mother.dob;
-    document.getElementById("editMotherPhone").value = mother.phone;
-    document.getElementById("editMotherEmail").value = mother.email;
-    document.getElementById("editMotherAddress").value = mother.address;
-    document.getElementById("editMotherEmergencyName").value = mother.emergencyName;
-    document.getElementById("editMotherRelationship").value = mother.emergencyRelationship;
-    document.getElementById("editMotherEmergencyPhone").value = mother.emergencyPhone;
-
-    bootstrap.Modal
-        .getOrCreateInstance(document.getElementById("editMotherModal"))
-        .show();
-}
-
-// ================= OPEN EDIT CHILD =================
-
-function editChild(child) {
-    document.getElementById("editChildId").value = child.id;
-    document.getElementById("editChildName").value = child.fullName;
-    document.getElementById("editChildMyKid").value = child.myKidNumber;
-    document.getElementById("editChildDOB").value = child.dob;
-    document.getElementById("editChildGender").value = child.gender;
-    document.getElementById("editChildGuardianName").value = child.guardianName;
-    document.getElementById("editChildGuardianPhone").value = child.guardianPhone;
-    document.getElementById("editChildGuardianEmail").value = child.guardianEmail;
-
-    bootstrap.Modal
-        .getOrCreateInstance(document.getElementById("editChildModal"))
-        .show();
-}
-
-// ================= HANDLE VIEW,EDIT & DEACTIVATE BUTTONS =================
-
-function setupActionButtons() {
-    document.addEventListener("click", event => {
-        const button = event.target.closest("[data-action]");
-
-        if (!button) return;
-
-        const action = button.dataset.action;
-        const id = Number(button.dataset.id);
-
-        // Mother actions
-        if (button.closest("#motherTableBody")) {
-            const mother = mothers.find(item => item.id === id);
-            if (!mother) return;
-
-            if (action === "view") {
-                viewMother(mother);
-            }
-
-            if (action === "edit") {
-                editMother(mother);
-            }
-
-            if (action === "toggle-status") {
-                openMotherStatusModal(mother);
-            }
-        }
-
-        // Child actions
-        if (button.closest("#childTableBody")) {
-            const child = children.find(item => item.id === id);
-            if (!child) return;
-
-            if (action === "view") {
-                viewChild(child);
-            }
-
-            if (action === "edit") {
-                editChild(child);
-            }
-
-            if (action === "toggle-status") {
-                openChildStatusModal(child);
-            }
-        }
-    });
-}
-
-
-// ================= ADD MOTHER =================
-
-document.getElementById("addMotherForm").addEventListener("submit", event => {
-    event.preventDefault();
-
-    const form = event.currentTarget;
-    const inputs = form.querySelectorAll(".modal-body input.form-control");
-
-    const newMother = {
-        id: mothers.length > 0
-            ? Math.max(...mothers.map(mother => mother.id)) + 1
-            : 1,
-        fullName: inputs[0].value.trim(),
-        icNumber: inputs[1].value.trim(),
-        dob: inputs[2].value,
-        phone: inputs[3].value.trim(),
-        email: inputs[4].value.trim(),
-        address: inputs[5].value.trim(),
-        emergencyName: inputs[6].value.trim(),
-        emergencyRelationship: inputs[7].value.trim(),
-        emergencyPhone: inputs[8].value.trim(),
-        status: "Active",
-        dateCreated: new Date().toISOString().split("T")[0]
-    };
-
-    mothers.push(newMother);
-
-    renderMothers();
-    form.reset();
-
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("addMotherModal")
-    ).hide();
-});
-
-// ================= EDIT MOTHER =================
-
-document.getElementById("editMotherForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const id = Number(document.getElementById("editMotherId").value);
-    const mother = mothers.find(m => m.id === id);
-
-    if (!mother) {
-        return;
-    }
-
-    Object.assign(mother, {
-        fullName: document.getElementById("editMotherName").value.trim(),
-        icNumber: document.getElementById("editMotherICNumber").value.trim(),
-        dob: document.getElementById("editMotherDOB").value,
-        phone: document.getElementById("editMotherPhone").value.trim(),
-        email: document.getElementById("editMotherEmail").value.trim(),
-        address: document.getElementById("editMotherAddress").value.trim(),
-        emergencyName: document.getElementById("editMotherEmergencyName").value.trim(),
-        emergencyRelationship: document.getElementById("editMotherRelationship").value.trim(),
-        emergencyPhone: document.getElementById("editMotherEmergencyPhone").value.trim()
-    });
-
-    renderMothers();
-
-    bootstrap.Modal
-        .getOrCreateInstance(document.getElementById("editMotherModal"))
-        .hide();
-});
-
-
-// ================= ADD CHILD =================
-
-document.getElementById("addChildForm").addEventListener("submit", event => {
-    event.preventDefault();
-
-    const form = event.currentTarget;
-    const inputs = form.querySelectorAll(".modal-body input.form-control");
-    const genderSelect = form.querySelector(".modal-body select.form-select");
-
-    const newChild = {
-        id: children.length > 0
-            ? Math.max(...children.map(child => child.id)) + 1
-            : 1,
-        fullName: inputs[0].value.trim(),
-        myKidNumber: inputs[1].value.trim(),
-        dob: inputs[2].value,
-        gender: genderSelect.value,
-        guardianName: inputs[3].value.trim(),
-        guardianPhone: inputs[4].value.trim(),
-        guardianEmail: inputs[5].value.trim(),
-        status: "Active",
-        dateCreated: new Date().toISOString().split("T")[0]
-    };
-
-    children.push(newChild);
-
-    renderChildren();
-    form.reset();
-
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("addChildModal")
-    ).hide();
-});
-
-
-// ================= EDIT CHILD =================
-
-document.getElementById("editChildForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const id = Number(document.getElementById("editChildId").value);
-    const child = children.find(c => c.id === id);
-
-    if (!child) {
-        return;
-    }
-
-    Object.assign(child, {
-        fullName: document.getElementById("editChildName").value.trim(),
-        myKidNumber: document.getElementById("editChildMyKid").value.trim(),
-        dob: document.getElementById("editChildDOB").value,
-        gender: document.getElementById("editChildGender").value,
-        guardianName: document.getElementById("editChildGuardianName").value.trim(),
-        guardianPhone: document.getElementById("editChildGuardianPhone").value.trim(),
-        guardianEmail: document.getElementById("editChildGuardianEmail").value.trim()
-    });
-
-    renderChildren();
-
-    bootstrap.Modal
-        .getOrCreateInstance(document.getElementById("editChildModal"))
-        .hide();
-});
-
-// ================= OPEN MOTHER STATUS MODAL =================
-
-function openMotherStatusModal(mother) {
-    pendingMotherId = mother.id;
-
-    const isActive = mother.status === "Active";
-
-    document.getElementById("deactivateMotherModalLabel").textContent =
-        isActive ? "Deactivate Mother Account?" : "Activate Mother Account?";
-
-    document.getElementById("motherStatusTargetName").textContent =
-        mother.fullName;
-    
-    document.getElementById("motherStatusAction").textContent =
-        isActive ? "deactivate" : "activate";
-
-    document.getElementById("motherStatusWarning").textContent =
-        isActive
-            ? "The mother member will no longer be able to log in to the system."
-            : "The mother member will be able to log in to the system again.";
-
-    const confirmButton = document.getElementById("confirmMotherStatusButton");
-
-    confirmButton.className = isActive
-        ? "btn btn-danger"
-        : "btn btn-success";
-
-    confirmButton.innerHTML = isActive
-        ? '<i class="bi bi-person-x"></i> Deactivate'
-        : '<i class="bi bi-person-check"></i> Activate';
-
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("deactivateMotherModal")
-    ).show();
-}
-
-
-// ================= OPEN CHILD STATUS MODAL =================
-
-function openChildStatusModal(child) {
-    pendingChildId = child.id;
-
-    const isActive = child.status === "Active";
-
-    document.getElementById("deactivateChildModalLabel").textContent =
-        isActive ? "Deactivate Child Account?" : "Activate Child Account?";
-
-    document.getElementById("childStatusTargetName").textContent =
-        child.fullName;
-
-    document.getElementById("childStatusAction").textContent =
-        isActive ? "deactivate" : "activate";
-
-    document.getElementById("childStatusWarning").textContent =
-        isActive
-            ? "The child member will no longer be able to log in to the system."
-            : "The child member will be able to log in to the system again.";
-
-    const confirmButton = document.getElementById("confirmChildStatusButton");
-
-    confirmButton.className = isActive
-        ? "btn btn-danger"
-        : "btn btn-success";
-
-    confirmButton.innerHTML = isActive
-        ? '<i class="bi bi-person-x"></i> Deactivate'
-        : '<i class="bi bi-person-check"></i> Activate';
-
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("deactivateChildModal")
-    ).show();
-}
-
-// ================= CONFIRM MOTHER STATUS CHANGE =================
-
-document.getElementById("confirmMotherStatusButton")
-    .addEventListener("click", () => {
-
-        const mother = mothers.find(
-            item => item.id === pendingMotherId
-        );
-
-        if (!mother) return;
-
-        mother.status = mother.status === "Active"
-            ? "Inactive"
-            : "Active";
-
-        renderMothers();
-
-        bootstrap.Modal.getOrCreateInstance(
-            document.getElementById("deactivateMotherModal")
-        ).hide();
-
-        pendingMotherId = null;
-    });
-
-// ================= CONFIRM CHILD STATUS CHANGE =================
-
-document.getElementById("confirmChildStatusButton")
-    .addEventListener("click", () => {
-
-        const child = children.find(
-            item => item.id === pendingChildId
-        );
-
-        if (!child) return;
-
-        child.status = child.status === "Active"
-            ? "Inactive"
-            : "Active";
-
-        renderChildren();
-
-        bootstrap.Modal.getOrCreateInstance(
-            document.getElementById("deactivateChildModal")
-        ).hide();
-
-        pendingChildId = null;
-    });

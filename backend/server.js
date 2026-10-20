@@ -658,6 +658,64 @@ app.get("/api/mothers", (req, res) => {
     }
 });
 
+// Update a mother account's status (Active or Inactive)
+app.patch("/api/mother/:motherId/status", (req, res) => {
+    const motherId = Number(req.params.motherId);
+    const { account_status } = req.body;
+
+    // Validate the mother ID
+    if (!Number.isInteger(motherId) || motherId <= 0) {
+        return res.status(400).json({
+            message: "Invalid mother ID."
+        });
+    }
+
+    // Only allow these two account statuses
+    if (!["Active", "Inactive"].includes(account_status)) {
+        return res.status(400).json({
+            message: "Status must be Active or Inactive."
+        });
+    }
+
+    try {
+        // Check that the mother account exists
+        const mother = db.prepare(`
+            SELECT user_id
+            FROM Mother
+            WHERE mother_id = ?
+        `).get(motherId);
+
+        if (!mother) {
+            return res.status(404).json({
+                message: "Mother account not found."
+            });
+        }
+
+        // Update the account status in the User table
+        db.prepare(`
+            UPDATE User
+            SET account_status = ?
+            WHERE user_id = ?
+        `).run(account_status, mother.user_id);
+
+        const action = account_status === "Inactive"
+            ? "deactivated"
+            : "activated";
+
+        return res.status(200).json({
+            message: `Mother account ${action} successfully.`,
+            account_status
+        });
+
+    } catch (error) {
+        console.error("Error updating mother status:", error);
+
+        return res.status(500).json({
+            message: "Failed to update mother account status."
+        });
+    }
+});
+
 // Get all children
 app.get("/api/children", (req, res) => {
     try {
@@ -686,6 +744,64 @@ app.get("/api/children", (req, res) => {
 
         res.status(500).json({
             message: "Failed to retrieve child records."
+        });
+    }
+});
+
+// Update a child account's status (Active or Inactive)
+app.patch("/api/child/:childId/status", (req, res) => {
+    const childId = Number(req.params.childId);
+    const { account_status } = req.body;
+
+    // Validate the child ID
+    if (!Number.isInteger(childId) || childId <= 0) {
+        return res.status(400).json({
+            message: "Invalid child ID."
+        });
+    }
+
+    // Only allow these two account statuses
+    if (!["Active", "Inactive"].includes(account_status)) {
+        return res.status(400).json({
+            message: "Status must be Active or Inactive."
+        });
+    }
+
+    try {
+        // Check that the child account exists
+        const child = db.prepare(`
+            SELECT user_id
+            FROM Child
+            WHERE child_id = ?
+        `).get(childId);
+
+        if (!child) {
+            return res.status(404).json({
+                message: "Child account not found."
+            });
+        }
+
+        // Update the account status in the User table
+        db.prepare(`
+            UPDATE User
+            SET account_status = ?
+            WHERE user_id = ?
+        `).run(account_status, child.user_id);
+
+        const action = account_status === "Inactive"
+            ? "deactivated"
+            : "activated";
+
+        return res.status(200).json({
+            message: `Child account ${action} successfully.`,
+            account_status
+        });
+
+    } catch (error) {
+        console.error("Error updating child status:", error);
+
+        return res.status(500).json({
+            message: "Failed to update child account status."
         });
     }
 });
