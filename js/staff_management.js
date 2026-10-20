@@ -212,7 +212,7 @@ async function resendInvitation(staffId, button) {
             );
         }
 
-        alert(result.message);
+        showToast("Invitation sent successfully.", "success");
 
 
         // Development only: show the returned invitation URL
@@ -229,7 +229,7 @@ async function resendInvitation(staffId, button) {
 
     } catch (error) {
         console.error("Error resending invitation:", error);
-        alert(error.message || "Failed to resend invitation.");
+        showToast(error.message || "Failed to resend invitation.", "error");
     } finally {
         // The original button may have been removed by loadStaff()
         // Restore it only if it is still present on the page
