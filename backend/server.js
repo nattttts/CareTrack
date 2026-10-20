@@ -6,6 +6,9 @@ const { createInvitation } = require("./invitation");
 const crypto = require("node:crypto");
 const { hashPassword } = require("./password");
 const { sendInvitationEmail } = require("./email");
+require("dotenv").config({
+    path: require("node:path").join(__dirname, "../.env")
+});
 
 const app = express();
 app.use(cors());
