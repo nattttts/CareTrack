@@ -1281,6 +1281,11 @@ app.patch("/api/child/:childId/status", (req, res) => {
     }
 });
 
+
+/* =========================================================
+   VACCINATION MANAGEMENT API
+   ========================================================= */
+
 // GET: Load all children and their vaccination records.
 app.get("/api/vaccination-management/children", (req, res) => {
     try {
@@ -1301,6 +1306,7 @@ app.get("/api/vaccination-management/children", (req, res) => {
             ORDER BY User.full_name
         `).all();
 
+        // appointment_id has been removed from Child_Vaccination.
         const getRecords = db.prepare(`
             SELECT
                 cv.child_vaccination_id,
@@ -1309,10 +1315,9 @@ app.get("/api/vaccination-management/children", (req, res) => {
                 v.vaccine_name,
                 cv.due_date,
                 cv.dose,
-                cv.status,
-                cv.appointment_id
-            FROM Child_Vaccination cv
-            INNER JOIN Vaccination v
+                cv.status
+            FROM Child_Vaccination AS cv
+            INNER JOIN Vaccination AS v
                 ON v.vaccination_id = cv.vaccination_id
             WHERE cv.user_id = ?
             ORDER BY cv.due_date, cv.child_vaccination_id
@@ -1323,15 +1328,17 @@ app.get("/api/vaccination-management/children", (req, res) => {
             records: getRecords.all(child.user_id)
         }));
 
-        res.json(result);
+        return res.json(result);
+
     } catch (error) {
         console.error("Error retrieving vaccination data:", error);
 
-        res.status(500).json({
+        return res.status(500).json({
             message: "Failed to retrieve children and vaccination records."
         });
     }
 });
+
 
 // GET: Load available vaccines.
 app.get("/api/vaccination-management/vaccines", (req, res) => {
@@ -1347,15 +1354,17 @@ app.get("/api/vaccination-management/vaccines", (req, res) => {
             ORDER BY vaccine_name
         `).all();
 
-        res.json(vaccines);
+        return res.json(vaccines);
+
     } catch (error) {
         console.error("Error retrieving vaccines:", error);
 
-        res.status(500).json({
+        return res.status(500).json({
             message: "Failed to retrieve vaccine options."
         });
     }
 });
+
 
 // PATCH: Update a child's details.
 app.patch(
@@ -1367,15 +1376,20 @@ app.patch(
             user_id,
             full_name,
             gender,
-            date_of_birth
+            date_of_birth,
+            guardian_name,
+            phone_no
         } = req.body;
 
+        // Validate required fields.
         if (
             !oldUserId ||
             typeof user_id !== "string" ||
             typeof full_name !== "string" ||
             typeof gender !== "string" ||
-            typeof date_of_birth !== "string"
+            typeof date_of_birth !== "string" ||
+            typeof guardian_name !== "string" ||
+            typeof phone_no !== "string"
         ) {
             return res.status(400).json({
                 message: "Please complete all child details."
@@ -1385,16 +1399,32 @@ app.patch(
         const newUserId = user_id.trim();
         const name = full_name.trim();
         const dob = date_of_birth.trim();
+        const guardianName = guardian_name.trim();
+        const phoneNo = phone_no.trim();
 
         if (
             !newUserId ||
             !name ||
             !dob ||
-            !["Male", "Female"].includes(gender) ||
-            !/^\d{4}-\d{2}-\d{2}$/.test(dob)
+            !guardianName ||
+            !phoneNo ||
+            !["Male", "Female"].includes(gender)
         ) {
             return res.status(400).json({
-                message: "Enter a valid name, IC number, gender and date of birth."
+                message: "Enter valid child details."
+            });
+        }
+
+        // Validate date of birth.
+        const date = new Date(dob);
+
+        if (
+            !/^\d{4}-\d{2}-\d{2}$/.test(dob) ||
+            Number.isNaN(date.getTime()) ||
+            date.toISOString().slice(0, 10) !== dob
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid date of birth."
             });
         }
 
@@ -1411,6 +1441,7 @@ app.patch(
                 });
             }
 
+            // Prevent using another account's IC/MyKid number.
             const duplicate = db.prepare(`
                 SELECT user_id
                 FROM User
@@ -1424,39 +1455,52 @@ app.patch(
                 });
             }
 
+            // Update User and Child in one transaction.
             const updateChild = db.transaction(() => {
-                // The database uses User.user_id as the child's ID.
-                // Existing foreign keys update through ON UPDATE CASCADE.
                 db.prepare(`
                     UPDATE User
                     SET user_id = ?,
                         full_name = ?
                     WHERE user_id = ?
-                `).run(newUserId, name, oldUserId);
+                `).run(
+                    newUserId,
+                    name,
+                    oldUserId
+                );
 
                 db.prepare(`
                     UPDATE Child
                     SET date_of_birth = ?,
-                        gender = ?
+                        gender = ?,
+                        guardian_name = ?,
+                        phone_no = ?
                     WHERE user_id = ?
-                `).run(dob, gender, newUserId);
+                `).run(
+                    dob,
+                    gender,
+                    guardianName,
+                    phoneNo,
+                    newUserId
+                );
             });
 
             updateChild();
 
-            res.json({
+            return res.json({
                 message: "Child details updated successfully.",
                 user_id: newUserId
             });
+
         } catch (error) {
             console.error("Error updating child details:", error);
 
-            res.status(500).json({
+            return res.status(500).json({
                 message: "Failed to update child details."
             });
         }
     }
 );
+
 
 // PATCH: Update an existing vaccination record.
 app.patch(
@@ -1515,18 +1559,20 @@ app.patch(
                 });
             }
 
-            res.json({
+            return res.json({
                 message: "Vaccination record updated successfully."
             });
+
         } catch (error) {
             console.error("Error updating vaccination record:", error);
 
-            res.status(500).json({
+            return res.status(500).json({
                 message: "Failed to update vaccination record."
             });
         }
     }
 );
+
 
 // POST: Add a vaccination record for a child.
 app.post(
@@ -1547,11 +1593,23 @@ app.post(
             typeof dose !== "string" ||
             !dose.trim() ||
             !["Upcoming", "Completed"].includes(status) ||
-            typeof due_date !== "string" ||
-            !/^\d{4}-\d{2}-\d{2}$/.test(due_date)
+            typeof due_date !== "string"
         ) {
             return res.status(400).json({
                 message: "Please provide a vaccine, dose, status and due date."
+            });
+        }
+
+        // Validate the date, including invalid calendar dates.
+        const date = new Date(due_date);
+
+        if (
+            !/^\d{4}-\d{2}-\d{2}$/.test(due_date) ||
+            Number.isNaN(date.getTime()) ||
+            date.toISOString().slice(0, 10) !== due_date
+        ) {
+            return res.status(400).json({
+                message: "Please provide a valid due date."
             });
         }
 
@@ -1580,6 +1638,7 @@ app.post(
                 });
             }
 
+            // appointment_id is no longer required.
             const result = db.prepare(`
                 INSERT INTO Child_Vaccination (
                     user_id,
@@ -1597,19 +1656,21 @@ app.post(
                 status
             );
 
-            res.status(201).json({
+            return res.status(201).json({
                 message: "Vaccination record added successfully.",
                 record_id: result.lastInsertRowid
             });
+
         } catch (error) {
             console.error("Error adding vaccination record:", error);
 
-            res.status(500).json({
+            return res.status(500).json({
                 message: "Failed to add vaccination record."
             });
         }
     }
 );
+
 
 // DELETE: Delete a vaccination record.
 app.delete(
@@ -1635,13 +1696,14 @@ app.delete(
                 });
             }
 
-            res.json({
+            return res.json({
                 message: "Vaccination record deleted successfully."
             });
+
         } catch (error) {
             console.error("Error deleting vaccination record:", error);
 
-            res.status(500).json({
+            return res.status(500).json({
                 message: "Failed to delete vaccination record."
             });
         }

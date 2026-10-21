@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -15,14 +16,12 @@
 
 <body>
 
-    <!-- ================= HEADER ================= -->
     <header class="top-header">
         <div class="logo">
             <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
-
             <div class="logo-text">
                 <h1>CareTrack</h1>
-                <p>Maternal & Child Healthcare</p>
+                <p>Maternal &amp; Child Healthcare</p>
             </div>
         </div>
 
@@ -34,10 +33,8 @@
         </div>
     </header>
 
-    <!-- ================= PAGE LAYOUT ================= -->
     <div class="page-layout">
 
-        <!-- ================= SIDEBAR ================= -->
         <aside class="sidebar">
             <nav class="sidebar-nav">
 
@@ -84,23 +81,27 @@
             </nav>
         </aside>
 
-        <!-- ================= MAIN CONTENT ================= -->
         <main class="main-content">
 
             <div class="page-header">
                 <div class="page-heading">
+
                     <div class="page-icon">
                         <img src="../icons/syringe.png" alt="Vaccination">
                     </div>
 
                     <div>
                         <h2>Vaccination Management</h2>
-                        <p>Search for a child, view vaccination records, and manage vaccination status.</p>
+                        <p>
+                            Search for a child, view vaccination records,
+                            and manage vaccination status.
+                        </p>
                     </div>
+
                 </div>
             </div>
 
-            <!-- ================= SEARCH ================= -->
+            <!-- Search -->
             <section class="search-card">
                 <div class="search-box">
                     <span class="search-icon">⌕</span>
@@ -113,8 +114,9 @@
                 </div>
             </section>
 
-            <!-- ================= ALL CHILDREN ================= -->
+            <!-- Children List -->
             <section class="children-list-card">
+
                 <div class="section-title">
                     <h2>All Children</h2>
                     <p>Select a child to view their vaccination information.</p>
@@ -128,15 +130,12 @@
                     style="display: none;">
                     No child found.
                 </p>
+
             </section>
 
-            <!--
-                IMPORTANT:
-                Child details remain hidden until the staff clicks View Child.
-            -->
+            <!-- Selected Child Details -->
             <div id="childDetails" style="display: none;">
 
-                <!-- ================= CHILD DETAILS ================= -->
                 <section class="child-card">
 
                     <div class="child-photo">
@@ -144,6 +143,7 @@
                     </div>
 
                     <div class="child-information" id="childDisplay">
+
                         <h2 id="childName"></h2>
 
                         <p>
@@ -152,114 +152,62 @@
                             DOB: <span id="childDOB"></span>
                         </p>
 
-                        <p>IC No: <span id="childIC"></span></p>
+                        <p>
+                            IC No: <span id="childIC"></span>
+                        </p>
+
                     </div>
-
-                    <!-- ================= EDIT CHILD FORM ================= -->
-                    <div
-                        class="child-edit-form"
-                        id="childEditForm"
-                        style="display: none;">
-
-                        <div class="child-edit-grid">
-
-                            <div>
-                                <label for="editChildName">Name</label>
-                                <input type="text" id="editChildName" required>
-                            </div>
-
-                            <div>
-                                <label for="editChildGender">Gender</label>
-                                <select id="editChildGender" required>
-                                    <option value="Female">Female</option>
-                                    <option value="Male">Male</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label for="editChildDOB">Date of Birth</label>
-                                <input type="date" id="editChildDOB" required>
-                            </div>
-
-                            <div>
-                                <label for="editChildGuardian">Guardian Name</label>
-                                <input type="text" id="editChildGuardian" required>
-                            </div>
-
-                            <div>
-                                <label for="editChildPhone">Phone Number</label>
-                                <input type="tel" id="editChildPhone" required>
-                            </div>
-
-                        </div>
-
-                        <div class="edit-form-buttons">
-                            <button
-                                type="button"
-                                class="save-child-button"
-                                onclick="saveChildDetails()">
-                                Save Changes
-                            </button>
-
-                            <button
-                                type="button"
-                                class="cancel-child-button"
-                                onclick="cancelEditChild()">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        class="edit-child-button"
-                        id="editChildButton"
-                        onclick="editChild()">
-                        <i class="bi bi-pencil"></i> Edit Child Details
-                    </button>
 
                 </section>
 
-                <!-- ================= VACCINATION CONTENT ================= -->
                 <div class="content-grid">
 
-                    <!-- ================= RECORDS TABLE ================= -->
+                    <!-- Vaccination Records Table -->
                     <section class="records-card">
+
                         <h2>Vaccination Records</h2>
 
                         <div class="table-container">
+
                             <table id="vaccinationTable">
+
                                 <thead>
                                     <tr>
                                         <th>Vaccine</th>
                                         <th>Dose</th>
+                                        <th>Due Date</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
 
                                 <tbody id="vaccinationTableBody"></tbody>
+
                             </table>
+
                         </div>
 
                         <div class="information-box">
+                            The due date is the scheduled vaccination date.
                             Select a record to edit it, or add a new vaccination record.
-                            Remarks and address are not stored in the current database.
                         </div>
+
                     </section>
 
-                    <!-- ================= RIGHT COLUMN ================= -->
+                    <!-- Right Column -->
                     <div class="right-column">
 
-                        <!-- ================= UPDATE RECORD ================= -->
+                        <!-- Update Vaccination Record -->
                         <section class="update-card">
 
                             <div class="card-title">
+
                                 <span class="card-icon">
                                     <img src="../icons/syringe.png" alt="">
                                 </span>
 
                                 <h2>Update Vaccination Record</h2>
+
                             </div>
 
                             <p class="form-help" id="updateHelp">
@@ -294,7 +242,7 @@
 
                         </section>
 
-                        <!-- ================= ADD RECORD ================= -->
+                        <!-- Add Vaccination Record -->
                         <section class="add-card">
 
                             <div class="add-title">
@@ -329,7 +277,10 @@
 
                                     <div>
                                         <label for="newDueDate">Due Date</label>
-                                        <input type="date" id="newDueDate" required>
+                                        <input
+                                            type="date"
+                                            id="newDueDate"
+                                            required>
                                     </div>
 
                                     <div>
@@ -343,6 +294,7 @@
                                 </div>
 
                                 <div class="add-form-buttons">
+
                                     <button
                                         type="button"
                                         class="confirm-add-button"
@@ -356,9 +308,11 @@
                                         onclick="cancelAddRecord()">
                                         Cancel
                                     </button>
+
                                 </div>
 
                             </div>
+
                         </section>
 
                     </div>

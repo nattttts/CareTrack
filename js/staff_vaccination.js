@@ -1,3 +1,4 @@
+
 const API_BASE = "http://localhost:3000/api/vaccination-management";
 
 let children = [];
@@ -7,7 +8,7 @@ let selectedRecordId = null;
 
 const $ = id => document.getElementById(id);
 
-// Escape database values before displaying them in HTML
+// Escape values before inserting them into HTML
 function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, character => ({
         "&": "&amp;",
@@ -18,7 +19,27 @@ function escapeHTML(value) {
     })[character]);
 }
 
-// Send requests to the CareTrack backend
+// Format YYYY-MM-DD as DD/MM/YYYY without timezone conversion
+function formatDate(dateValue) {
+    if (!dateValue) return "-";
+
+    const datePart = String(dateValue).slice(0, 10);
+    const parts = datePart.split("-");
+
+    if (parts.length !== 3) {
+        return escapeHTML(dateValue);
+    }
+
+    const [year, month, day] = parts;
+
+    if (!year || !month || !day) {
+        return escapeHTML(dateValue);
+    }
+
+    return `${day}/${month}/${year}`;
+}
+
+// Send requests to the backend
 async function apiRequest(url, options = {}) {
     const response = await fetch(url, {
         ...options,
@@ -33,7 +54,7 @@ async function apiRequest(url, options = {}) {
     try {
         data = await response.json();
     } catch (error) {
-        // Response may not contain JSON
+        // The response may not contain JSON.
     }
 
     if (!response.ok) {
@@ -45,16 +66,18 @@ async function apiRequest(url, options = {}) {
     return data;
 }
 
+// Get the selected child
 function getSelectedChild() {
     return children.find(
-        child => child.user_id === selectedChildId
+        child => String(child.user_id) === String(selectedChildId)
     ) || null;
 }
 
 // Generate vaccine dropdown options
 function vaccineOptionsHTML(selectedId = "") {
     return vaccines.map(vaccine => `
-        <option value="${vaccine.vaccination_id}"
+        <option
+            value="${escapeHTML(vaccine.vaccination_id)}"
             ${String(vaccine.vaccination_id) === String(selectedId)
                 ? "selected"
                 : ""}>
@@ -63,15 +86,13 @@ function vaccineOptionsHTML(selectedId = "") {
     `).join("");
 }
 
-// Generate available doses according to the vaccine
+// Generate doses based on the selected vaccine
 function dosesFor(vaccineId) {
     const vaccine = vaccines.find(
         item => String(item.vaccination_id) === String(vaccineId)
     );
 
-    if (!vaccine) {
-        return ["Dose 1"];
-    }
+    if (!vaccine) return ["Dose 1"];
 
     const quantity = Math.max(
         1,
@@ -90,7 +111,7 @@ function dosesFor(vaccineId) {
     return [...new Set(doses)];
 }
 
-// Update dose options
+// Update the available dose options
 function updateDoseOptions(type) {
     const vaccineSelect = $(
         type === "new" ? "newVaccine" : "vaccine"
@@ -125,18 +146,18 @@ function fillVaccineSelects() {
     updateDoseOptions("new");
 }
 
-// Search children by name or IC number
+// Search by child's name or IC number
 function searchChild() {
     displayChildren();
 }
 
-// Display the children list
+// Display the list of children
 function displayChildren() {
-    const searchInput = $("searchChild");
+    const list = $("childrenList");
 
-    if (!$("childrenList")) return;
+    if (!list) return;
 
-    const query = (searchInput?.value || "")
+    const query = ($("searchChild")?.value || "")
         .trim()
         .toLowerCase();
 
@@ -147,9 +168,11 @@ function displayChildren() {
         return name.includes(query) || ic.includes(query);
     });
 
-    $("childrenList").innerHTML = filteredChildren.map(child => `
+    list.innerHTML = filteredChildren.map(child => `
         <div class="child-list-item ${
-            child.user_id === selectedChildId ? "active" : ""
+            String(child.user_id) === String(selectedChildId)
+                ? "active"
+                : ""
         }">
             <div class="child-list-left">
                 <div class="child-list-avatar">
@@ -172,13 +195,11 @@ function displayChildren() {
         </div>
     `).join("");
 
-    $("childrenList")
-        .querySelectorAll("[data-child-id]")
-        .forEach(button => {
-            button.addEventListener("click", () => {
-                selectChild(button.dataset.childId);
-            });
+    list.querySelectorAll("[data-child-id]").forEach(button => {
+        button.addEventListener("click", () => {
+            selectChild(button.dataset.childId);
         });
+    });
 
     if ($("noChildrenMessage")) {
         $("noChildrenMessage").style.display =
@@ -186,48 +207,53 @@ function displayChildren() {
     }
 }
 
-// Select a child and show their information
+// Select a child and display their vaccination records
 function selectChild(userId) {
-    selectedChildId = userId;
+    selectedChildId = String(userId);
     selectedRecordId = null;
 
     const child = getSelectedChild();
 
-    if (!child) return;
+    if (!child) {
+        console.error("Child not found:", userId, children);
+        return;
+    }
 
     $("childDetails").style.display = "block";
-    $("childEditForm").style.display = "none";
-    $("childDisplay").style.display = "block";
-    $("editChildButton").style.display = "inline-block";
-
     $("addRecordForm").style.display = "none";
     $("showAddRecordButton").style.display = "inline-block";
 
     clearRecordForm();
-    clearRecordSelection();
-
     renderChildDetails(child);
+    clearRecordSelection();
     displayChildren();
+
+    $("childDetails").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
 }
 
-// Display child details
+// Display selected child's information and records
 function renderChildDetails(child) {
     $("childName").textContent = child.full_name || "-";
     $("childGender").textContent = child.gender || "-";
-    $("childDOB").textContent = child.date_of_birth || "-";
+    $("childDOB").textContent = formatDate(child.date_of_birth);
     $("childIC").textContent = child.user_id || "-";
 
     renderVaccinationRecords(child.records || []);
 }
 
-// Display vaccination records in the table
+// Display vaccination records
 function renderVaccinationRecords(records) {
     const tableBody = $("vaccinationTableBody");
+
+    if (!tableBody) return;
 
     if (!records || records.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="4">
+                <td colspan="5">
                     No vaccination records found for this child.
                 </td>
             </tr>
@@ -235,37 +261,51 @@ function renderVaccinationRecords(records) {
         return;
     }
 
-    tableBody.innerHTML = records.map(record => `
-        <tr class="${
-            Number(record.child_vaccination_id) ===
-            Number(selectedRecordId) ? "selected" : ""
-        }">
-            <td>${escapeHTML(record.vaccine_name)}</td>
-            <td>${escapeHTML(record.dose)}</td>
-            <td>
-                <span class="status ${String(record.status).toLowerCase()}">
-                    ${escapeHTML(record.status)}
-                </span>
-            </td>
-            <td>
-                <button
-                    type="button"
-                    class="edit-record-button"
-                    data-edit-record="${record.child_vaccination_id}"
-                    title="Edit">
-                    <i class="bi bi-pencil"></i>
-                </button>
+    tableBody.innerHTML = records.map(record => {
+        const statusClass = String(record.status || "")
+            .toLowerCase()
+            .replace(/[^a-z]/g, "");
 
-                <button
-                    type="button"
-                    class="delete-record-button"
-                    data-delete-record="${record.child_vaccination_id}"
-                    title="Delete">
-                    <i class="bi bi-trash3"></i>
-                </button>
-            </td>
-        </tr>
-    `).join("");
+        return `
+            <tr class="${
+                Number(record.child_vaccination_id) ===
+                Number(selectedRecordId) ? "selected-row" : ""
+            }">
+                <td>${escapeHTML(record.vaccine_name)}</td>
+                <td>${escapeHTML(record.dose)}</td>
+
+                <td class="vaccination-date">
+                    ${formatDate(record.due_date)}
+                </td>
+
+                <td>
+                    <span class="status ${statusClass}">
+                        ${escapeHTML(record.status)}
+                    </span>
+                </td>
+
+                <td class="action-buttons">
+                    <button
+                        type="button"
+                        class="edit-record-button"
+                        data-edit-record="${escapeHTML(record.child_vaccination_id)}"
+                        title="Edit vaccination record"
+                        aria-label="Edit vaccination record">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="delete-record-button"
+                        data-delete-record="${escapeHTML(record.child_vaccination_id)}"
+                        title="Delete vaccination record"
+                        aria-label="Delete vaccination record">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
 
     tableBody.querySelectorAll("[data-edit-record]")
         .forEach(button => {
@@ -282,74 +322,7 @@ function renderVaccinationRecords(records) {
         });
 }
 
-// Show child edit form
-function editChild() {
-    const child = getSelectedChild();
-
-    if (!child) return;
-
-    $("childDisplay").style.display = "none";
-    $("childEditForm").style.display = "block";
-    $("editChildButton").style.display = "none";
-
-    $("editChildName").value = child.full_name || "";
-    $("editChildGender").value = child.gender || "Male";
-    $("editChildDOB").value = child.date_of_birth || "";
-    $("editChildIC").value = child.user_id || "";
-}
-
-// Cancel child editing
-function cancelEditChild() {
-    $("childEditForm").style.display = "none";
-    $("childDisplay").style.display = "block";
-    $("editChildButton").style.display = "inline-block";
-}
-
-// Save child information to SQLite
-async function saveChildDetails() {
-    const child = getSelectedChild();
-
-    if (!child) return;
-
-    const newUserId = $("editChildIC").value.trim();
-    const fullName = $("editChildName").value.trim();
-    const gender = $("editChildGender").value;
-    const dob = $("editChildDOB").value;
-
-    if (!newUserId || !fullName || !gender || !dob) {
-        alert("Please complete all required child details.");
-        return;
-    }
-
-    const payload = {
-        user_id: newUserId,
-        full_name: fullName,
-        gender,
-        date_of_birth: dob
-    };
-
-    try {
-        const result = await apiRequest(
-            `${API_BASE}/children/${encodeURIComponent(child.user_id)}`,
-            {
-                method: "PATCH",
-                body: JSON.stringify(payload)
-            }
-        );
-
-        alert(result.message || "Child details updated successfully.");
-
-        selectedChildId = result.user_id || newUserId;
-
-        await loadData(selectedChildId);
-
-    } catch (error) {
-        console.error("Error saving child details:", error);
-        alert(error.message);
-    }
-}
-
-// Select a vaccination record for editing
+// Select a vaccination record to edit
 function editRecord(recordId) {
     const child = getSelectedChild();
 
@@ -373,9 +346,14 @@ function editRecord(recordId) {
     $("status").value = record.status;
 
     $("updateHelp").textContent =
-        `Editing ${record.vaccine_name} — due ${record.due_date}`;
+        `Editing ${record.vaccine_name} — due ${formatDate(record.due_date)}`;
 
-    renderVaccinationRecords(child.records);
+    renderVaccinationRecords(child.records || []);
+
+    $("updateHelp").scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+    });
 }
 
 // Save changes to an existing vaccination record
@@ -408,7 +386,6 @@ async function saveRecord() {
         alert(result.message || "Vaccination record updated.");
 
         await loadData(selectedChildId);
-
     } catch (error) {
         console.error("Error updating vaccination record:", error);
         alert(error.message);
@@ -434,7 +411,6 @@ async function deleteRecord(recordId) {
         selectedRecordId = null;
 
         await loadData(selectedChildId);
-
     } catch (error) {
         console.error("Error deleting vaccination record:", error);
         alert(error.message);
@@ -451,7 +427,16 @@ function addRecord() {
     $("addRecordForm").style.display = "block";
     $("showAddRecordButton").style.display = "none";
 
-    $("newDueDate").value = new Date().toISOString().slice(0, 10);
+    // Use the local date to avoid UTC date differences.
+    const today = new Date();
+
+    const localToday = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, "0"),
+        String(today.getDate()).padStart(2, "0")
+    ].join("-");
+
+    $("newDueDate").value = localToday;
 
     updateDoseOptions("new");
 }
@@ -481,10 +466,15 @@ function clearRecordForm() {
     updateDoseOptions("new");
 }
 
-// Add a new vaccination record to SQLite
+// Add a vaccination record
 async function confirmAddRecord() {
     if (!selectedChildId) {
         alert("Please select a child first.");
+        return;
+    }
+
+    if (!$("newVaccine").value) {
+        alert("Please select a vaccine.");
         return;
     }
 
@@ -519,14 +509,13 @@ async function confirmAddRecord() {
         clearRecordForm();
 
         await loadData(selectedChildId);
-
     } catch (error) {
         console.error("Error adding vaccination record:", error);
         alert(error.message);
     }
 }
 
-// Clear the selected record
+// Clear the selected vaccination record
 function clearRecordSelection() {
     selectedRecordId = null;
 
@@ -542,13 +531,21 @@ function clearRecordSelection() {
     }
 }
 
-// Load children, vaccination records and vaccine options from the database
+// Load children and vaccine options from SQLite
 async function loadData(preferredChildId = null) {
     try {
         const [childData, vaccineData] = await Promise.all([
             apiRequest(`${API_BASE}/children`),
             apiRequest(`${API_BASE}/vaccines`)
         ]);
+
+        if (!Array.isArray(childData)) {
+            throw new Error("Children API did not return an array.");
+        }
+
+        if (!Array.isArray(vaccineData)) {
+            throw new Error("Vaccines API did not return an array.");
+        }
 
         children = childData;
         vaccines = vaccineData;
@@ -558,60 +555,71 @@ async function loadData(preferredChildId = null) {
 
         const nextChildId =
             preferredChildId &&
-            children.some(child => child.user_id === preferredChildId)
-                ? preferredChildId
+            children.some(
+                child => String(child.user_id) === String(preferredChildId)
+            )
+                ? String(preferredChildId)
                 : selectedChildId &&
-                  children.some(child => child.user_id === selectedChildId)
-                    ? selectedChildId
+                  children.some(
+                      child => String(child.user_id) === String(selectedChildId)
+                  )
+                    ? String(selectedChildId)
                     : null;
 
-        if (nextChildId) {
+        if (nextChildId !== null) {
             selectChild(nextChildId);
         } else {
             selectedChildId = null;
             selectedRecordId = null;
-
             $("childDetails").style.display = "none";
-
-            // Do not automatically open the first child's details.
             displayChildren();
         }
-
     } catch (error) {
         console.error("Failed to load vaccination data:", error);
 
-        $("childrenList").innerHTML = `
-            <p class="error-message">
-                Unable to load children. Please check that the backend
-                is running and the vaccination API routes are available.
-            </p>
-        `;
+        const list = $("childrenList");
 
-        $("noChildrenMessage").style.display = "none";
+        if (list) {
+            list.innerHTML = `
+                <p class="error-message">
+                    Unable to load vaccination data:
+                    ${escapeHTML(error.message)}
+                </p>
+            `;
+        }
 
-        alert(
-            "Unable to load vaccination data.\n\n" +
-            error.message +
-            "\n\nCheck the backend terminal and browser console."
-        );
+        if ($("noChildrenMessage")) {
+            $("noChildrenMessage").style.display = "none";
+        }
     }
 }
 
-// Start the page
+// Initialise the page
 document.addEventListener("DOMContentLoaded", () => {
-    $("searchChild").addEventListener("input", searchChild);
+    const searchInput = $("searchChild");
+    const vaccineSelect = $("vaccine");
+    const newVaccineSelect = $("newVaccine");
 
-    $("vaccine").addEventListener("change", () => {
+    if (!searchInput || !vaccineSelect || !newVaccineSelect) {
+        console.error("Missing required HTML elements.", {
+            searchChild: !!searchInput,
+            vaccine: !!vaccineSelect,
+            newVaccine: !!newVaccineSelect
+        });
+        return;
+    }
+
+    searchInput.addEventListener("input", searchChild);
+
+    vaccineSelect.addEventListener("change", () => {
         updateDoseOptions("update");
     });
 
-    $("newVaccine").addEventListener("change", () => {
+    newVaccineSelect.addEventListener("change", () => {
         updateDoseOptions("new");
     });
 
-    // Keep child details hidden until View Child is clicked.
     $("childDetails").style.display = "none";
-    $("childEditForm").style.display = "none";
     $("addRecordForm").style.display = "none";
 
     loadData();

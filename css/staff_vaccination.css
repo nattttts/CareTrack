@@ -347,38 +347,9 @@ button {
     overflow-wrap: anywhere;
 }
 
-
-/* =========================================
-   EDIT CHILD BUTTON
-   RESTORED TO YOUR ORIGINAL PINK STYLE
-========================================= */
-
-.edit-child-button {
-    border: 0 !important;
-    background: #f9528e !important;
-    color: #ffffff !important;
-    padding: 11px 18px;
-    border-radius: 20px !important;
-    cursor: pointer;
-    font-weight: bold;
-    white-space: nowrap;
-    box-shadow: none !important;
-}
-
-.edit-child-button i {
-    color: #ffffff !important;
-}
-
-.edit-child-button:hover {
-    background: #e83f7d !important;
-    color: #ffffff !important;
-}
-
-
 /* =========================================
    CHILD EDIT FORM
 ========================================= */
-
 .child-edit-form {
     flex: 1;
     min-width: 0;
@@ -578,7 +549,6 @@ tbody tr:hover {
     white-space: nowrap;
 }
 
-/* White square buttons with soft pink outlines */
 #vaccinationTable .edit-record-button,
 #vaccinationTable .delete-record-button {
     width: 38px !important;
@@ -602,14 +572,12 @@ tbody tr:hover {
     transform: none !important;
 }
 
-/* Bootstrap pencil and trash icons */
 #vaccinationTable .edit-record-button i,
 #vaccinationTable .delete-record-button i {
     color: #e88ca9 !important;
     font-size: 15px;
 }
 
-/* Hover - light pink background */
 #vaccinationTable .edit-record-button:hover,
 #vaccinationTable .delete-record-button:hover {
     background: #fff0f5 !important;
@@ -787,7 +755,7 @@ select:disabled {
 
 
 /* =========================================
-   DATE INPUTS - WHITE WITH PINK ACCENTS
+   DATE INPUTS
 ========================================= */
 
 input[type="date"],
@@ -806,7 +774,6 @@ input[type="month"] {
     box-shadow: none;
 }
 
-/* Pink focus border */
 input[type="date"]:focus,
 input[type="datetime-local"]:focus,
 input[type="month"]:focus {
@@ -815,7 +782,6 @@ input[type="month"]:focus {
     box-shadow: 0 0 0 2px rgba(249, 82, 142, 0.12) !important;
 }
 
-/* Pink calendar icon in Chrome / Edge / Opera */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 input[type="month"]::-webkit-calendar-picker-indicator {
