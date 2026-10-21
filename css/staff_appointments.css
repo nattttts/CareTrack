@@ -62,7 +62,11 @@ a {
 .page-header {
     max-width: 1250px;
 
-    margin: 0 auto 24px;
+    margin: 0 auto 27px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .page-heading {
@@ -107,6 +111,32 @@ a {
     font-size: 14px;
 }
 
+.schedule-appointment-button {
+    min-height: 46px;
+
+    padding: 0 22px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    border: none;
+
+    background: #f9528e;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.schedule-appointment-button:hover {
+    background: #e81f67;
+    border-color: #e81f67;
+}
+
+.schedule-appointment-button:active {
+    background: #d9165c !important;
+    border-color: #d9165c !important;
+}
 
 /* =====================================================
    APPOINTMENT TABS
@@ -313,19 +343,6 @@ a {
     gap: 10px;
 }
 
-.patient-avatar {
-    width: 39px;
-    height: 39px;
-
-    flex-shrink: 0;
-
-    border-radius: 50%;
-
-    object-fit: cover;
-
-    background: var(--caretrack-pink-light);
-}
-
 .patient-cell strong,
 .patient-cell span {
     display: block;
@@ -426,12 +443,12 @@ a {
 
 /* Pending */
 
-.status-badge.pending {
+.status-badge.pending-reschedule {
     color: #b77a00;
     background: #fff5dc;
 }
 
-.status-badge.pending > span {
+.status-badge.pending-reschedule > span {
     background: #e4a100;
 }
 
@@ -676,12 +693,52 @@ a {
     padding: 23px;
 }
 
+.modal-body h6 {
+    margin-top: 28px;
+    margin-bottom: 16px;
+
+    color: #e81f67;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Remove top margin from the first section title */
+.modal-body h6:first-of-type {
+    margin-top: 0;
+}
+
 .modal-footer {
     padding: 14px 23px;
 
     border-top: 1px solid #f0e2e8;
 }
 
+/* Schedule Appointment Modal */
+.schedule-modal-button {
+    color: #ffffff;
+    background: #f9528e;
+    border-color: #f9528e;
+}
+
+.schedule-modal-button:hover {
+    background: #e81f67;
+    border-color: #e81f67;
+}
+
+.schedule-modal-button:active {
+    background: #d9165c !important;
+    border-color: #d9165c !important;
+}
+
+.cancel-modal-button {
+    border: 1px solid #d4e1ee;
+    color: #526a86;
+    background: #ffffff;
+}
+
+.cancel-modal-button:hover {
+    background: #f5f8fb;
+}
 
 /* Modal Detail */
 

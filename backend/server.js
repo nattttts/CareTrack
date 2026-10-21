@@ -1300,7 +1300,6 @@ app.patch(
     }
 );
 
-
 // PATCH: Update an existing vaccination record.
 app.patch(
     "/api/vaccination-management/records/:recordId",
@@ -1370,7 +1369,6 @@ app.patch(
         }
     }
 );
-
 
 // POST: Add a vaccination record for a child.
 app.post(
@@ -1455,7 +1453,6 @@ app.post(
     }
 );
 
-
 // DELETE: Delete a vaccination record.
 app.delete(
     "/api/vaccination-management/records/:recordId",
@@ -1492,6 +1489,253 @@ app.delete(
         }
     }
 );
+
+// Get all appointments
+app.get("/api/staff/appointments", (req, res) => {
+    try {
+        const appointments = db.prepare(`
+            SELECT
+                a.appointment_id,
+                a.user_id,
+                u.full_name AS patient_name,
+                a.appointment_date,
+                a.start_time,
+                a.end_time,
+                a.status,
+                a.reschedule_status,
+                a.appointment_type
+            FROM Appointment a
+            JOIN User u
+                ON a.user_id = u.user_id
+            ORDER BY
+                a.appointment_date ASC,
+                a.start_time ASC
+        `).all();
+
+        res.json(appointments);
+    } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+
+        res.status(500).json({
+            message: "Failed to retrieve appointments."
+        });
+    }
+});
+
+// Search for patients
+app.get("/api/staff/patients/search", (req, res) => {
+    try {
+        const searchTerm = req.query.q?.trim();
+
+        if (!searchTerm || searchTerm.length < 2) {
+            return res.status(400).json({
+                message: "Enter at least 2 characters to search."
+            });
+        }
+
+        const patients = db.prepare(`
+            SELECT
+                user_id,
+                full_name,
+                role
+            FROM User
+            WHERE role IN ('mother', 'child')
+              AND account_status = 'Active'
+              AND (
+                  user_id LIKE ?
+                  OR full_name LIKE ?
+              )
+            ORDER BY full_name ASC
+            LIMIT 20
+        `).all(`%${searchTerm}%`, `%${searchTerm}%`);
+
+        res.json(patients);
+    } catch (error) {
+        console.error("Failed to search patients:", error);
+
+        res.status(500).json({
+            message: "Failed to search patients."
+        });
+    }
+});
+
+// Add new patient appointments
+app.post("/api/staff/appointments", (req, res) => {
+    try {
+        const {
+            user_id,
+            appointment_date,
+            start_time,
+            end_time
+        } = req.body;
+
+        // Check required fields
+        if (!user_id || !appointment_date || !start_time || !end_time) {
+            return res.status(400).json({
+                message: "Please provide the patient, date, start time and end time."
+            });
+        }
+
+        // Validate date and time formats
+        if (
+            !/^\d{4}-\d{2}-\d{2}$/.test(appointment_date) ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(start_time) ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(end_time)
+        ) {
+            return res.status(400).json({
+                message: "Invalid appointment date or time format."
+            });
+        }
+
+        // Confirm that the patient exists and is active
+        const patient = db.prepare(`
+            SELECT user_id, role
+            FROM User
+            WHERE user_id = ?
+              AND role IN ('mother', 'child')
+              AND account_status = 'Active'
+        `).get(user_id);
+
+        if (!patient) {
+            return res.status(400).json({
+                message: "The selected patient does not exist or is inactive."
+            });
+        }
+
+        // Determine the appointment type from the patient's role
+        const appointmentType =
+            patient.role === "child"
+                ? "Child Vaccination"
+                : "Maternal Follow-up";
+
+        // Validate the calendar date
+        const [year, month, day] = appointment_date.split("-").map(Number);
+
+        const selectedDate = new Date(Date.UTC(year, month - 1, day));
+
+        if (
+            selectedDate.getUTCFullYear() !== year ||
+            selectedDate.getUTCMonth() !== month - 1 ||
+            selectedDate.getUTCDate() !== day
+        ) {
+            return res.status(400).json({
+                message: "Please provide a valid appointment date."
+            });
+        }
+
+        // Check clinic operating days and hours
+        const dayOfWeek = selectedDate.getUTCDay();
+
+        let openingTime;
+        let closingTime;
+
+        if (dayOfWeek === 0) {
+            return res.status(400).json({
+                message: "The clinic is closed on Sundays."
+            });
+        } else if (dayOfWeek === 6) {
+            openingTime = "09:00";
+            closingTime = "12:30";
+        } else {
+            openingTime = "08:30";
+            closingTime = "17:00";
+        }
+
+        if (
+            start_time < openingTime ||
+            start_time >= closingTime ||
+            end_time <= start_time ||
+            end_time > closingTime
+        ) {
+            return res.status(400).json({
+                message: `Appointment time must be within clinic hours (${openingTime}–${closingTime}), and the end time must be after the start time.`
+            });
+        }
+
+        // Get today's date in Malaysia (YYYY-MM-DD)
+        const today = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Kuala_Lumpur",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        }).format(new Date());
+
+        // Prevent appointments in the past
+        if (appointment_date < today) {
+            return res.status(400).json({
+                message: "The appointment date cannot be in the past."
+            });
+        }
+
+        // Prevent a start time in the past today
+        if (appointment_date === today) {
+            const currentTime = new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Asia/Kuala_Lumpur",
+                hour: "2-digit",
+                minute: "2-digit",
+                hourCycle: "h23"
+            }).format(new Date());
+
+            if (start_time <= currentTime) {
+                return res.status(400).json({
+                    message: "The start time must be later than the current time."
+                });
+            }
+        }
+
+        // Prevent overlapping appointments for the same patient
+        const overlappingAppointment = db.prepare(`
+            SELECT appointment_id
+            FROM Appointment
+            WHERE user_id = ?
+              AND appointment_date = ?
+              AND status = 'Confirmed'
+              AND start_time < ?
+              AND end_time > ?
+        `).get(
+            user_id,
+            appointment_date,
+            end_time,
+            start_time
+        );
+
+        if (overlappingAppointment) {
+            return res.status(409).json({
+                message: "This patient already has an overlapping appointment."
+            });
+        }
+
+        // Save the appointment
+        const result = db.prepare(`
+            INSERT INTO Appointment (
+                user_id,
+                appointment_type,
+                appointment_date,
+                start_time,
+                end_time
+            )
+            VALUES (?, ?, ?, ?, ?)
+        `).run(
+            user_id,
+            appointmentType,
+            appointment_date,
+            start_time,
+            end_time
+        );
+
+        res.status(201).json({
+            message: "Appointment scheduled successfully.",
+            appointment_id: result.lastInsertRowid
+        });
+
+    } catch (error) {
+        console.error("Failed to create appointment:", error);
+
+        res.status(500).json({
+            message: "Failed to schedule the appointment. Please try again."
+        });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
