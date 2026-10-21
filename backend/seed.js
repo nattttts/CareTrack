@@ -54,14 +54,14 @@ const insert = {
 
     appointment: db.prepare(`
         INSERT INTO Appointment
-            (appointment_id, user_id, appointment_date, start_time, end_time, status, reschedule_status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (appointment_id, user_id, appointment_type, appointment_date, start_time, end_time, status, reschedule_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `),
 
     childVaccination: db.prepare(`
         INSERT INTO Child_Vaccination
-            (child_vaccination_id, user_id, vaccination_id, appointment_id, due_date, dose, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (child_vaccination_id, user_id, vaccination_id, due_date, dose, status)
+        VALUES (?, ?, ?, ?, ?, ?)
     `),
 
     notification: db.prepare(`
@@ -158,15 +158,15 @@ const seed = db.transaction(() => {
     // reschedule_status: None / Pending / Approved / Rejected
     // =========================================
     const appointments = [
-        [1, "970107-07-0010", "2026-07-20", "11:00", "11:30", "Completed", "None"],
-        [2, "980108-07-0012", "2026-08-20", "10:30", "11:00", "Completed", "None"],
-        [3, "260801-07-0007", "2026-10-01", "10:00", "10:30", "Completed", "None"],
-        [4, "950105-07-0006", "2026-10-13", "09:00", "09:30", "Completed", "Approved"],
-        [5, "950105-07-0006", "2026-11-13", "09:00", "09:30", "Confirmed", "Pending"],
-        [6, "960106-07-0008", "2026-10-13", "10:00", "10:30", "Missed", "None"],
-        [7, "960106-07-0008", "2026-10-20", "10:00", "10:30", "Confirmed", "None"],
-        [8, "260801-07-0007", "2026-11-01", "10:00", "10:30", "Confirmed", "None"],
-        [9, "260902-07-0003", "2026-11-01", "09:00", "09:30", "Confirmed", "Pending"]
+        [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "11:30", "Completed", "None"],
+        [2, "980108-07-0012", "Maternal Follow-up", "2026-08-20", "10:30", "11:00", "Completed", "None"],
+        [3, "260801-07-0007", "Child Vaccination", "2026-10-01", "10:00", "10:30", "Completed", "None"],
+        [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "09:30", "Completed", "Approved"],
+        [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "09:30", "Confirmed", "Pending"],
+        [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "10:30", "Missed", "None"],
+        [7, "960106-07-0008", "Maternal Follow-up", "2026-10-20", "10:00", "10:30", "Confirmed", "None"],
+        [8, "260801-07-0007", "Child Vaccination", "2026-11-01", "10:00", "10:30", "Confirmed", "None"],
+        [9, "260902-07-0003", "Child Vaccination", "2026-11-01", "09:00", "09:30", "Confirmed", "Pending"]
     ];
 
     appointments.forEach(row => insert.appointment.run(...row));
@@ -175,9 +175,9 @@ const seed = db.transaction(() => {
     // 10. CHILD VACCINATION RECORDS
     // =========================================
     const childVaccinations = [
-        [1, "260801-07-0007", 1, 3, "2026-10-01", "Dose 1", "Completed"],
-        [2, "260801-07-0007", 1, 8, "2026-11-01", "Dose 2", "Upcoming"],
-        [3, "260902-07-0003", 1, 9, "2026-11-01", "Dose 1", "Upcoming"]
+        [1, "260801-07-0007", 1, "2026-10-01", "Dose 1", "Completed"],
+        [2, "260801-07-0007", 1, "2026-11-01", "Dose 2", "Upcoming"],
+        [3, "260902-07-0003", 1, "2026-11-01", "Dose 1", "Upcoming"]
     ];
 
     childVaccinations.forEach(row => insert.childVaccination.run(...row));
