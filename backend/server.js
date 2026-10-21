@@ -1682,18 +1682,17 @@ app.post("/api/staff/appointments", (req, res) => {
                 });
             }
         }
-
-        // Prevent overlapping appointments for the same patient
+        
+        // Prevent overlapping appointments across the entire clinic
         const overlappingAppointment = db.prepare(`
-            SELECT appointment_id
+            SELECT appointment_id, start_time, end_time
             FROM Appointment
-            WHERE user_id = ?
-              AND appointment_date = ?
+            WHERE appointment_date = ?
               AND status = 'Confirmed'
               AND start_time < ?
               AND end_time > ?
+            LIMIT 1
         `).get(
-            user_id,
             appointment_date,
             end_time,
             start_time
@@ -1701,7 +1700,8 @@ app.post("/api/staff/appointments", (req, res) => {
 
         if (overlappingAppointment) {
             return res.status(409).json({
-                message: "This patient already has an overlapping appointment."
+                message:
+                    `An appointment already exists from ${overlappingAppointment.start_time} to ${overlappingAppointment.end_time}. Please choose another time.`
             });
         }
 

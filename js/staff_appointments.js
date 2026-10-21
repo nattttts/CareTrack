@@ -554,7 +554,8 @@ function validateAppointmentSchedule() {
     scheduleAppointmentMessage.classList.remove(
         "alert",
         "alert-danger",
-        "alert-success"
+        "alert-success",
+        "mt-2"
     );
 
     let errorMessage = "";
@@ -642,7 +643,8 @@ function validateAppointmentSchedule() {
         scheduleAppointmentMessage.textContent = errorMessage;
         scheduleAppointmentMessage.classList.add(
             "alert",
-            "alert-danger"
+            "alert-danger",
+            "mt-2"
         );
         scheduleAppointmentMessage.hidden = false;
 
@@ -676,7 +678,7 @@ scheduleAppointmentForm.addEventListener("submit", async event => {
         scheduleAppointmentMessage.textContent =
             "Please search for and select a patient first.";
 
-        scheduleAppointmentMessage.className = "alert alert-danger";
+        scheduleAppointmentMessage.className = "alert alert-danger mt-2";
 
         scheduleAppointmentMessage.hidden = false;
         patientSearchInput.focus();
@@ -745,7 +747,7 @@ scheduleAppointmentForm.addEventListener("submit", async event => {
         scheduleAppointmentMessage.textContent =
             error.message || "Unable to schedule the appointment.";
 
-        scheduleAppointmentMessage.className = "alert alert-danger";
+        scheduleAppointmentMessage.className = "alert alert-danger mt-2";
         scheduleAppointmentMessage.hidden = false;
 
     } finally {
@@ -787,7 +789,8 @@ scheduleAppointmentModal.addEventListener("hidden.bs.modal", () => {
     scheduleAppointmentMessage.classList.remove(
         "alert",
         "alert-danger",
-        "alert-success"
+        "alert-success",
+        "mt-2"
     );
 });
 
