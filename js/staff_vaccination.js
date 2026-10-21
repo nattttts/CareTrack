@@ -1,3 +1,4 @@
+import { showToast } from "./popup_message.js";
 
 const API_BASE = "http://localhost:3000/api/vaccination-management";
 
@@ -5,6 +6,7 @@ let children = [];
 let vaccines = [];
 let selectedChildId = null;
 let selectedRecordId = null;
+let toastShownForLoadError = false;
 
 const $ = id => document.getElementById(id);
 
@@ -53,7 +55,7 @@ async function apiRequest(url, options = {}) {
 
     try {
         data = await response.json();
-    } catch (error) {
+    } catch {
         // The response may not contain JSON.
     }
 
@@ -111,7 +113,7 @@ function dosesFor(vaccineId) {
     return [...new Set(doses)];
 }
 
-// Update the available dose options
+// Update available dose options
 function updateDoseOptions(type) {
     const vaccineSelect = $(
         type === "new" ? "newVaccine" : "vaccine"
@@ -207,7 +209,7 @@ function displayChildren() {
     }
 }
 
-// Select a child and display their vaccination records
+// Select a child
 function selectChild(userId) {
     selectedChildId = String(userId);
     selectedRecordId = null;
@@ -359,12 +361,15 @@ function editRecord(recordId) {
 // Save changes to an existing vaccination record
 async function saveRecord() {
     if (!selectedChildId) {
-        alert("Please select a child first.");
+        showToast("Please select a child first.", "error");
         return;
     }
 
     if (!selectedRecordId) {
-        alert("Please select a vaccination record from the table first.");
+        showToast(
+            "Please select a vaccination record from the table first.",
+            "error"
+        );
         return;
     }
 
@@ -383,22 +388,29 @@ async function saveRecord() {
             }
         );
 
-        alert(result.message || "Vaccination record updated.");
+        showToast(
+            result.message || "Vaccination record updated successfully!",
+            "success"
+        );
 
         await loadData(selectedChildId);
     } catch (error) {
         console.error("Error updating vaccination record:", error);
-        alert(error.message);
+
+        showToast(
+            error.message || "Failed to update vaccination record.",
+            "error"
+        );
     }
 }
 
 // Delete a vaccination record
 async function deleteRecord(recordId) {
-    const confirmed = confirm(
+    if (!confirm(
         "Delete this vaccination record? This cannot be undone."
-    );
-
-    if (!confirmed) return;
+    )) {
+        return;
+    }
 
     try {
         const result = await apiRequest(
@@ -406,37 +418,41 @@ async function deleteRecord(recordId) {
             { method: "DELETE" }
         );
 
-        alert(result.message || "Vaccination record deleted.");
+        showToast(
+            result.message || "Vaccination record deleted successfully!",
+            "success"
+        );
 
         selectedRecordId = null;
 
         await loadData(selectedChildId);
     } catch (error) {
         console.error("Error deleting vaccination record:", error);
-        alert(error.message);
+
+        showToast(
+            error.message || "Failed to delete vaccination record.",
+            "error"
+        );
     }
 }
 
 // Show the add-record form
 function addRecord() {
     if (!selectedChildId) {
-        alert("Please select a child first.");
+        showToast("Please select a child first.", "error");
         return;
     }
 
     $("addRecordForm").style.display = "block";
     $("showAddRecordButton").style.display = "none";
 
-    // Use the local date to avoid UTC date differences.
     const today = new Date();
 
-    const localToday = [
+    $("newDueDate").value = [
         today.getFullYear(),
         String(today.getMonth() + 1).padStart(2, "0"),
         String(today.getDate()).padStart(2, "0")
     ].join("-");
-
-    $("newDueDate").value = localToday;
 
     updateDoseOptions("new");
 }
@@ -469,19 +485,17 @@ function clearRecordForm() {
 // Add a vaccination record
 async function confirmAddRecord() {
     if (!selectedChildId) {
-        alert("Please select a child first.");
+        showToast("Please select a child first.", "error");
         return;
     }
 
     if (!$("newVaccine").value) {
-        alert("Please select a vaccine.");
+        showToast("Please select a vaccine.", "error");
         return;
     }
 
-    const dueDate = $("newDueDate").value;
-
-    if (!dueDate) {
-        alert("Please select a due date.");
+    if (!$("newDueDate").value) {
+        showToast("Please select a due date.", "error");
         return;
     }
 
@@ -489,7 +503,7 @@ async function confirmAddRecord() {
         vaccination_id: Number($("newVaccine").value),
         dose: $("newDose").value,
         status: $("newStatus").value,
-        due_date: dueDate
+        due_date: $("newDueDate").value
     };
 
     try {
@@ -501,7 +515,10 @@ async function confirmAddRecord() {
             }
         );
 
-        alert(result.message || "Vaccination record added successfully.");
+        showToast(
+            result.message || "Vaccination record added successfully!",
+            "success"
+        );
 
         $("addRecordForm").style.display = "none";
         $("showAddRecordButton").style.display = "inline-block";
@@ -511,7 +528,11 @@ async function confirmAddRecord() {
         await loadData(selectedChildId);
     } catch (error) {
         console.error("Error adding vaccination record:", error);
-        alert(error.message);
+
+        showToast(
+            error.message || "Failed to add vaccination record.",
+            "error"
+        );
     }
 }
 
@@ -571,11 +592,22 @@ async function loadData(preferredChildId = null) {
         } else {
             selectedChildId = null;
             selectedRecordId = null;
+
             $("childDetails").style.display = "none";
             displayChildren();
         }
+
+        toastShownForLoadError = false;
     } catch (error) {
         console.error("Failed to load vaccination data:", error);
+
+        if (!toastShownForLoadError) {
+            showToast(
+                error.message || "Unable to load vaccination data.",
+                "error"
+            );
+            toastShownForLoadError = true;
+        }
 
         const list = $("childrenList");
 
@@ -606,6 +638,7 @@ document.addEventListener("DOMContentLoaded", () => {
             vaccine: !!vaccineSelect,
             newVaccine: !!newVaccineSelect
         });
+
         return;
     }
 
@@ -624,3 +657,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadData();
 });
+
+// Make functions available to inline onclick handlers in the HTML
+window.saveRecord = saveRecord;
+window.clearRecordSelection = clearRecordSelection;
+window.addRecord = addRecord;
+window.confirmAddRecord = confirmAddRecord;
+window.cancelAddRecord = cancelAddRecord;
