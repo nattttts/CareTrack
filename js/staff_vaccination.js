@@ -217,9 +217,6 @@ function renderChildDetails(child) {
     $("childDOB").textContent = child.date_of_birth || "-";
     $("childIC").textContent = child.user_id || "-";
 
-    // The current database does not have a child address field.
-    $("childAddress").textContent = "Not stored in database";
-
     renderVaccinationRecords(child.records || []);
 }
 
@@ -299,7 +296,6 @@ function editChild() {
     $("editChildGender").value = child.gender || "Male";
     $("editChildDOB").value = child.date_of_birth || "";
     $("editChildIC").value = child.user_id || "";
-    $("editChildAddress").value = "Not stored in database";
 }
 
 // Cancel child editing
