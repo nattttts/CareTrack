@@ -4,15 +4,38 @@ const cors = require("cors");
 const db = require("./database");
 const { createInvitation } = require("./invitation");
 const crypto = require("node:crypto");
-const { hashPassword } = require("./password");
+const { hashPassword, verifyPassword } = require("./password");
 const { sendInvitationEmail } = require("./email");
+const session = require("express-session");
+const SqliteStore = require("better-sqlite3-session-store")(session);
 require("dotenv").config({
     path: require("node:path").join(__dirname, "../.env")
 });
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Session configuration
+app.use(session({
+    store: new SqliteStore({
+        client: db,
+        expired: {
+            clear: true,
+            intervalMs: 900000
+        }
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+        maxAge: 60 * 60 * 1000
+    }
+}));
 
 // Serve HTML files
 app.use(express.static(path.join(__dirname, "../html")));
@@ -186,6 +209,141 @@ app.post("/api/set-password", async (req, res) => {
             message: "Unable to set your password right now. Please try again."
         });
     }
+});
+
+app.post("/api/login", (req, res) => {
+    const { icNumber, password } = req.body;
+
+    // Check required fields
+    if (!icNumber || !password) {
+        return res.status(400).json({
+            message: "Please enter your IC Number / MyKid Number and password."
+        });
+    }
+
+    try {
+        // Find user by IC Number / MyKid Number
+        const user = db.prepare(`
+            SELECT user_id, password_hash, role, account_status, password_set
+            FROM User
+            WHERE user_id = ?
+        `).get(icNumber.trim());
+
+        // Reject invalid credentials
+        if (!user || user.account_status !== "Active" || user.password_set !== 1) {
+            return res.status(401).json({
+                message: "Invalid IC Number / MyKid Number or password."
+            });
+        }
+
+        // Verify password
+        verifyPassword(user.password_hash, password)
+            .then((isValid) => {
+                if (!isValid) {
+                    return res.status(401).json({
+                        message: "Invalid IC Number / MyKid Number or password."
+                    });
+                }
+
+                // Regenerate session after successful login
+                req.session.regenerate((err) => {
+                    if (err) {
+                        return res.status(500).json({
+                            message: "Unable to log in. Please try again."
+                        });
+                    }
+
+                    req.session.user = {
+                        userId: user.user_id,
+                        role: user.role
+                    };
+
+                    req.session.save((err) => {
+                        if (err) {
+                            return res.status(500).json({
+                                message: "Unable to log in. Please try again."
+                            });
+                        }
+
+                        return res.json({
+                            message: "Login successful.",
+                            role: user.role
+                        });
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error("Login password verification error:", error);
+                return res.status(500).json({
+                    message: "Unable to log in. Please try again."
+                });
+            });
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({
+            message: "Unable to log in. Please try again."
+        });
+    }
+});
+
+ // Get current logged-in user
+app.get("/api/me", (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({
+            message: "Not logged in."
+        });
+    }
+
+    try {
+        const user = db.prepare(`
+            SELECT user_id, full_name, role
+            FROM User
+            WHERE user_id = ?
+        `).get(req.session.user.userId);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found."
+            });
+        }
+
+        return res.json({
+            userId: user.user_id,
+            fullName: user.full_name,
+            role: user.role
+        });
+
+    } catch (error) {
+        console.error("Get user profile error:", error);
+
+        return res.status(500).json({
+            message: "Unable to retrieve user information."
+        });
+    }
+});
+
+// Log out current user
+app.post("/api/logout", (req, res) => {
+    if (!req.session) {
+        return res.status(200).json({
+            message: "Logged out successfully."
+        });
+    }
+
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Logout error:", err);
+            return res.status(500).json({
+                message: "Unable to log out. Please try again."
+            });
+        }
+
+        res.clearCookie("connect.sid");
+
+        return res.json({
+            message: "Logged out successfully."
+        });
+    });
 });
 
 // Get all staff members
