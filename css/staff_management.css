@@ -113,6 +113,10 @@ a {
     border-color: #e81f67;
 }
 
+.add-staff-button:active {
+    background: #d9165c !important;
+    border-color: #d9165c !important;
+}
 
 /* ================= FILTER ================= */
 
