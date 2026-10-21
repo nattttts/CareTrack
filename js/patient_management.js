@@ -140,7 +140,6 @@ async function loadChild() {
             row.dataset.search = [
                 child.full_name,
                 child.user_id,
-                child.gender,
                 child.guardian_name
             ].join(" ").toLowerCase();
 
@@ -324,11 +323,12 @@ function resetChildFilters() {
     applyChildFilters();
 }
 
+
+// ================= HANDLE MOTHER ACTION BUTTONS =================
 const motherTableBody = document.getElementById("motherTableBody");
 
 let selectedMother = null;
 
-// ================= HANDLE MOTHER ACTION BUTTONS =================
 motherTableBody.addEventListener("click", function (event) {
     const button = event.target.closest("button");
 
@@ -418,6 +418,45 @@ motherTableBody.addEventListener("click", function (event) {
             .show();
     }
 
+    // EDIT MOTHER
+    else if (button.classList.contains("edit-button")) {
+        document.getElementById("editMotherId").value =
+            mother.mother_id;
+
+        document.getElementById("editMotherName").value =
+            mother.full_name;
+
+        document.getElementById("editMotherICNumber").value =
+            mother.user_id;
+
+         document.getElementById("editMotherDOB").value =
+            mother.date_of_birth;
+
+         document.getElementById("editMotherPhone").value =
+            mother.phone_no || "";
+
+        document.getElementById("editMotherEmail").value =
+            mother.email;
+
+        document.getElementById("editMotherAddress").value =
+            mother.address;
+
+        document.getElementById("editMotherEmergencyName").value =
+            mother.contact_name;
+
+        document.getElementById("editMotherRelationship").value =
+            mother.relationship;
+
+        document.getElementById("editMotherEmergencyPhone").value =
+            mother.contact_phone_no;
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("editMotherModal")
+            )
+            .show();
+    }
+
     // ACTIVATE / DEACTIVATE
     else if (
         button.classList.contains("activate-button") ||
@@ -461,7 +500,103 @@ motherTableBody.addEventListener("click", function (event) {
     }
 });
 
-// Confirm activation or deactivation
+// ================= UPDATE MOTHER DETAILS =================
+document.getElementById("editMotherForm").addEventListener(
+    "submit",
+    async function (event) {
+        event.preventDefault();
+
+        const form = this;
+        const submitButton = form.querySelector(
+            'button[type="submit"]'
+        );
+
+        const motherId = document.getElementById(
+            "editMotherId"
+        ).value;
+
+        const motherData = {
+            user_id: document.getElementById(
+                "editMotherICNumber"
+            ).value.trim(),
+
+            full_name: document.getElementById(
+                "editMotherName"
+            ).value.trim(),
+
+            date_of_birth: document.getElementById(
+                "editMotherDOB"
+            ).value.trim(),
+
+            phone_no: document.getElementById(
+                "editMotherPhone"
+            ).value.trim(),
+
+            email: document.getElementById(
+                "editMotherEmail"
+            ).value.trim(),
+
+            address: document.getElementById(
+                "editMotherAddress"
+            ).value.trim(),
+
+            contact_name: document.getElementById(
+                "editMotherEmergencyName"
+            ).value.trim(),
+
+            relationship: document.getElementById(
+                "editMotherRelationship"
+            ).value.trim(),
+
+            contact_phone_no: document.getElementById(
+                "editMotherEmergencyPhone"
+            ).value.trim(),
+        };
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Saving...";
+
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/mother/${motherId}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(motherData)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Failed to update mother details."
+                );
+            }
+
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById("editMotherModal")
+            ).hide();
+
+            await loadMother();
+
+            showToast(result.message, "success");
+
+        } catch (error) {
+            console.error("Error updating mother:", error);
+            showToast(error.message, "error");
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Save Changes";
+        }
+    }
+);
+
+// ================= CONFIRM ACTIVATION OR DEACTIVATION FOR MOTHER =================
 document
     .getElementById("confirmMotherStatusButton")
     .addEventListener("click", async function () {
@@ -610,6 +745,39 @@ childTableBody.addEventListener("click", function (event) {
             .show();
     }
 
+    // EDIT CHILD
+    else if (button.classList.contains("edit-button")) {
+        document.getElementById("editChildId").value =
+            child.child_id;
+
+        document.getElementById("editChildName").value =
+            child.full_name;
+
+        document.getElementById("editChildMyKid").value =
+            child.user_id;
+
+        document.getElementById("editChildDOB").value =
+            child.date_of_birth;
+
+        document.getElementById("editChildGender").value =
+            child.gender;
+
+        document.getElementById("editChildGuardianName").value =
+            child.guardian_name;
+
+        document.getElementById("editChildGuardianEmail").value =
+            child.email;
+
+        document.getElementById("editChildGuardianPhone").value =
+            child.phone_no || "";
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById("editChildModal")
+            )
+            .show();
+    }
+
     // ACTIVATE / DEACTIVATE
     else if (
         button.classList.contains("activate-button") ||
@@ -653,7 +821,95 @@ childTableBody.addEventListener("click", function (event) {
     }
 });
 
-// Confirm activation or deactivation
+// ================= UPDATE CHILD DETAILS =================
+document.getElementById("editChildForm").addEventListener(
+    "submit",
+    async function (event) {
+        event.preventDefault();
+
+        const form = this;
+        const submitButton = form.querySelector(
+            'button[type="submit"]'
+        );
+
+        const childId = document.getElementById(
+            "editChildId"
+        ).value;
+
+        const childData = {
+            user_id: document.getElementById(
+                "editChildMyKid"
+            ).value.trim(),
+
+            full_name: document.getElementById(
+                "editChildName"
+            ).value.trim(),
+
+            date_of_birth: document.getElementById(
+                "editChildDOB"
+            ).value.trim(),
+
+            gender: document.getElementById(
+                "editChildGender"
+            ).value,
+
+            guardian_name: document.getElementById(
+                "editChildGuardianName"
+            ).value.trim(),
+
+            phone_no: document.getElementById(
+                "editChildGuardianPhone"
+            ).value.trim(),
+
+            email: document.getElementById(
+                "editChildGuardianEmail"
+            ).value.trim()
+        };
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Saving...";
+
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/child/${childId}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(childData)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Failed to update child details."
+                );
+            }
+
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById("editChildModal")
+            ).hide();
+
+            await loadChild();
+
+            showToast(result.message, "success");
+
+        } catch (error) {
+            console.error("Error updating child:", error);
+            showToast(error.message, "error");
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Save Changes";
+        }
+    }
+);
+
+// ================= CONFIRM ACTIVATION OR DEACTIVATION FOR CHILD =================
 document
     .getElementById("confirmChildStatusButton")
     .addEventListener("click", async function () {
@@ -741,6 +997,20 @@ document.addEventListener("DOMContentLoaded", () => {
     loadMother();
     loadChild();
     setupTabs();
+
+    // Disable future date in mother date picker
+    const motherDOB = document.getElementById("editMotherDOB");
+
+    if (motherDOB) {
+        motherDOB.max = new Date().toLocaleDateString("sv-SE");
+    }
+
+    // Disable future date in child date picker
+    const childDOB = document.getElementById("editChildDOB");
+
+    if (childDOB) {
+        childDOB.max = new Date().toLocaleDateString("sv-SE");
+    }
 
     document.getElementById("motherSearch")
         .addEventListener("input", applyMotherFilters);

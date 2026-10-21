@@ -465,7 +465,7 @@ app.patch("/api/staff/:staffId", (req, res) => {
 
     const newIC = user_id.trim();
     const name = full_name.trim();
-    const normalizedEmail = email.trim();
+    const normalizedEmail = email.trim().toLowerCase();
     const phone = phone_no.trim();
 
     if (!newIC || !name || !normalizedEmail || !phone || !position) {
@@ -636,8 +636,8 @@ app.get("/api/mothers", (req, res) => {
                 User.account_status,
                 User.created_at,
                 Mother.date_of_birth,
-                Mother.address,
                 Mother.phone_no,
+                Mother.address,
                 Mother.contact_name,
                 Mother.relationship,
                 Mother.contact_phone_no
@@ -654,6 +654,175 @@ app.get("/api/mothers", (req, res) => {
 
         res.status(500).json({
             message: "Failed to retrieve mother records."
+        });
+    }
+});
+
+// Update mother details
+app.patch("/api/mother/:motherId", (req, res) => {
+    const motherId = Number(req.params.motherId);
+
+    const {
+        user_id,
+        full_name,
+        email,
+        date_of_birth,
+        phone_no,
+        address,
+        contact_name,
+        relationship,
+        contact_phone_no
+    } = req.body;
+
+    // Validate mother ID
+    if (!Number.isInteger(motherId) || motherId <= 0) {
+        return res.status(400).json({
+            message: "Invalid mother ID."
+        });
+    }
+
+    // Validate required fields
+    if (
+        typeof user_id !== "string" ||
+        typeof full_name !== "string" ||
+        typeof email !== "string" ||
+        typeof date_of_birth !== "string" ||
+        typeof phone_no !== "string" ||
+        typeof address !== "string" ||
+        typeof contact_name !== "string" ||
+        typeof relationship !== "string" ||
+        typeof contact_phone_no !== "string"
+    ) {
+        return res.status(400).json({
+            message: "Please provide all required mother details."
+        });
+    }
+
+    const newIC = user_id.trim();
+    const name = full_name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    const dob = date_of_birth.trim();
+    const phone = phone_no.trim();
+    const newAddress = address.trim();
+    const contactName = contact_name.trim();
+    const newRelationship = relationship.trim();
+    const contactPhoneNo = contact_phone_no.trim();
+
+    if (!newIC || !name || !normalizedEmail || !dob || !phone || 
+        !newAddress || !contactName || !newRelationship || !contactPhoneNo) {
+        return res.status(400).json({
+            message: "All fields are required."
+        });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+        return res.status(400).json({
+            message: "Please enter a valid email address."
+        });
+    }
+
+    // Validate date of birth
+    const date = new Date(dob);
+
+    if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(dob) ||
+        Number.isNaN(date.getTime()) ||
+        date.toISOString().slice(0, 10) !== dob
+    ) {
+        return res.status(400).json({
+            message: "Please enter a valid date of birth."
+        });
+    }
+
+    try {
+        // Find the existing mother account
+        const existingMother = db.prepare(`
+            SELECT Mother.user_id
+            FROM Mother
+            WHERE Mother.mother_id = ?
+        `).get(motherId);
+
+        if (!existingMother) {
+            return res.status(404).json({
+                message: "Mother member not found."
+            });
+        }
+
+        // Check whether the new IC belongs to another account
+        const duplicateIC = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE user_id = ?
+            AND user_id != ?
+        `).get(newIC, existingMother.user_id);
+
+        if (duplicateIC) {
+            return res.status(409).json({
+                message: "This IC number is already registered."
+            });
+        }
+
+        // Check whether another account uses this email
+        const duplicateEmail = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE LOWER(TRIM(email)) = LOWER(?)
+            AND user_id != ?
+            AND role = 'mother'
+        `).get(normalizedEmail, existingMother.user_id);
+
+        if (duplicateEmail) {
+            return res.status(409).json({
+                message: "This email is already used by another account."
+            });
+        }
+
+        // Update everything in one transaction
+        const updateMother = db.transaction(() => {
+            db.prepare(`
+                UPDATE User
+                SET user_id = ?,
+                    full_name = ?,
+                    email = ?
+                WHERE user_id = ?
+            `).run(
+                newIC,
+                name,
+                normalizedEmail,
+                existingMother.user_id
+            );
+
+            db.prepare(`
+                UPDATE Mother
+                SET date_of_birth = ?,
+                    phone_no = ?,
+                    address = ?,
+                    contact_name = ?,
+                    relationship = ?,
+                    contact_phone_no = ?
+                WHERE mother_id = ?
+            `).run(
+                dob, 
+                phone, 
+                newAddress, 
+                contactName, 
+                newRelationship, 
+                contactPhoneNo, 
+                motherId
+            );
+        });
+
+        updateMother();
+
+        return res.status(200).json({
+            message: "Mother details updated successfully."
+        });
+
+    } catch (error) {
+        console.error("Error updating mother:", error);
+
+        return res.status(500).json({
+            message: "Failed to update mother details."
         });
     }
 });
@@ -744,6 +913,154 @@ app.get("/api/children", (req, res) => {
 
         res.status(500).json({
             message: "Failed to retrieve child records."
+        });
+    }
+});
+
+// Update child details
+app.patch("/api/child/:childId", (req, res) => {
+    const childId = Number(req.params.childId);
+
+    const {
+        user_id,
+        full_name,
+        date_of_birth,
+        gender,
+        guardian_name,
+        phone_no,
+        email
+    } = req.body;
+
+    // Validate child ID
+    if (!Number.isInteger(childId) || childId <= 0) {
+        return res.status(400).json({
+            message: "Invalid child ID."
+        });
+    }
+
+    // Validate required fields
+    if (
+        typeof user_id !== "string" ||
+        typeof full_name !== "string" ||
+        typeof date_of_birth !== "string" ||
+        typeof gender !== "string" ||
+        typeof guardian_name !== "string" ||
+        typeof phone_no !== "string" ||
+        typeof email !== "string"
+    ) {
+        return res.status(400).json({
+            message: "Please provide all required child details."
+        });
+    }
+
+    const newIC = user_id.trim();
+    const name = full_name.trim();
+    const dob = date_of_birth.trim();
+    const guardianName = guardian_name.trim();
+    const phone = phone_no.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!newIC || !name || !dob || !guardianName || !phone || !normalizedEmail) {
+        return res.status(400).json({
+            message: "All fields are required."
+        });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+        return res.status(400).json({
+            message: "Please enter a valid email address."
+        });
+    }
+
+    // Validate date of birth
+    const date = new Date(dob);
+
+    if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(dob) ||
+        Number.isNaN(date.getTime()) ||
+        date.toISOString().slice(0, 10) !== dob
+    ) {
+        return res.status(400).json({
+            message: "Please enter a valid date of birth."
+        });
+    }
+
+    if (!["Male", "Female"].includes(gender)) {
+        return res.status(400).json({
+            message: "Please select a valid gender."
+        });
+    }
+
+    try {
+        // Find the existing child account
+        const existingChild = db.prepare(`
+            SELECT Child.user_id
+            FROM Child
+            WHERE Child.child_id = ?
+        `).get(childId);
+
+        if (!existingChild) {
+            return res.status(404).json({
+                message: "Child member not found."
+            });
+        }
+
+        // Check whether the new MyKid number belongs to another account
+        const duplicateIC = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE user_id = ?
+            AND user_id != ?
+        `).get(newIC, existingChild.user_id);
+
+        if (duplicateIC) {
+            return res.status(409).json({
+                message: "This IC number is already registered."
+            });
+        }
+
+        // Update everything in one transaction
+        const updateChild = db.transaction(() => {
+            db.prepare(`
+                UPDATE User
+                SET user_id = ?,
+                    full_name = ?,
+                    email = ?
+                WHERE user_id = ?
+            `).run(
+                newIC,
+                name,
+                normalizedEmail,
+                existingChild.user_id
+            );
+
+            db.prepare(`
+                UPDATE Child
+                SET date_of_birth = ?,
+                    gender = ?,
+                    guardian_name = ?,
+                    phone_no = ?
+                WHERE child_id = ?
+            `).run(
+                dob, 
+                gender,
+                guardianName,
+                phone,
+                childId
+            );
+        });
+
+        updateChild();
+
+        return res.status(200).json({
+            message: "Child details updated successfully."
+        });
+
+    } catch (error) {
+        console.error("Error updating child:", error);
+
+        return res.status(500).json({
+            message: "Failed to update child details."
         });
     }
 });
