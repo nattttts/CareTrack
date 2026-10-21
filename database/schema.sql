@@ -119,6 +119,13 @@ CREATE TABLE IF NOT EXISTS Vaccination (
 CREATE TABLE IF NOT EXISTS Appointment (
     appointment_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
+    appointment_type TEXT NOT NULL 
+        CHECK (
+            appointment_type IN (
+                'Maternal Follow-up',
+                'Child Vaccination'
+            )
+        ),
     appointment_date TEXT NOT NULL,
     start_time TEXT NOT NULL,
     end_time TEXT NOT NULL,
@@ -155,7 +162,6 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
     child_vaccination_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
     vaccination_id INTEGER NOT NULL,
-    appointment_id INTEGER UNIQUE,
     due_date TEXT NOT NULL,
     dose TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'Upcoming'
@@ -168,10 +174,7 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
         ON UPDATE CASCADE,
 
     FOREIGN KEY (vaccination_id)
-        REFERENCES Vaccination(vaccination_id),
-
-    FOREIGN KEY (appointment_id)
-        REFERENCES Appointment(appointment_id)
+        REFERENCES Vaccination(vaccination_id)
 );
 
 
