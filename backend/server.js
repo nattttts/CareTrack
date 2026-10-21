@@ -806,6 +806,376 @@ app.patch("/api/child/:childId/status", (req, res) => {
     }
 });
 
+// GET: Load all children and their vaccination records.
+app.get("/api/vaccination-management/children", (req, res) => {
+    try {
+        const children = db.prepare(`
+            SELECT
+                Child.child_id,
+                Child.user_id,
+                User.full_name,
+                User.email,
+                Child.date_of_birth,
+                Child.gender,
+                Child.guardian_name,
+                Child.phone_no
+            FROM Child
+            INNER JOIN User
+                ON User.user_id = Child.user_id
+            WHERE User.role = 'child'
+            ORDER BY User.full_name
+        `).all();
+
+        const getRecords = db.prepare(`
+            SELECT
+                cv.child_vaccination_id,
+                cv.user_id,
+                cv.vaccination_id,
+                v.vaccine_name,
+                cv.due_date,
+                cv.dose,
+                cv.status,
+                cv.appointment_id
+            FROM Child_Vaccination cv
+            INNER JOIN Vaccination v
+                ON v.vaccination_id = cv.vaccination_id
+            WHERE cv.user_id = ?
+            ORDER BY cv.due_date, cv.child_vaccination_id
+        `);
+
+        const result = children.map(child => ({
+            ...child,
+            records: getRecords.all(child.user_id)
+        }));
+
+        res.json(result);
+    } catch (error) {
+        console.error("Error retrieving vaccination data:", error);
+
+        res.status(500).json({
+            message: "Failed to retrieve children and vaccination records."
+        });
+    }
+});
+
+// GET: Load available vaccines.
+app.get("/api/vaccination-management/vaccines", (req, res) => {
+    try {
+        const vaccines = db.prepare(`
+            SELECT
+                vaccination_id,
+                vaccine_name,
+                description,
+                dose_quantity,
+                booster
+            FROM Vaccination
+            ORDER BY vaccine_name
+        `).all();
+
+        res.json(vaccines);
+    } catch (error) {
+        console.error("Error retrieving vaccines:", error);
+
+        res.status(500).json({
+            message: "Failed to retrieve vaccine options."
+        });
+    }
+});
+
+// PATCH: Update a child's details.
+app.patch(
+    "/api/vaccination-management/children/:userId",
+    (req, res) => {
+        const oldUserId = String(req.params.userId || "").trim();
+
+        const {
+            user_id,
+            full_name,
+            gender,
+            date_of_birth
+        } = req.body;
+
+        if (
+            !oldUserId ||
+            typeof user_id !== "string" ||
+            typeof full_name !== "string" ||
+            typeof gender !== "string" ||
+            typeof date_of_birth !== "string"
+        ) {
+            return res.status(400).json({
+                message: "Please complete all child details."
+            });
+        }
+
+        const newUserId = user_id.trim();
+        const name = full_name.trim();
+        const dob = date_of_birth.trim();
+
+        if (
+            !newUserId ||
+            !name ||
+            !dob ||
+            !["Male", "Female"].includes(gender) ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(dob)
+        ) {
+            return res.status(400).json({
+                message: "Enter a valid name, IC number, gender and date of birth."
+            });
+        }
+
+        try {
+            const child = db.prepare(`
+                SELECT user_id
+                FROM Child
+                WHERE user_id = ?
+            `).get(oldUserId);
+
+            if (!child) {
+                return res.status(404).json({
+                    message: "Child not found."
+                });
+            }
+
+            const duplicate = db.prepare(`
+                SELECT user_id
+                FROM User
+                WHERE user_id = ?
+                  AND user_id != ?
+            `).get(newUserId, oldUserId);
+
+            if (duplicate) {
+                return res.status(409).json({
+                    message: "This IC number is already registered."
+                });
+            }
+
+            const updateChild = db.transaction(() => {
+                // The database uses User.user_id as the child's ID.
+                // Existing foreign keys update through ON UPDATE CASCADE.
+                db.prepare(`
+                    UPDATE User
+                    SET user_id = ?,
+                        full_name = ?
+                    WHERE user_id = ?
+                `).run(newUserId, name, oldUserId);
+
+                db.prepare(`
+                    UPDATE Child
+                    SET date_of_birth = ?,
+                        gender = ?
+                    WHERE user_id = ?
+                `).run(dob, gender, newUserId);
+            });
+
+            updateChild();
+
+            res.json({
+                message: "Child details updated successfully.",
+                user_id: newUserId
+            });
+        } catch (error) {
+            console.error("Error updating child details:", error);
+
+            res.status(500).json({
+                message: "Failed to update child details."
+            });
+        }
+    }
+);
+
+
+// PATCH: Update an existing vaccination record.
+app.patch(
+    "/api/vaccination-management/records/:recordId",
+    (req, res) => {
+        const recordId = Number(req.params.recordId);
+
+        const {
+            vaccination_id,
+            dose,
+            status
+        } = req.body;
+
+        if (
+            !Number.isInteger(recordId) ||
+            recordId <= 0 ||
+            !Number.isInteger(Number(vaccination_id)) ||
+            typeof dose !== "string" ||
+            !dose.trim() ||
+            !["Upcoming", "Completed"].includes(status)
+        ) {
+            return res.status(400).json({
+                message: "Please provide a valid vaccine, dose and status."
+            });
+        }
+
+        try {
+            const vaccine = db.prepare(`
+                SELECT vaccination_id
+                FROM Vaccination
+                WHERE vaccination_id = ?
+            `).get(Number(vaccination_id));
+
+            if (!vaccine) {
+                return res.status(400).json({
+                    message: "Please select a valid vaccine."
+                });
+            }
+
+            const result = db.prepare(`
+                UPDATE Child_Vaccination
+                SET vaccination_id = ?,
+                    dose = ?,
+                    status = ?
+                WHERE child_vaccination_id = ?
+            `).run(
+                Number(vaccination_id),
+                dose.trim(),
+                status,
+                recordId
+            );
+
+            if (result.changes === 0) {
+                return res.status(404).json({
+                    message: "Vaccination record not found."
+                });
+            }
+
+            res.json({
+                message: "Vaccination record updated successfully."
+            });
+        } catch (error) {
+            console.error("Error updating vaccination record:", error);
+
+            res.status(500).json({
+                message: "Failed to update vaccination record."
+            });
+        }
+    }
+);
+
+
+// POST: Add a vaccination record for a child.
+app.post(
+    "/api/vaccination-management/children/:userId/records",
+    (req, res) => {
+        const userId = String(req.params.userId || "").trim();
+
+        const {
+            vaccination_id,
+            dose,
+            status,
+            due_date
+        } = req.body;
+
+        if (
+            !userId ||
+            !Number.isInteger(Number(vaccination_id)) ||
+            typeof dose !== "string" ||
+            !dose.trim() ||
+            !["Upcoming", "Completed"].includes(status) ||
+            typeof due_date !== "string" ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(due_date)
+        ) {
+            return res.status(400).json({
+                message: "Please provide a vaccine, dose, status and due date."
+            });
+        }
+
+        try {
+            const child = db.prepare(`
+                SELECT user_id
+                FROM Child
+                WHERE user_id = ?
+            `).get(userId);
+
+            if (!child) {
+                return res.status(404).json({
+                    message: "Child not found."
+                });
+            }
+
+            const vaccine = db.prepare(`
+                SELECT vaccination_id
+                FROM Vaccination
+                WHERE vaccination_id = ?
+            `).get(Number(vaccination_id));
+
+            if (!vaccine) {
+                return res.status(400).json({
+                    message: "Please select a valid vaccine."
+                });
+            }
+
+            const result = db.prepare(`
+                INSERT INTO Child_Vaccination (
+                    user_id,
+                    vaccination_id,
+                    due_date,
+                    dose,
+                    status
+                )
+                VALUES (?, ?, ?, ?, ?)
+            `).run(
+                userId,
+                Number(vaccination_id),
+                due_date,
+                dose.trim(),
+                status
+            );
+
+            res.status(201).json({
+                message: "Vaccination record added successfully.",
+                record_id: result.lastInsertRowid
+            });
+        } catch (error) {
+            console.error("Error adding vaccination record:", error);
+
+            res.status(500).json({
+                message: "Failed to add vaccination record."
+            });
+        }
+    }
+);
+
+
+// DELETE: Delete a vaccination record.
+app.delete(
+    "/api/vaccination-management/records/:recordId",
+    (req, res) => {
+        const recordId = Number(req.params.recordId);
+
+        if (!Number.isInteger(recordId) || recordId <= 0) {
+            return res.status(400).json({
+                message: "Invalid vaccination record ID."
+            });
+        }
+
+        try {
+            const result = db.prepare(`
+                DELETE FROM Child_Vaccination
+                WHERE child_vaccination_id = ?
+            `).run(recordId);
+
+            if (result.changes === 0) {
+                return res.status(404).json({
+                    message: "Vaccination record not found."
+                });
+            }
+
+            res.json({
+                message: "Vaccination record deleted successfully."
+            });
+        } catch (error) {
+            console.error("Error deleting vaccination record:", error);
+
+            res.status(500).json({
+                message: "Failed to delete vaccination record."
+            });
+        }
+    }
+);
+
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
     console.log("SQLite database connected!");
