@@ -1,695 +1,622 @@
+const API_BASE = "http://localhost:3000/api/vaccination-management";
 
-/* =========================================
-   VACCINE DOSE OPTIONS
-   Demo rules for the CareTrack assignment.
-   Adjust these to match your approved schedule.
-========================================= */
+let children = [];
+let vaccines = [];
+let selectedChildId = null;
+let selectedRecordId = null;
 
-const vaccineDoseRules = {
-    "BCG": ["Dose 1"],
-    "Hepatitis B": ["Dose 1", "Dose 2", "Dose 3"],
-    "DTP - IPV - Hib": ["Dose 1", "Dose 2", "Dose 3"],
-    "DTP - IPV - Hib (Booster)": ["Booster Dose"],
-    "MMR": ["Dose 1", "Dose 2"],
-    "Varicella": ["Dose 1", "Dose 2"]
-};
+const $ = id => document.getElementById(id);
 
-
-/* =========================================
-   SAMPLE CHILDREN AND VACCINATION RECORDS
-========================================= */
-
-const children = {
-    emma: {
-        name: "Emma Tan",
-        gender: "Female",
-        dob: "2022-01-12",
-        ic: "220112-14-5678",
-        address: "12, CareTrack Street, Penang",
-
-        records: [
-            { vaccine: "BCG", dose: "Dose 1", status: "Completed", remarks: "-" },
-            { vaccine: "Hepatitis B", dose: "Dose 1", status: "Completed", remarks: "-" },
-            { vaccine: "DTP - IPV - Hib", dose: "Dose 1", status: "Completed", remarks: "-" },
-            { vaccine: "DTP - IPV - Hib", dose: "Dose 2", status: "Completed", remarks: "-" },
-            { vaccine: "DTP - IPV - Hib", dose: "Dose 3", status: "Completed", remarks: "-" },
-            { vaccine: "DTP - IPV - Hib (Booster)", dose: "Booster Dose", status: "Upcoming", remarks: "Booster scheduled" },
-            { vaccine: "MMR", dose: "Dose 1", status: "Upcoming", remarks: "-" },
-            { vaccine: "Varicella", dose: "Dose 1", status: "Upcoming", remarks: "-" }
-        ]
-    },
-
-    ethan: {
-        name: "Ethan Tan",
-        gender: "Male",
-        dob: "2023-06-08",
-        ic: "230608-14-6789",
-        address: "25, CareTrack Street, Penang",
-
-        records: [
-            { vaccine: "BCG", dose: "Dose 1", status: "Completed", remarks: "-" },
-            { vaccine: "Hepatitis B", dose: "Dose 1", status: "Completed", remarks: "-" },
-            { vaccine: "DTP - IPV - Hib", dose: "Dose 1", status: "Completed", remarks: "-" },
-            { vaccine: "DTP - IPV - Hib", dose: "Dose 2", status: "Completed", remarks: "-" },
-            { vaccine: "DTP - IPV - Hib", dose: "Dose 3", status: "Upcoming", remarks: "-" },
-            { vaccine: "MMR", dose: "Dose 1", status: "Upcoming", remarks: "-" }
-        ]
-    }
-};
-
-
-let selectedChild = null;
-let selectedRecordIndex = null;
-
-
-/* =========================================
-   HELPER FUNCTIONS
-========================================= */
-
-function safe(value) {
+// Escape database values before displaying them in HTML
+function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, character => ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
-    }[character]));
+    })[character]);
 }
 
+// Send requests to the CareTrack backend
+async function apiRequest(url, options = {}) {
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+        }
+    });
 
-function formatDate(dateString) {
-    if (!dateString) return "";
+    let data = {};
 
-    const date = new Date(dateString + "T00:00:00");
-
-    if (Number.isNaN(date.getTime())) {
-        return dateString;
+    try {
+        data = await response.json();
+    } catch (error) {
+        // Response may not contain JSON
     }
 
-    return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    });
+    if (!response.ok) {
+        throw new Error(
+            data.message || `Request failed (${response.status}).`
+        );
+    }
+
+    return data;
 }
 
+function getSelectedChild() {
+    return children.find(
+        child => child.user_id === selectedChildId
+    ) || null;
+}
 
-/* =========================================
-   INITIALISE VACCINE DROPDOWNS
-========================================= */
+// Generate vaccine dropdown options
+function vaccineOptionsHTML(selectedId = "") {
+    return vaccines.map(vaccine => `
+        <option value="${vaccine.vaccination_id}"
+            ${String(vaccine.vaccination_id) === String(selectedId)
+                ? "selected"
+                : ""}>
+            ${escapeHTML(vaccine.vaccine_name)}
+        </option>
+    `).join("");
+}
 
+// Generate available doses according to the vaccine
+function dosesFor(vaccineId) {
+    const vaccine = vaccines.find(
+        item => String(item.vaccination_id) === String(vaccineId)
+    );
+
+    if (!vaccine) {
+        return ["Dose 1"];
+    }
+
+    const quantity = Math.max(
+        1,
+        Number(vaccine.dose_quantity) || 1
+    );
+
+    const doses = Array.from(
+        { length: quantity },
+        (_, index) => `Dose ${index + 1}`
+    );
+
+    if (Number(vaccine.booster) === 1) {
+        doses.push("Booster Dose");
+    }
+
+    return [...new Set(doses)];
+}
+
+// Update dose options
+function updateDoseOptions(type) {
+    const vaccineSelect = $(
+        type === "new" ? "newVaccine" : "vaccine"
+    );
+
+    const doseSelect = $(
+        type === "new" ? "newDose" : "dose"
+    );
+
+    if (!vaccineSelect || !doseSelect) return;
+
+    const previousDose = doseSelect.value;
+    const doses = dosesFor(vaccineSelect.value);
+
+    doseSelect.innerHTML = doses.map(dose => `
+        <option value="${escapeHTML(dose)}">
+            ${escapeHTML(dose)}
+        </option>
+    `).join("");
+
+    if (doses.includes(previousDose)) {
+        doseSelect.value = previousDose;
+    }
+}
+
+// Populate vaccine dropdowns
 function fillVaccineSelects() {
-    const vaccineOptions = Object.keys(vaccineDoseRules)
-        .map(vaccine => {
-            return `<option value="${safe(vaccine)}">${safe(vaccine)}</option>`;
-        })
-        .join("");
-
-    document.getElementById("vaccine").innerHTML = vaccineOptions;
-    document.getElementById("newVaccine").innerHTML = vaccineOptions;
+    $("vaccine").innerHTML = vaccineOptionsHTML();
+    $("newVaccine").innerHTML = vaccineOptionsHTML();
 
     updateDoseOptions("update");
     updateDoseOptions("new");
 }
 
-
-/* =========================================
-   FIND DOSES ALREADY RECORDED
-========================================= */
-
-function existingDoses(vaccine, exceptIndex = null) {
-    if (!selectedChild) {
-        return [];
-    }
-
-    return children[selectedChild].records
-        .filter((record, index) => {
-            return record.vaccine === vaccine && index !== exceptIndex;
-        })
-        .map(record => record.dose);
+// Search children by name or IC number
+function searchChild() {
+    displayChildren();
 }
 
+// Display the children list
+function displayChildren() {
+    const searchInput = $("searchChild");
 
-/* =========================================
-   UPDATE DOSE DROPDOWN
+    if (!$("childrenList")) return;
 
-   When adding a record:
-   - Hide doses already recorded.
-   - Show only remaining doses.
+    const query = (searchInput?.value || "")
+        .trim()
+        .toLowerCase();
 
-   When editing a record:
-   - Exclude the current record from the
-     duplicate check so its current dose
-     can remain selected.
-========================================= */
+    const filteredChildren = children.filter(child => {
+        const name = String(child.full_name || "").toLowerCase();
+        const ic = String(child.user_id || "").toLowerCase();
 
-function updateDoseOptions(which) {
-    const vaccineId = which === "new" ? "newVaccine" : "vaccine";
-    const doseId = which === "new" ? "newDose" : "dose";
-
-    const vaccineSelect = document.getElementById(vaccineId);
-    const doseSelect = document.getElementById(doseId);
-
-    const vaccine = vaccineSelect.value;
-
-    const exceptIndex =
-        which === "update" ? selectedRecordIndex : null;
-
-    const alreadyRecorded = existingDoses(vaccine, exceptIndex);
-
-    let availableDoses = (vaccineDoseRules[vaccine] || [])
-        .filter(dose => !alreadyRecorded.includes(dose));
-
-    // Keep the current dose visible while editing its own record.
-    if (
-        which === "update" &&
-        selectedRecordIndex !== null &&
-        selectedChild
-    ) {
-        const currentRecord =
-            children[selectedChild].records[selectedRecordIndex];
-
-        if (
-            currentRecord &&
-            currentRecord.vaccine === vaccine &&
-            !availableDoses.includes(currentRecord.dose)
-        ) {
-            availableDoses.unshift(currentRecord.dose);
-        }
-    }
-
-    doseSelect.innerHTML = "";
-
-    if (availableDoses.length === 0) {
-        doseSelect.add(new Option("No doses available", ""));
-        doseSelect.disabled = true;
-        return;
-    }
-
-    doseSelect.disabled = false;
-
-    availableDoses.forEach(dose => {
-        doseSelect.add(new Option(dose, dose));
+        return name.includes(query) || ic.includes(query);
     });
-}
 
-
-/* =========================================
-   DISPLAY ALL CHILDREN
-========================================= */
-
-function displayChildren(filter = "") {
-    const list = document.getElementById("childrenList");
-    const noMessage = document.getElementById("noChildrenMessage");
-
-    list.innerHTML = "";
-
-    const query = filter.trim().toLowerCase();
-    let count = 0;
-
-    Object.keys(children).forEach(key => {
-        const child = children[key];
-
-        const matchesName = child.name.toLowerCase().includes(query);
-        const matchesIC = child.ic.toLowerCase().includes(query);
-
-        if (!matchesName && !matchesIC) {
-            return;
-        }
-
-        count++;
-
-        const item = document.createElement("div");
-        item.className = "child-list-item";
-
-        item.innerHTML = `
+    $("childrenList").innerHTML = filteredChildren.map(child => `
+        <div class="child-list-item ${
+            child.user_id === selectedChildId ? "active" : ""
+        }">
             <div class="child-list-left">
                 <div class="child-list-avatar">
                     <img src="../icons/user.png" alt="">
                 </div>
 
                 <div class="child-list-information">
-                    <h3>${safe(child.name)}</h3>
-                    <p>${safe(child.gender)}</p>
-                    <span>IC No: ${safe(child.ic)}</span>
+                    <h3>${escapeHTML(child.full_name)}</h3>
+                    <p>${escapeHTML(child.gender)}</p>
+                    <span>IC No: ${escapeHTML(child.user_id)}</span>
                 </div>
             </div>
 
             <button
                 type="button"
                 class="view-child-button"
-                onclick="viewChild('${key}')"
-            >
+                data-child-id="${escapeHTML(child.user_id)}">
                 View Child
             </button>
-        `;
+        </div>
+    `).join("");
 
-        list.appendChild(item);
-    });
+    $("childrenList")
+        .querySelectorAll("[data-child-id]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                selectChild(button.dataset.childId);
+            });
+        });
 
-    noMessage.style.display = count === 0 ? "block" : "none";
-}
-
-
-function searchChild() {
-    const searchValue = document.getElementById("searchChild").value;
-    displayChildren(searchValue);
-}
-
-
-/* =========================================
-   VIEW CHILD DETAILS
-========================================= */
-
-function viewChild(key) {
-    if (!children[key]) {
-        return;
+    if ($("noChildrenMessage")) {
+        $("noChildrenMessage").style.display =
+            filteredChildren.length ? "none" : "block";
     }
+}
 
-    selectedChild = key;
-    selectedRecordIndex = null;
+// Select a child and show their information
+function selectChild(userId) {
+    selectedChildId = userId;
+    selectedRecordId = null;
 
-    const child = children[key];
+    const child = getSelectedChild();
 
-    document.getElementById("childName").textContent = child.name;
-    document.getElementById("childGender").textContent = child.gender;
-    document.getElementById("childDOB").textContent = formatDate(child.dob);
-    document.getElementById("childIC").textContent = child.ic;
-    document.getElementById("childAddress").textContent = child.address;
+    if (!child) return;
 
-    document.getElementById("childDetails").style.display = "block";
+    $("childDetails").style.display = "block";
+    $("childEditForm").style.display = "none";
+    $("childDisplay").style.display = "block";
+    $("editChildButton").style.display = "inline-block";
 
-    cancelEditChild();
+    $("addRecordForm").style.display = "none";
+    $("showAddRecordButton").style.display = "inline-block";
+
+    clearRecordForm();
     clearRecordSelection();
 
-    displayRecords();
-    updateDoseOptions("new");
-
-    document.getElementById("childDetails").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
+    renderChildDetails(child);
+    displayChildren();
 }
 
+// Display child details
+function renderChildDetails(child) {
+    $("childName").textContent = child.full_name || "-";
+    $("childGender").textContent = child.gender || "-";
+    $("childDOB").textContent = child.date_of_birth || "-";
+    $("childIC").textContent = child.user_id || "-";
 
-/* =========================================
-   DISPLAY VACCINATION RECORDS
-========================================= */
+    // The current database does not have a child address field.
+    $("childAddress").textContent = "Not stored in database";
 
-function displayRecords() {
-    const tableBody = document.getElementById("vaccinationTableBody");
+    renderVaccinationRecords(child.records || []);
+}
 
-    tableBody.innerHTML = "";
+// Display vaccination records in the table
+function renderVaccinationRecords(records) {
+    const tableBody = $("vaccinationTableBody");
 
-    if (!selectedChild) {
+    if (!records || records.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4">
+                    No vaccination records found for this child.
+                </td>
+            </tr>
+        `;
         return;
     }
 
-    children[selectedChild].records.forEach((record, index) => {
-        const row = document.createElement("tr");
-
-        if (index === selectedRecordIndex) {
-            row.classList.add("selected-row");
-        }
-
-        row.innerHTML = `
-            <td>${safe(record.vaccine)}</td>
-            <td>${safe(record.dose)}</td>
-
+    tableBody.innerHTML = records.map(record => `
+        <tr class="${
+            Number(record.child_vaccination_id) ===
+            Number(selectedRecordId) ? "selected" : ""
+        }">
+            <td>${escapeHTML(record.vaccine_name)}</td>
+            <td>${escapeHTML(record.dose)}</td>
             <td>
-                <span class="status ${safe(record.status.toLowerCase())}">
-                    ${safe(record.status)}
+                <span class="status ${String(record.status).toLowerCase()}">
+                    ${escapeHTML(record.status)}
                 </span>
             </td>
-
-            <td>${safe(record.remarks || "-")}</td>
-
-            <td class="action-buttons">
+            <td>
                 <button
                     type="button"
                     class="edit-record-button"
-                    title="Edit record"
-                    aria-label="Edit record"
-                >
+                    data-edit-record="${record.child_vaccination_id}"
+                    title="Edit">
                     <i class="bi bi-pencil"></i>
                 </button>
 
                 <button
                     type="button"
                     class="delete-record-button"
-                    title="Delete record"
-                    aria-label="Delete record"
-                >
-                    <i class="bi bi-trash"></i>
+                    data-delete-record="${record.child_vaccination_id}"
+                    title="Delete">
+                    <i class="bi bi-trash3"></i>
                 </button>
             </td>
-        `;
+        </tr>
+    `).join("");
 
-        row.addEventListener("click", () => {
-            selectRecord(index);
+    tableBody.querySelectorAll("[data-edit-record]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                editRecord(Number(button.dataset.editRecord));
+            });
         });
 
-        row.querySelector(".edit-record-button")
-            .addEventListener("click", event => {
-                event.stopPropagation();
-                selectRecord(index);
+    tableBody.querySelectorAll("[data-delete-record]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                deleteRecord(Number(button.dataset.deleteRecord));
             });
-
-        row.querySelector(".delete-record-button")
-            .addEventListener("click", event => {
-                event.stopPropagation();
-                deleteRecord(index);
-            });
-
-        tableBody.appendChild(row);
-    });
+        });
 }
 
-
-/* =========================================
-   SELECT RECORD TO EDIT
-========================================= */
-
-function selectRecord(index) {
-    const record = children[selectedChild]?.records[index];
-
-    if (!record) {
-        return;
-    }
-
-    selectedRecordIndex = index;
-
-    document.getElementById("vaccine").value = record.vaccine;
-
-    updateDoseOptions("update");
-
-    document.getElementById("dose").value = record.dose;
-    document.getElementById("status").value = record.status;
-
-    document.getElementById("remarks").value =
-        record.remarks === "-" ? "" : record.remarks;
-
-    document.getElementById("updateHelp").textContent =
-        `Editing ${record.vaccine} — ${record.dose}.`;
-
-    displayRecords();
-}
-
-
-/* =========================================
-   CLEAR RECORD SELECTION
-========================================= */
-
-function clearRecordSelection() {
-    selectedRecordIndex = null;
-
-    document.getElementById("remarks").value = "";
-    document.getElementById("status").value = "Completed";
-
-    document.getElementById("updateHelp").textContent =
-        "Select a record from the table to edit it.";
-
-    updateDoseOptions("update");
-
-    if (selectedChild) {
-        displayRecords();
-    }
-}
-
-
-/* =========================================
-   SAVE UPDATED VACCINATION RECORD
-========================================= */
-
-function saveRecord() {
-    if (!selectedChild) {
-        alert("Please select a child first.");
-        return;
-    }
-
-    if (selectedRecordIndex === null) {
-        alert("Please select a record from the table first.");
-        return;
-    }
-
-    const vaccine = document.getElementById("vaccine").value;
-    const dose = document.getElementById("dose").value;
-    const status = document.getElementById("status").value;
-    const remarks =
-        document.getElementById("remarks").value.trim() || "-";
-
-    if (!dose) {
-        alert("Please select an available dose.");
-        return;
-    }
-
-    const records = children[selectedChild].records;
-
-    const duplicate = records.some((record, index) => {
-        return (
-            index !== selectedRecordIndex &&
-            record.vaccine === vaccine &&
-            record.dose === dose
-        );
-    });
-
-    if (duplicate) {
-        alert("This dose already has a record for this child.");
-        return;
-    }
-
-    records[selectedRecordIndex] = {
-        vaccine,
-        dose,
-        status,
-        remarks
-    };
-
-    selectedRecordIndex = null;
-
-    document.getElementById("remarks").value = "";
-
-    document.getElementById("updateHelp").textContent =
-        "Record updated. Select another record to edit it.";
-
-    displayRecords();
-    updateDoseOptions("update");
-    updateDoseOptions("new");
-
-    alert("Vaccination record updated successfully.");
-}
-
-
-/* =========================================
-   EDIT CHILD DETAILS
-========================================= */
-
+// Show child edit form
 function editChild() {
-    if (!selectedChild) {
-        alert("Please select a child first.");
-        return;
-    }
+    const child = getSelectedChild();
 
-    const child = children[selectedChild];
+    if (!child) return;
 
-    document.getElementById("editChildName").value = child.name;
-    document.getElementById("editChildGender").value = child.gender;
-    document.getElementById("editChildDOB").value = child.dob;
-    document.getElementById("editChildIC").value = child.ic;
-    document.getElementById("editChildAddress").value = child.address;
+    $("childDisplay").style.display = "none";
+    $("childEditForm").style.display = "block";
+    $("editChildButton").style.display = "none";
 
-    document.getElementById("childDisplay").style.display = "none";
-    document.getElementById("childEditForm").style.display = "block";
-    document.getElementById("editChildButton").style.display = "none";
+    $("editChildName").value = child.full_name || "";
+    $("editChildGender").value = child.gender || "Male";
+    $("editChildDOB").value = child.date_of_birth || "";
+    $("editChildIC").value = child.user_id || "";
+    $("editChildAddress").value = "Not stored in database";
 }
 
+// Cancel child editing
+function cancelEditChild() {
+    $("childEditForm").style.display = "none";
+    $("childDisplay").style.display = "block";
+    $("editChildButton").style.display = "inline-block";
+}
 
-/* =========================================
-   SAVE CHILD DETAILS
-========================================= */
+// Save child information to SQLite
+async function saveChildDetails() {
+    const child = getSelectedChild();
 
-function saveChildDetails() {
-    if (!selectedChild) {
+    if (!child) return;
+
+    const newUserId = $("editChildIC").value.trim();
+    const fullName = $("editChildName").value.trim();
+    const gender = $("editChildGender").value;
+    const dob = $("editChildDOB").value;
+
+    if (!newUserId || !fullName || !gender || !dob) {
+        alert("Please complete all required child details.");
         return;
     }
 
-    const updatedChild = {
-        name: document.getElementById("editChildName").value.trim(),
-        gender: document.getElementById("editChildGender").value,
-        dob: document.getElementById("editChildDOB").value,
-        ic: document.getElementById("editChildIC").value.trim(),
-        address: document.getElementById("editChildAddress").value.trim()
+    const payload = {
+        user_id: newUserId,
+        full_name: fullName,
+        gender,
+        date_of_birth: dob
     };
 
-    if (
-        !updatedChild.name ||
-        !updatedChild.dob ||
-        !updatedChild.ic ||
-        !updatedChild.address
-    ) {
-        alert("Please fill in all child details.");
-        return;
+    try {
+        const result = await apiRequest(
+            `${API_BASE}/children/${encodeURIComponent(child.user_id)}`,
+            {
+                method: "PATCH",
+                body: JSON.stringify(payload)
+            }
+        );
+
+        alert(result.message || "Child details updated successfully.");
+
+        selectedChildId = result.user_id || newUserId;
+
+        await loadData(selectedChildId);
+
+    } catch (error) {
+        console.error("Error saving child details:", error);
+        alert(error.message);
     }
-
-    Object.assign(children[selectedChild], updatedChild);
-
-    document.getElementById("childName").textContent = updatedChild.name;
-    document.getElementById("childGender").textContent = updatedChild.gender;
-    document.getElementById("childDOB").textContent =
-        formatDate(updatedChild.dob);
-    document.getElementById("childIC").textContent = updatedChild.ic;
-    document.getElementById("childAddress").textContent =
-        updatedChild.address;
-
-    cancelEditChild();
-
-    displayChildren(document.getElementById("searchChild").value);
-
-    alert("Child details updated successfully.");
 }
 
+// Select a vaccination record for editing
+function editRecord(recordId) {
+    const child = getSelectedChild();
 
-/* =========================================
-   CANCEL CHILD EDITING
-========================================= */
-
-function cancelEditChild() {
-    document.getElementById("childEditForm").style.display = "none";
-    document.getElementById("childDisplay").style.display = "block";
-    document.getElementById("editChildButton").style.display = "inline-block";
-}
-
-
-/* =========================================
-   DELETE VACCINATION RECORD
-========================================= */
-
-function deleteRecord(index) {
-    const record = children[selectedChild]?.records[index];
-
-    if (!record) {
-        return;
-    }
-
-    const confirmed = confirm(
-        `Are you sure you want to delete ${record.vaccine} — ${record.dose}?`
+    const record = child?.records.find(
+        item => Number(item.child_vaccination_id) === recordId
     );
 
-    if (!confirmed) {
+    if (!record) return;
+
+    selectedRecordId = recordId;
+
+    $("vaccine").innerHTML = vaccineOptionsHTML(
+        record.vaccination_id
+    );
+
+    $("vaccine").value = String(record.vaccination_id);
+
+    updateDoseOptions("update");
+
+    $("dose").value = record.dose;
+    $("status").value = record.status;
+
+    $("updateHelp").textContent =
+        `Editing ${record.vaccine_name} — due ${record.due_date}`;
+
+    renderVaccinationRecords(child.records);
+}
+
+// Save changes to an existing vaccination record
+async function saveRecord() {
+    if (!selectedChildId) {
+        alert("Please select a child first.");
         return;
     }
 
-    children[selectedChild].records.splice(index, 1);
+    if (!selectedRecordId) {
+        alert("Please select a vaccination record from the table first.");
+        return;
+    }
 
-    selectedRecordIndex = null;
+    const payload = {
+        vaccination_id: Number($("vaccine").value),
+        dose: $("dose").value,
+        status: $("status").value
+    };
 
-    document.getElementById("remarks").value = "";
+    try {
+        const result = await apiRequest(
+            `${API_BASE}/records/${selectedRecordId}`,
+            {
+                method: "PATCH",
+                body: JSON.stringify(payload)
+            }
+        );
 
-    document.getElementById("updateHelp").textContent =
-        "Select a record from the table to edit it.";
+        alert(result.message || "Vaccination record updated.");
 
-    displayRecords();
-    updateDoseOptions("update");
-    updateDoseOptions("new");
+        await loadData(selectedChildId);
 
-    alert("Vaccination record deleted successfully.");
+    } catch (error) {
+        console.error("Error updating vaccination record:", error);
+        alert(error.message);
+    }
 }
 
+// Delete a vaccination record
+async function deleteRecord(recordId) {
+    const confirmed = confirm(
+        "Delete this vaccination record? This cannot be undone."
+    );
 
-/* =========================================
-   SHOW ADD RECORD FORM
-========================================= */
+    if (!confirmed) return;
 
+    try {
+        const result = await apiRequest(
+            `${API_BASE}/records/${recordId}`,
+            { method: "DELETE" }
+        );
+
+        alert(result.message || "Vaccination record deleted.");
+
+        selectedRecordId = null;
+
+        await loadData(selectedChildId);
+
+    } catch (error) {
+        console.error("Error deleting vaccination record:", error);
+        alert(error.message);
+    }
+}
+
+// Show the add-record form
 function addRecord() {
-    if (!selectedChild) {
+    if (!selectedChildId) {
         alert("Please select a child first.");
         return;
     }
 
-    document.getElementById("addRecordForm").style.display = "block";
-    document.getElementById("showAddRecordButton").style.display = "none";
+    $("addRecordForm").style.display = "block";
+    $("showAddRecordButton").style.display = "none";
 
-    document.getElementById("newStatus").value = "Completed";
-    document.getElementById("newRemarks").value = "";
+    $("newDueDate").value = new Date().toISOString().slice(0, 10);
 
     updateDoseOptions("new");
 }
 
-
-/* =========================================
-   ADD NEW VACCINATION RECORD
-========================================= */
-
-function confirmAddRecord() {
-    if (!selectedChild) {
-        alert("Please select a child first.");
-        return;
-    }
-
-    const vaccine = document.getElementById("newVaccine").value;
-    const dose = document.getElementById("newDose").value;
-    const status = document.getElementById("newStatus").value;
-    const remarks =
-        document.getElementById("newRemarks").value.trim() || "-";
-
-    if (!dose) {
-        alert("No available dose remains for this vaccine.");
-        return;
-    }
-
-    const records = children[selectedChild].records;
-
-    const duplicate = records.some(record => {
-        return record.vaccine === vaccine && record.dose === dose;
-    });
-
-    if (duplicate) {
-        updateDoseOptions("new");
-        alert("This dose already has a record for this child.");
-        return;
-    }
-
-    records.push({
-        vaccine,
-        dose,
-        status,
-        remarks
-    });
-
-    displayRecords();
-
-    document.getElementById("newRemarks").value = "";
-    document.getElementById("addRecordForm").style.display = "none";
-    document.getElementById("showAddRecordButton").style.display = "inline-block";
-
-    updateDoseOptions("new");
-    updateDoseOptions("update");
-
-    alert(`Vaccination record added for ${children[selectedChild].name}.`);
-}
-
-
-/* =========================================
-   CANCEL ADDING RECORD
-========================================= */
-
+// Hide the add-record form
 function cancelAddRecord() {
-    document.getElementById("addRecordForm").style.display = "none";
-    document.getElementById("showAddRecordButton").style.display = "inline-block";
+    $("addRecordForm").style.display = "none";
+    $("showAddRecordButton").style.display = "inline-block";
 
-    document.getElementById("newRemarks").value = "";
+    clearRecordForm();
+}
+
+// Reset the add-record form
+function clearRecordForm() {
+    if ($("newVaccine") && $("newVaccine").options.length) {
+        $("newVaccine").selectedIndex = 0;
+    }
+
+    if ($("newStatus")) {
+        $("newStatus").value = "Upcoming";
+    }
+
+    if ($("newDueDate")) {
+        $("newDueDate").value = "";
+    }
 
     updateDoseOptions("new");
 }
 
+// Add a new vaccination record to SQLite
+async function confirmAddRecord() {
+    if (!selectedChildId) {
+        alert("Please select a child first.");
+        return;
+    }
 
-/* =========================================
-   PAGE INITIALISATION
-========================================= */
+    const dueDate = $("newDueDate").value;
 
-document.addEventListener("DOMContentLoaded", function () {
-    fillVaccineSelects();
-    displayChildren();
+    if (!dueDate) {
+        alert("Please select a due date.");
+        return;
+    }
 
-    document.getElementById("childDetails").style.display = "none";
+    const payload = {
+        vaccination_id: Number($("newVaccine").value),
+        dose: $("newDose").value,
+        status: $("newStatus").value,
+        due_date: dueDate
+    };
+
+    try {
+        const result = await apiRequest(
+            `${API_BASE}/children/${encodeURIComponent(selectedChildId)}/records`,
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+        );
+
+        alert(result.message || "Vaccination record added successfully.");
+
+        $("addRecordForm").style.display = "none";
+        $("showAddRecordButton").style.display = "inline-block";
+
+        clearRecordForm();
+
+        await loadData(selectedChildId);
+
+    } catch (error) {
+        console.error("Error adding vaccination record:", error);
+        alert(error.message);
+    }
+}
+
+// Clear the selected record
+function clearRecordSelection() {
+    selectedRecordId = null;
+
+    if ($("updateHelp")) {
+        $("updateHelp").textContent =
+            "Select a record from the table to edit it.";
+    }
+
+    const child = getSelectedChild();
+
+    if (child) {
+        renderVaccinationRecords(child.records || []);
+    }
+}
+
+// Load children, vaccination records and vaccine options from the database
+async function loadData(preferredChildId = null) {
+    try {
+        const [childData, vaccineData] = await Promise.all([
+            apiRequest(`${API_BASE}/children`),
+            apiRequest(`${API_BASE}/vaccines`)
+        ]);
+
+        children = childData;
+        vaccines = vaccineData;
+
+        fillVaccineSelects();
+        displayChildren();
+
+        const nextChildId =
+            preferredChildId &&
+            children.some(child => child.user_id === preferredChildId)
+                ? preferredChildId
+                : selectedChildId &&
+                  children.some(child => child.user_id === selectedChildId)
+                    ? selectedChildId
+                    : null;
+
+        if (nextChildId) {
+            selectChild(nextChildId);
+        } else {
+            selectedChildId = null;
+            selectedRecordId = null;
+
+            $("childDetails").style.display = "none";
+
+            // Do not automatically open the first child's details.
+            displayChildren();
+        }
+
+    } catch (error) {
+        console.error("Failed to load vaccination data:", error);
+
+        $("childrenList").innerHTML = `
+            <p class="error-message">
+                Unable to load children. Please check that the backend
+                is running and the vaccination API routes are available.
+            </p>
+        `;
+
+        $("noChildrenMessage").style.display = "none";
+
+        alert(
+            "Unable to load vaccination data.\n\n" +
+            error.message +
+            "\n\nCheck the backend terminal and browser console."
+        );
+    }
+}
+
+// Start the page
+document.addEventListener("DOMContentLoaded", () => {
+    $("searchChild").addEventListener("input", searchChild);
+
+    $("vaccine").addEventListener("change", () => {
+        updateDoseOptions("update");
+    });
+
+    $("newVaccine").addEventListener("change", () => {
+        updateDoseOptions("new");
+    });
+
+    // Keep child details hidden until View Child is clicked.
+    $("childDetails").style.display = "none";
+    $("childEditForm").style.display = "none";
+    $("addRecordForm").style.display = "none";
+
+    loadData();
 });

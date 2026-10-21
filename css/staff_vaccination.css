@@ -1,4 +1,8 @@
 
+/* =========================================
+   GENERAL
+========================================= */
+
 * {
     box-sizing: border-box;
 }
@@ -13,6 +17,18 @@ body {
 a {
     text-decoration: none;
 }
+
+button {
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
 
 .top-header {
     height: 78px;
@@ -55,6 +71,11 @@ a {
     align-items: center;
     gap: 12px;
 }
+
+
+/* =========================================
+   PAGE LAYOUT
+========================================= */
 
 .page-layout {
     min-height: calc(100vh - 78px);
@@ -113,6 +134,11 @@ a {
     color: #55708f;
 }
 
+
+/* =========================================
+   CARDS
+========================================= */
+
 .search-card,
 .children-list-card,
 .records-card,
@@ -128,6 +154,16 @@ a {
     padding: 20px;
     margin-bottom: 12px;
 }
+
+.children-list-card {
+    padding: 25px 28px;
+    margin-bottom: 25px;
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
 
 .search-box {
     height: 42px;
@@ -152,10 +188,10 @@ a {
     color: #183153;
 }
 
-.children-list-card {
-    padding: 25px 28px;
-    margin-bottom: 25px;
-}
+
+/* =========================================
+   CHILDREN LIST
+========================================= */
 
 .section-title {
     padding-bottom: 18px;
@@ -241,7 +277,6 @@ a {
     color: #f9528e;
     font-size: 13px;
     font-weight: 600;
-    cursor: pointer;
     white-space: nowrap;
 }
 
@@ -256,6 +291,11 @@ a {
     color: #718096;
     padding: 20px;
 }
+
+
+/* =========================================
+   CHILD DETAILS
+========================================= */
 
 .child-card {
     min-height: 145px;
@@ -307,23 +347,37 @@ a {
     overflow-wrap: anywhere;
 }
 
+
+/* =========================================
+   EDIT CHILD BUTTON
+   RESTORED TO YOUR ORIGINAL PINK STYLE
+========================================= */
+
 .edit-child-button {
-    border: 0;
-    background: #f9528e;
-    color: #ffffff;
+    border: 0 !important;
+    background: #f9528e !important;
+    color: #ffffff !important;
     padding: 11px 18px;
-    border-radius: 20px;
+    border-radius: 20px !important;
     cursor: pointer;
     font-weight: bold;
     white-space: nowrap;
+    box-shadow: none !important;
 }
 
-.edit-child-button:hover,
-.save-child-button:hover,
-.confirm-add-button:hover,
-.save-button:hover {
-    background: #e83f7d;
+.edit-child-button i {
+    color: #ffffff !important;
 }
+
+.edit-child-button:hover {
+    background: #e83f7d !important;
+    color: #ffffff !important;
+}
+
+
+/* =========================================
+   CHILD EDIT FORM
+========================================= */
 
 .child-edit-form {
     flex: 1;
@@ -391,7 +445,12 @@ a {
     color: #ffffff;
     font-size: 13px;
     font-weight: 600;
-    cursor: pointer;
+}
+
+.save-child-button:hover,
+.confirm-add-button:hover {
+    background: #e83f7d;
+    color: #ffffff;
 }
 
 .cancel-child-button,
@@ -403,8 +462,12 @@ a {
     color: #718096;
     font-size: 13px;
     font-weight: 600;
-    cursor: pointer;
 }
+
+
+/* =========================================
+   MAIN CONTENT GRID
+========================================= */
 
 .content-grid {
     display: grid;
@@ -424,6 +487,11 @@ a {
     margin: 0;
     color: #183153;
 }
+
+
+/* =========================================
+   VACCINATION TABLE
+========================================= */
 
 .table-container {
     width: 100%;
@@ -467,6 +535,11 @@ tbody tr:hover {
     background: #fde7f0;
 }
 
+
+/* =========================================
+   VACCINATION STATUS
+========================================= */
+
 .status {
     display: inline-block;
     padding: 5px 12px;
@@ -491,31 +564,68 @@ tbody tr:hover {
     color: #c0392b;
 }
 
-.action-buttons {
-    white-space: nowrap;
-    text-align: center;
-}
 
-.edit-record-button,
-.delete-record-button {
-    width: 34px;
-    height: 34px;
-    display: inline-flex;
+/* =========================================
+   EDIT & DELETE RECORD ICONS
+   EXACT HTML CLASS NAMES
+========================================= */
+
+.action-buttons {
+    display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #f9528e;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #f9528e;
-    cursor: pointer;
-    margin: 0 2px;
+    gap: 8px;
+    white-space: nowrap;
 }
 
-.edit-record-button:hover,
-.delete-record-button:hover {
-    background: #f9528e;
-    color: #ffffff;
+/* White square buttons with soft pink outlines */
+#vaccinationTable .edit-record-button,
+#vaccinationTable .delete-record-button {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff !important;
+    border: 1px solid #f4d4df !important;
+    border-radius: 8px !important;
+
+    color: #e88ca9 !important;
+    font-size: 15px;
+    line-height: 1;
+    box-shadow: none !important;
+    transform: none !important;
 }
+
+/* Bootstrap pencil and trash icons */
+#vaccinationTable .edit-record-button i,
+#vaccinationTable .delete-record-button i {
+    color: #e88ca9 !important;
+    font-size: 15px;
+}
+
+/* Hover - light pink background */
+#vaccinationTable .edit-record-button:hover,
+#vaccinationTable .delete-record-button:hover {
+    background: #fff0f5 !important;
+    border-color: #e8a0b7 !important;
+    color: #d96f95 !important;
+}
+
+#vaccinationTable .edit-record-button:hover i,
+#vaccinationTable .delete-record-button:hover i {
+    color: #d96f95 !important;
+}
+
+
+/* =========================================
+   INFORMATION BOX
+========================================= */
 
 .information-box {
     margin-top: 20px;
@@ -525,6 +635,11 @@ tbody tr:hover {
     color: #718096;
     font-size: 13px;
 }
+
+
+/* =========================================
+   RIGHT COLUMN / UPDATE CARD
+========================================= */
 
 .right-column {
     display: flex;
@@ -595,6 +710,11 @@ tbody tr:hover {
     resize: vertical;
 }
 
+
+/* =========================================
+   SAVE / CLEAR BUTTONS
+========================================= */
+
 .save-button,
 .clear-selection-button {
     width: 100%;
@@ -602,7 +722,6 @@ tbody tr:hover {
     padding: 11px;
     margin-top: 12px;
     font-weight: bold;
-    cursor: pointer;
 }
 
 .save-button {
@@ -611,12 +730,21 @@ tbody tr:hover {
     color: #ffffff;
 }
 
+.save-button:hover {
+    background: #e83f7d;
+}
+
 .clear-selection-button {
     margin-top: 8px;
     background: #ffffff;
     color: #718096;
     border: 1px solid #d9dfeb;
 }
+
+
+/* =========================================
+   ADD RECORD
+========================================= */
 
 .add-icon {
     width: 32px;
@@ -639,7 +767,6 @@ tbody tr:hover {
     color: #f9528e;
     border-radius: 7px;
     font-weight: bold;
-    cursor: pointer;
 }
 
 .add-record-form {
@@ -658,9 +785,50 @@ select:disabled {
     cursor: not-allowed;
 }
 
-button {
-    transition: background 0.2s ease, color 0.2s ease;
+
+/* =========================================
+   DATE INPUTS - WHITE WITH PINK ACCENTS
+========================================= */
+
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"] {
+    accent-color: #f9528e;
+    color: #183153;
+    color-scheme: light;
+
+    background-color: #ffffff !important;
+    border: 1px solid #f0cbd8 !important;
+    border-radius: 7px !important;
+
+    padding: 9px 11px;
+    outline: none;
+    box-shadow: none;
 }
+
+/* Pink focus border */
+input[type="date"]:focus,
+input[type="datetime-local"]:focus,
+input[type="month"]:focus {
+    border-color: #f4a5c0 !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(249, 82, 142, 0.12) !important;
+}
+
+/* Pink calendar icon in Chrome / Edge / Opera */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.9;
+    filter: invert(57%) sepia(39%) saturate(1040%)
+            hue-rotate(293deg) brightness(101%) contrast(96%);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
 
 @media (max-width: 1100px) {
     .content-grid {
