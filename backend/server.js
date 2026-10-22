@@ -1085,6 +1085,20 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
             });
         }
 
+        // Check whether another account uses this email
+        const duplicateEmail = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE LOWER(TRIM(email)) = LOWER(?)
+            AND role != 'child'
+        `).get(motherEmail);
+
+        if (duplicateEmail) {
+            return res.status(409).json({
+                message: "This email is already used by another account."
+            });
+        }
+
         // TEMPORARY: Replace with a real password hash before implementing login
         // The login route must reject accounts where password_set = 0
         const passwordHash = "TEMP_HASH_REPLACE_BEFORE_AUTH";
