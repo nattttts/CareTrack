@@ -3,8 +3,7 @@ import { showToast } from "./popup_message.js";
 let appointmentsData = [];
 
 // Appointment Tabs
-const appointmentTabs =
-    document.querySelectorAll(".appointment-tab");
+const appointmentTabs = document.querySelectorAll(".appointment-tab");
 
 let currentPeriod = "today";
 
@@ -19,15 +18,13 @@ appointmentTabs.forEach(tab => {
 
         this.classList.add("active");
 
-        currentPeriod =
-            this.getAttribute("data-tab");
+        currentPeriod = this.getAttribute("data-tab");
 
         applyAppointmentFilters();
 
     });
 
 });
-
 
 
 // Appointment filters
@@ -45,21 +42,34 @@ function applyAppointmentFilters() {
         "#appointmentTableBody tr[data-appointment-id]"
     );
 
-    const search =
-        searchInput.value.toLowerCase().trim();
+    // Sort past appointments from latest to oldest
+    if (currentPeriod === "past") {
+        const tableBody = document.getElementById("appointmentTableBody");
 
-    const selectedDate =
-        dateFilter.value;
+        const pastRows = Array.from(appointmentRows)
+            .filter(row => row.dataset.period === "past")
+            .sort((a, b) => {
+                const dateComparison =
+                    b.dataset.date.localeCompare(a.dataset.date);
 
-    const selectedType =
-        typeFilter.value;
+                if (dateComparison !== 0) {
+                    return dateComparison;
+                }
 
-    const selectedStatus =
-        statusFilter.value;
+                return b.dataset.startTime.localeCompare(
+                    a.dataset.startTime
+                );
+            });
 
+        pastRows.forEach(row => tableBody.appendChild(row));
+    }
+
+    const search = searchInput.value.toLowerCase().trim();
+    const selectedDate = dateFilter.value;
+    const selectedType = typeFilter.value;
+    const selectedStatus = statusFilter.value;
 
     let visibleCount = 0;
-
 
     appointmentRows.forEach(row => {
         const period = row.dataset.period;
@@ -99,44 +109,26 @@ function applyAppointmentFilters() {
 }
 
 
-searchInput.addEventListener(
-    "input",
-    applyAppointmentFilters
-);
-
+searchInput.addEventListener("input", applyAppointmentFilters);
 
 dateFilter.addEventListener("change", applyAppointmentFilters);
 typeFilter.addEventListener("change", applyAppointmentFilters);
 statusFilter.addEventListener("change", applyAppointmentFilters);
 
-resetFilters.addEventListener(
-    "click",
-    function () {
+resetFilters.addEventListener("click", function () {
+    searchInput.value = "";
+    dateFilter.value = "";
+    typeFilter.value = "all";
+    statusFilter.value = "all";
+    currentPeriod = "today";
 
-        searchInput.value = "";
+    appointmentTabs.forEach(tab => {
+        tab.classList.remove("active");
+    });
 
-        dateFilter.value = "";
+    document.querySelector('[data-tab="today"]').classList.add("active");
 
-        typeFilter.value = "all";
-
-        statusFilter.value = "all";
-
-        currentPeriod = "today";
-
-
-        appointmentTabs.forEach(tab => {
-
-            tab.classList.remove("active");
-
-        });
-
-
-        document
-            .querySelector('[data-tab="today"]')
-            .classList.add("active");
-
-
-        applyAppointmentFilters();
+    applyAppointmentFilters();
 
     }
 );
@@ -253,19 +245,21 @@ async function loadAppointments() {
                     </button>
                 `;
             } else if (displayStatus === "Completed") {
-                actionButtons += `
-                    <button
-                        type="button"
-                        class="action-button follow-up-button"
-                        data-bs-toggle="modal"
-                        data-bs-target="#scheduleFollowUpModal"
-                        data-appointment-id="${escapeHtml(appointment.appointment_id)}"
-                        data-user-id="${escapeHtml(appointment.user_id)}"
-                    >
-                        <i class="bi bi-calendar-plus"></i>
-                        Schedule Follow-up
-                    </button>
-                `;
+                if (appointment.account_status === "Active") {
+                    actionButtons += `
+                        <button
+                            type="button"
+                            class="action-button follow-up-button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#scheduleFollowUpModal"
+                            data-appointment-id="${escapeHtml(appointment.appointment_id)}"
+                            data-user-id="${escapeHtml(appointment.user_id)}"
+                        >
+                            <i class="bi bi-calendar-plus"></i>
+                            Schedule Follow-up
+                        </button>
+                    `;
+                }
             }
 
             const row = document.createElement("tr");
@@ -273,6 +267,7 @@ async function loadAppointments() {
             row.dataset.appointmentId = appointment.appointment_id;
             row.dataset.period = period;
             row.dataset.date = appointmentDate;
+            row.dataset.startTime = appointment.start_time;
             row.dataset.type = appointment.appointment_type;
             row.dataset.status = displayStatus;
 
@@ -320,6 +315,7 @@ async function loadAppointments() {
         document.getElementById("noAppointments").style.display = "none";
     }
 }
+
 const scheduleAppointmentModal = document.getElementById("scheduleAppointmentModal");
 const viewAppointmentModal = document.getElementById("viewAppointmentModal");
 

@@ -2095,7 +2095,8 @@ app.get("/api/staff/appointments", requireRole("staff"), (req, res) => {
                 a.status,
                 a.reschedule_status,
                 a.appointment_type,
-                u.role
+                u.role,
+                u.account_status
             FROM Appointment a
             JOIN User u
                 ON a.user_id = u.user_id
