@@ -1,9 +1,8 @@
 async function loadUserInfo() {
     const userName = document.getElementById("userName");
-    const welcomeMessage = document.getElementById("welcomeMessage");
 
     // Stop if this page does not use the shared header.
-    if (!userName && !welcomeMessage) {
+    if (!userName) {
         return;
     }
 
@@ -16,26 +15,11 @@ async function loadUserInfo() {
 
         const user = await response.json();
 
-        if (userName) {
-            userName.textContent = user.fullName;
-        }
-
-        if (welcomeMessage) {
-            if (user.role === "mother" || user.role === "child") {
-                welcomeMessage.textContent =
-                    `Welcome back, ${user.fullName}. Here's an overview of your healthcare activities.`;
-            } else {
-                welcomeMessage.textContent =
-                    `Welcome back, ${user.fullName}. Here's your clinic overview for today.`;
-            }
-        }
+        userName.textContent = user.fullName;
 
     } catch (error) {
         console.error("Load user information error:", error);
-
-        if (userName) {
-            userName.textContent = "User";
-        }
+        userName.textContent = "User";
     }
 }
 
