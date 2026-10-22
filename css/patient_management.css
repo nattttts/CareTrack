@@ -278,6 +278,13 @@ a {
 }
 
 /* Account Status */
+.account-status-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
 .status-badge {
     padding: 6px 12px;
 
@@ -314,7 +321,28 @@ a {
     background: #77879b;
 }
 
+.password-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.password-set {
+    color: #198754;
+}
+
+.password-not-set {
+    color: red;
+}
+
 /* ================= ACTIONS ================= */
+.patient-actions-cell {
+    min-width: 175px;
+}
+
 .action-buttons {
     display: flex;
     justify-content: center;
@@ -368,6 +396,46 @@ a {
 
 .activate-button:hover {
     background: #edfff5;
+}
+
+/* Keep View, Edit and Activate/Deactivate on one row */
+.patient-actions-cell .action-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Keep the three buttons compact */
+.patient-actions-cell .action-buttons .action-button {
+    min-width: 0;
+    width: auto;
+    padding: 0 8px;
+    flex: 1;
+}
+
+/* Put Resend Invitation on a separate row */
+.patient-actions-cell .resend-invitation-button {
+    display: flex;
+    width: 100%;
+    margin-top: 8px;
+    justify-content: center;
+
+    color: #ffffff;
+    background-color: #f9528e;
+    border: 1px solid #f9528e;
+}
+
+.patient-actions-cell .resend-invitation-button:hover {
+    color: #ffffff;
+    background-color: #e81f67;
+    border-color: #e81f67;
+}
+
+.patient-actions-cell .resend-invitation-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
 }
 
 /* ================= NO RESULTS ================= */

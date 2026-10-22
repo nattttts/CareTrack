@@ -985,13 +985,14 @@ app.get("/api/mothers", requireRole("staff"), (req, res) => {
                 Mother.address,
                 Mother.contact_name,
                 Mother.relationship,
-                Mother.contact_phone_no
+                Mother.contact_phone_no,
+                User.password_set
             FROM Mother
             INNER JOIN User
                 ON Mother.user_id = User.user_id
             ORDER BY User.account_status, User.full_name
         `).all();
-
+            
         res.json(mothers);
 
     } catch (error) {
@@ -1187,6 +1188,71 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
     }
 });
 
+// Resend invitation link for password setup
+app.post("/api/mother/:motherId/resend-invitation", requireRole("staff"), async (req, res) => {
+    try {
+        const mother = db.prepare(`
+            SELECT
+                Mother.user_id,
+                User.email,
+                User.password_set,
+                User.account_status
+            FROM Mother
+            INNER JOIN User
+                ON Mother.user_id = User.user_id
+            WHERE Mother.mother_id = ?
+        `).get(req.params.motherId);
+
+        if (!mother) {
+            return res.status(404).json({
+                message: "Mother account not found."
+            });
+        }
+
+        if (Number(mother.password_set) === 1) {
+            return res.status(409).json({
+                message: "This mother member has already set their password."
+            });
+        }
+
+        if (mother.account_status !== "Active") {
+            return res.status(409).json({
+                message: "Activate this mother account before sending an invitation."
+            });
+        }
+
+        const token = createInvitation(mother.user_id);
+
+        const baseUrl =
+            process.env.APP_BASE_URL || `http://localhost:${PORT}`;
+
+        const invitationUrl =
+            `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
+
+        try {
+            await sendInvitationEmail(mother.email, invitationUrl);
+
+            return res.status(200).json({
+                message: "Invitation email sent successfully."
+            });
+
+        } catch (error) {
+            console.error("Failed to resend mother invitation:", error);
+
+            return res.status(500).json({
+                message: "The new invitation was created, but the email could not be sent. Please try resending it."
+            });
+        }
+
+    } catch (error) {
+        console.error("Error creating mother invitation:", error);
+
+        return res.status(500).json({
+            message: "Failed to create the mother invitation."
+        });
+    }
+});
+
 // Update mother details
 app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
     const motherId = Number(req.params.motherId);
@@ -1297,7 +1363,7 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
             FROM User
             WHERE LOWER(TRIM(email)) = LOWER(?)
             AND user_id != ?
-            AND role = 'mother'
+            AND role != 'child'
         `).get(normalizedEmail, existingMother.user_id);
 
         if (duplicateEmail) {

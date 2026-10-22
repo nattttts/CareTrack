@@ -46,21 +46,41 @@ async function loadMother() {
                 <td>${mother.email}</td>
                 <td>${mother.phone_no}</td>
                 <td>
-                    <span class="status-badge ${
-                        mother.account_status === "Active"
-                            ? "active-status"
-                            : "inactive-status"
-                    }">
-                        <span class="status-dot"></span>
-                        ${mother.account_status}
-                    </span>
+                    <div class="account-status-group">
+                        <span class="status-badge ${
+                            mother.account_status === "Active"
+                                ? "active-status"
+                                : "inactive-status"
+                        }">
+                            <span class="status-dot"></span>
+                            ${mother.account_status}
+                        </span>
+
+                        <span class="password-status ${
+                            Number(mother.password_set) === 1
+                                ? "password-set"
+                                : "password-not-set"
+                        }">
+                            <i class="bi ${
+                                Number(mother.password_set) === 1
+                                    ? "bi-check-circle"
+                                    : "bi-clock"
+                            }"></i>
+
+                            ${
+                                Number(mother.password_set) === 1
+                                    ? "Password set"
+                                    : "Password not set"
+                            }
+                        </span>
+                    </div>
                 </td>
                 <td>${new Date(mother.created_at).toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric"
                 })}</td>
-                <td>
+                <td class="patient-actions-cell">
                     <div class="action-buttons">
                         <button type="button" class="action-button view-button">
                             <i class="bi bi-eye"></i>
@@ -91,8 +111,22 @@ async function loadMother() {
                                     : "Activate"
                             }</span>
                         </button>
-
                     </div>
+
+                    ${
+                        Number(mother.password_set) !== 1
+                            ? `
+                                <button
+                                    type="button"
+                                    class="action-button resend-invitation-button"
+                                    data-mother-id="${mother.mother_id}"
+                                >
+                                    <i class="bi bi-envelope"></i>
+                                    <span>Resend Invitation</span>
+                                </button>
+                            `
+                            : ""
+                    }
                 </td>
             `;
 
@@ -323,6 +357,57 @@ function resetChildFilters() {
     applyChildFilters();
 }
 
+async function resendMotherInvitation(motherId, button) {
+    const originalText = button.innerHTML;
+
+    try {
+        // Prevent repeated clicks while the request is processing
+        button.disabled = true;
+        button.textContent = "Sending...";
+
+        // Ask the backend to generate a new invitation
+        const response = await fetch(
+            `http://localhost:3000/api/mother/${motherId}/resend-invitation`,
+            {
+                method: "POST"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to resend invitation."
+            );
+        }
+
+        showToast("Invitation sent successfully.", "success");
+
+
+        // Development only: show the returned invitation URL
+        // if the backend provides one
+        if (result.developmentInvitationUrl) {
+            console.log(
+                "Development invitation URL:",
+                result.developmentInvitationUrl
+            );
+        }
+
+        // Refresh the mother table to reflect the latest account data
+        await loadMother();
+
+    } catch (error) {
+        console.error("Error resending invitation:", error);
+        showToast(error.message || "Failed to resend invitation.", "error");
+    } finally {
+        // The original button may have been removed by loadMother()
+        // Restore it only if it is still present on the page
+        if (button.isConnected) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+}
 
 // ================= HANDLE MOTHER ACTION BUTTONS =================
 const motherTableBody = document.getElementById("motherTableBody");
@@ -498,7 +583,77 @@ motherTableBody.addEventListener("click", function (event) {
             )
             .show();
     }
+
+    // RESEND INVITATION
+    else if (button.classList.contains("resend-invitation-button")) {
+        resendMotherInvitation(mother.mother_id, button);
+    }
 });
+
+// Add new mother
+document
+    .getElementById("addMotherForm")
+    .addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const submitButton = this.querySelector(
+            'button[type="submit"]'
+        );
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Adding...";
+
+        const motherData = {
+            full_name: document.getElementById("addMotherName").value,
+            user_id: document.getElementById("addMotherIC").value,
+            date_of_birth: document.getElementById("addMotherDOB").value,
+            phone_no: document.getElementById("addMotherPhoneNo").value,
+            email: document.getElementById("addMotherEmail").value,
+            address: document.getElementById("addMotherAddress").value,
+            contact_name: document.getElementById("addMotherEmergencyName").value,
+            relationship: document.getElementById("addMotherRelationship").value,
+            contact_phone_no: document.getElementById("addMotherEmergencyPhone").value
+        };
+
+        try {
+            const response = await fetch("http://localhost:3000/api/mother", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(motherData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to add mother.");
+            }
+
+            // Close the modal and clear the form
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    document.getElementById("addMotherModal")
+                )
+                .hide();
+
+            this.reset();
+
+            // Refresh the mother table
+            await loadMother();
+
+            showToast("Mother added successfully!", "success");
+
+        } catch (error) {
+            console.error("Error adding mother:", error);
+            showToast(error.message, "error");
+            
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Add Mother";
+        }
+    });
 
 // ================= UPDATE MOTHER DETAILS =================
 document.getElementById("editMotherForm").addEventListener(
@@ -998,18 +1153,23 @@ document.addEventListener("DOMContentLoaded", () => {
     loadChild();
     setupTabs();
 
-    // Disable future date in mother date picker
-    const motherDOB = document.getElementById("editMotherDOB");
+    // Disable future dates in birth date pickers
+    const motherDOB = document.getElementById("addMotherDOB");
+    const editMotherDOB = document.getElementById("editMotherDOB");
+    const editChildDOB = document.getElementById("editChildDOB");
+
+    const today = new Date().toLocaleDateString("sv-SE");
 
     if (motherDOB) {
-        motherDOB.max = new Date().toLocaleDateString("sv-SE");
+        motherDOB.max = today;
     }
 
-    // Disable future date in child date picker
-    const childDOB = document.getElementById("editChildDOB");
+    if (editMotherDOB) {
+        editMotherDOB.max = today;
+    }
 
-    if (childDOB) {
-        childDOB.max = new Date().toLocaleDateString("sv-SE");
+    if (editChildDOB) {
+        editChildDOB.max = today;
     }
 
     document.getElementById("motherSearch")
