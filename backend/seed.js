@@ -1,5 +1,6 @@
 
 const db = require("./database");
+const { hashPassword } = require("./password");
 
 // Refuse to seed a database that already has user records.
 // This prevents accidental duplicate or conflicting sample data.
@@ -78,200 +79,212 @@ const insert = {
     `)
 };
 
-const seed = db.transaction(() => {
-    // =========================================
-    // 1. USERS
-    // These are fictional test accounts.
-    // Replace placeholder hashes when auth is built.
-    // =========================================
-    const users = [
-        ["1", "Admin", "admin@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "admin", "Active", "2025-11-01 12:00:00", 1],
-        ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
-        ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
-        ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Inactive", "2025-11-01 12:00:00", 1],
-        ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-02 12:00:00", 1],
-        ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-03 12:00:00", 1],
-        ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-11-10 12:00:00", 1],
-        ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-12-10 12:00:00", 1],
-        ["260801-07-0007", "Ali bin Ahmad", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-08-02 12:00:00", 1],
-        ["260902-07-0003", "Tan Yi Xing", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-09-03 12:00:00", 1]
-    ];
+async function main() {
+    const adminPasswordHash = await hashPassword("Admin@123456");
 
-    users.forEach(row => insert.user.run(...row));
+    const seed = db.transaction(() => {
+        // =========================================
+        // 1. USERS
+        // These are fictional test accounts.
+        // Replace placeholder hashes when auth is built.
+        // =========================================
+        const users = [
+            ["1", "Admin", "admin@gmail.com", adminPasswordHash, "admin", "Active", "2025-11-01 12:00:00", 1],
+            ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
+            ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
+            ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Inactive", "2025-11-01 12:00:00", 1],
+            ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-02 12:00:00", 1],
+            ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-03 12:00:00", 1],
+            ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-11-10 12:00:00", 1],
+            ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-12-10 12:00:00", 1],
+            ["260801-07-0007", "Ali bin Ahmad", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-08-02 12:00:00", 1],
+            ["260902-07-0003", "Tan Yi Xing", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-09-03 12:00:00", 1]
+        ];
 
-    // =========================================
-    // 2. STAFF
-    // =========================================
-    const staff = [
-        [1, "920102-07-0002", "Doctor", "012-3001001"],
-        [2, "930103-07-0004", "Nurse", "012-3001002",],
-        [3, "940104-07-0005", "Doctor", "012-3001003"]
-    ];
+        users.forEach(row => insert.user.run(...row));
 
-    staff.forEach(row => insert.staff.run(...row));
+        // =========================================
+        // 2. STAFF
+        // =========================================
+        const staff = [
+            [1, "920102-07-0002", "Doctor", "012-3001001"],
+            [2, "930103-07-0004", "Nurse", "012-3001002"],
+            [3, "940104-07-0005", "Doctor", "012-3001003"]
+        ];
 
-    // =========================================
-    // 3. MOTHERS
-    // =========================================
-    const mothers = [
-        [1, "970107-07-0010", "1997-01-07", "30 Demo Road, Penang", "012-4001003", "Ahmad bin Mohammad", "Husband", "012-5001001"],
-        [2, "980108-07-0012", "1998-01-08", "40 Red Street, Penang", "012-4001004", "Miguel Liew", "Husband", "012-5001002"],
-        [3, "950105-07-0006", "1995-01-05", "10 Example Street, Penang", "012-4001001", "Chew Jia Hao", "Husband", "012-5001003"],
-        [4, "960106-07-0008", "1996-01-06", "20 Sample Avenue, Penang", "012-4001002", "Aaron Lim", "Husband", "012-5001004"]
-    ];
+        staff.forEach(row => insert.staff.run(...row));
 
-    mothers.forEach(row => insert.mother.run(...row));
+        // =========================================
+        // 3. MOTHERS
+        // =========================================
+        const mothers = [
+            [1, "970107-07-0010", "1997-01-07", "30 Demo Road, Penang", "012-4001003", "Ahmad bin Mohammad", "Husband", "012-5001001"],
+            [2, "980108-07-0012", "1998-01-08", "40 Red Street, Penang", "012-4001004", "Miguel Liew", "Husband", "012-5001002"],
+            [3, "950105-07-0006", "1995-01-05", "10 Example Street, Penang", "012-4001001", "Chew Jia Hao", "Husband", "012-5001003"],
+            [4, "960106-07-0008", "1996-01-06", "20 Sample Avenue, Penang", "012-4001002", "Aaron Lim", "Husband", "012-5001004"]
+        ];
 
-    // =========================================
-    // 5. CHILDREN
-    // =========================================
-    const children = [
-        [1, "260801-07-0007", "2026-08-01", "Male", "Nurul binti Rashid", "012-4001001"],
-        [2, "260902-07-0003", "2026-09-02", "Male", "Jennie Lim", "012-4001002"]
-    ];
+        mothers.forEach(row => insert.mother.run(...row));
 
-    children.forEach(row => insert.child.run(...row));
+        // =========================================
+        // 5. CHILDREN
+        // =========================================
+        const children = [
+            [1, "260801-07-0007", "2026-08-01", "Male", "Nurul binti Rashid", "012-4001001"],
+            [2, "260902-07-0003", "2026-09-02", "Male", "Jennie Lim", "012-4001002"]
+        ];
 
-    // =========================================
-    // 6. SERVICES
-    // =========================================
-    const services = [
-        [1, "Maternal Follow-up", "Maternal healthcare follow-up appointments"],
-        [2, "Child Vaccination", "Childhood vaccination appointments"]
-    ];
+        children.forEach(row => insert.child.run(...row));
 
-    services.forEach(row => insert.service.run(...row));
+        // =========================================
+        // 6. SERVICES
+        // =========================================
+        const services = [
+            [1, "Maternal Follow-up", "Maternal healthcare follow-up appointments"],
+            [2, "Child Vaccination", "Childhood vaccination appointments"]
+        ];
 
-    // =========================================
-    // 7. VACCINATION CATALOGUE
-    // =========================================
-    const vaccines = [
-        [1, "DTaP-IPV-HepB-Hib", "Diphteria-Tetanus-Pertussis-Polio-Hepatitis B-Haemophilus influenzae type B", 3, 1],
-        [2, "MMR", "Measles, Mumps, Rubella", 2, 0],
-        [3, "PCV", "Pneumococcal", 2, 1]
-    ];
+        services.forEach(row => insert.service.run(...row));
 
-    vaccines.forEach(row => insert.vaccine.run(...row));
+        // =========================================
+        // 7. VACCINATION CATALOGUE
+        // =========================================
+        const vaccines = [
+            [1, "DTaP-IPV-HepB-Hib", "Diphteria-Tetanus-Pertussis-Polio-Hepatitis B-Haemophilus influenzae type B", 3, 1],
+            [2, "MMR", "Measles, Mumps, Rubella", 2, 0],
+            [3, "PCV", "Pneumococcal", 2, 1]
+        ];
 
-    // =========================================
-    // 9. APPOINTMENTS
-    // reschedule_status: None / Pending / Approved / Rejected
-    // =========================================
-    const appointments = [
-        [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "11:30", "Completed", "None"],
-        [2, "980108-07-0012", "Maternal Follow-up", "2026-08-20", "10:30", "11:00", "Completed", "None"],
-        [3, "260801-07-0007", "Child Vaccination", "2026-10-01", "10:00", "10:30", "Completed", "None"],
-        [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "09:30", "Completed", "Approved"],
-        [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "09:30", "Confirmed", "Pending"],
-        [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "10:30", "Missed", "None"],
-        [7, "960106-07-0008", "Maternal Follow-up", "2026-10-20", "10:00", "10:30", "Confirmed", "None"],
-        [8, "260801-07-0007", "Child Vaccination", "2026-11-01", "10:00", "10:30", "Confirmed", "None"],
-        [9, "260902-07-0003", "Child Vaccination", "2026-11-01", "09:00", "09:30", "Confirmed", "Pending"]
-    ];
+        vaccines.forEach(row => insert.vaccine.run(...row));
 
-    appointments.forEach(row => insert.appointment.run(...row));
+        // =========================================
+        // 9. APPOINTMENTS
+        // reschedule_status: None / Pending / Approved / Rejected
+        // =========================================
+        const appointments = [
+            [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "11:30", "Completed", "None"],
+            [2, "980108-07-0012", "Maternal Follow-up", "2026-08-20", "10:30", "11:00", "Completed", "None"],
+            [3, "260801-07-0007", "Child Vaccination", "2026-10-01", "10:00", "10:30", "Completed", "None"],
+            [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "09:30", "Completed", "Approved"],
+            [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "09:30", "Confirmed", "Pending"],
+            [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "10:30", "Missed", "None"],
+            [7, "960106-07-0008", "Maternal Follow-up", "2026-10-20", "10:00", "10:30", "Confirmed", "None"],
+            [8, "260801-07-0007", "Child Vaccination", "2026-11-01", "10:00", "10:30", "Confirmed", "None"],
+            [9, "260902-07-0003", "Child Vaccination", "2026-11-01", "09:00", "09:30", "Confirmed", "Pending"]
+        ];
 
-    // =========================================
-    // 10. CHILD VACCINATION RECORDS
-    // =========================================
-    const childVaccinations = [
-        [1, "260801-07-0007", 1, "2026-10-01", "Dose 1", "Completed"],
-        [2, "260801-07-0007", 1, "2026-11-01", "Dose 2", "Upcoming"],
-        [3, "260902-07-0003", 1, "2026-11-01", "Dose 1", "Upcoming"]
-    ];
+        appointments.forEach(row => insert.appointment.run(...row));
 
-    childVaccinations.forEach(row => insert.childVaccination.run(...row));
+        // =========================================
+        // 10. CHILD VACCINATION RECORDS
+        // =========================================
+        const childVaccinations = [
+            [1, "260801-07-0007", 1, "2026-10-01", "Dose 1", "Completed"],
+            [2, "260801-07-0007", 1, "2026-11-01", "Dose 2", "Upcoming"],
+            [3, "260902-07-0003", 1, "2026-11-01", "Dose 1", "Upcoming"]
+        ];
 
-    // =========================================
-    // 11. NOTIFICATIONS
-    // Both linked records can be provided for vaccination
-    // appointment notifications.
-    // is_read: 0 = unread, 1 = read.
-    // =========================================
-    const notifications = [
-        [1, "970107-07-0010", 1, null, "Appointment Scheduled",
-            "Your next appointment has been scheduled on 20 July 2026 at 11:00.", 1],
+        childVaccinations.forEach(row => insert.childVaccination.run(...row));
 
-        [2, "980108-07-0012", 2, null, "Appointment Scheduled",
-            "Your next appointment has been scheduled on 20 August 2026 at 10:30.", 1],
+        // =========================================
+        // 11. NOTIFICATIONS
+        // Both linked records can be provided for vaccination
+        // appointment notifications.
+        // is_read: 0 = unread, 1 = read.
+        // =========================================
+        const notifications = [
+            [1, "970107-07-0010", 1, null, "Appointment Scheduled",
+                "Your next appointment has been scheduled on 20 July 2026 at 11:00.", 1],
 
-        [3, "950105-07-0006", 6, null, "Appointment Scheduled",
-            "Your next appointment has been scheduled on 13 October 2026 at 09:00.", 0],
+            [2, "980108-07-0012", 2, null, "Appointment Scheduled",
+                "Your next appointment has been scheduled on 20 August 2026 at 10:30.", 1],
 
-        [4, "260801-07-0007", 3, 1, "Vaccination Appointment Scheduled",
-            "Your next vaccination appointment has been scheduled on 1 October 2026", 1],
+            [3, "950105-07-0006", 6, null, "Appointment Scheduled",
+                "Your next appointment has been scheduled on 13 October 2026 at 09:00.", 0],
 
-        [5, "950105-07-0006", 4, null, "Appointment Scheduled",
-            "Your next appointment has been scheduled on 12 October 2026 at 09:00.", 1],
-        
-        [6, "950105-07-0006", 4, null, "Appointment Successfully Rescheduled",
-            "Your appointment has been rescheduled to 13 October 2026 at 09:00.", 1],
-        
-        [7, "950105-07-0006", 5, null, "Appointment Scheduled",
-            "Your next appointment has been scheduled on 13 November 2026 at 09:00.", 0],
+            [4, "260801-07-0007", 3, 1, "Vaccination Appointment Scheduled",
+                "Your next vaccination appointment has been scheduled on 1 October 2026", 1],
 
-        [8, "960106-07-0008", 6, null, "Missed Appointment",
-            "Your appointment that was scheduled on 13 October 2026 was missed.", 1],
-        
-        [9, "960106-07-0008", 7, null, "Appointment Scheduled",
-            "Your next appointment has been scheduled on 20 October 2026", 0],
-        
-        [10, "260801-07-0007", 8, 2, "Vaccination Appointment Scheduled",
-            "Your next vaccination appointment has been scheduled on 1 November 2026", 0],
+            [5, "950105-07-0006", 4, null, "Appointment Scheduled",
+                "Your next appointment has been scheduled on 12 October 2026 at 09:00.", 1],
+            
+            [6, "950105-07-0006", 4, null, "Appointment Successfully Rescheduled",
+                "Your appointment has been rescheduled to 13 October 2026 at 09:00.", 1],
+            
+            [7, "950105-07-0006", 5, null, "Appointment Scheduled",
+                "Your next appointment has been scheduled on 13 November 2026 at 09:00.", 0],
 
-        [11, "260902-07-0003", 9, 3, "Vaccination Appointment Scheduled",
-            "Your next vaccination appointment has been scheduled on 1 November 2026", 0]
-    ];
+            [8, "960106-07-0008", 6, null, "Missed Appointment",
+                "Your appointment that was scheduled on 13 October 2026 was missed.", 1],
+            
+            [9, "960106-07-0008", 7, null, "Appointment Scheduled",
+                "Your next appointment has been scheduled on 20 October 2026", 0],
+            
+            [10, "260801-07-0007", 8, 2, "Vaccination Appointment Scheduled",
+                "Your next vaccination appointment has been scheduled on 1 November 2026", 0],
 
-    notifications.forEach(row => insert.notification.run(...row));
+            [11, "260902-07-0003", 9, 3, "Vaccination Appointment Scheduled",
+                "Your next vaccination appointment has been scheduled on 1 November 2026", 0]
+        ];
 
-    // =========================================
-    // 12. QUEUE ENTRIES
-    // Only appointments that have checked in.
-    // =========================================
-    const queueEntries = [
-        [1, 1, 3, "10:50:00", "Completed", "11:00:00", "11:01:00", "11:25:00", null],
-        [2, 2, 2, "10:20:00", "Completed", "10:30:00", "10:31:00", "10:58:00", null],
-        [3, 3, 1, "09:50:00", "Completed", "10:00:00", "10:01:00", "10:28:00", null],
-        [4, 4, 1, "08:50:00", "Completed", "09:00:00", "09:01:00", "09:28:00", null]
-    ];
+        notifications.forEach(row => insert.notification.run(...row));
 
-    queueEntries.forEach(row => insert.queue.run(...row));
-});
+        // =========================================
+        // 12. QUEUE ENTRIES
+        // Only appointments that have checked in.
+        // =========================================
+        const queueEntries = [
+            [1, 1, 3, "10:50:00", "Completed", "11:00:00", "11:01:00", "11:25:00", null],
+            [2, 2, 2, "10:20:00", "Completed", "10:30:00", "10:31:00", "10:58:00", null],
+            [3, 3, 1, "09:50:00", "Completed", "10:00:00", "10:01:00", "10:28:00", null],
+            [4, 4, 1, "08:50:00", "Completed", "09:00:00", "09:01:00", "09:28:00", null]
+        ];
 
-try {
-    seed();
+        queueEntries.forEach(row => insert.queue.run(...row));
+    });
 
-    console.log("Sample data inserted successfully!");
-    console.log("Admin: admin@gmail.com");
-    console.log("Staff: staff1@gmail.com, staff2@gmail.com, staff3@gmail.com");
-    console.log("Mothers: mother1@gmail.com, mother2@gmail.com, mother3@gmail.com, mother4@gmail.com");
-    console.log("Children: mother3@gmail.com, mother4@gmail.com");
-    console.log("These accounts do not have usable passwords yet.");
+    try {
+        seed();
 
-    const counts = db.prepare(`
-        SELECT
-            (SELECT COUNT(*) FROM User) AS users,
-            (SELECT COUNT(*) FROM Staff) AS staff,
-            (SELECT COUNT(*) FROM Mother) AS mothers,
-            (SELECT COUNT(*) FROM Child) AS children,
-            (SELECT COUNT(*) FROM Appointment) AS appointments,
-            (SELECT COUNT(*) FROM Notification) AS notifications
-    `).get();
+        console.log("Sample data inserted successfully!");
+        console.log("Admin: admin@gmail.com");
+        console.log("Staff: staff1@gmail.com, staff2@gmail.com, staff3@gmail.com");
+        console.log("Mothers: mother1@gmail.com, mother2@gmail.com, mother3@gmail.com, mother4@gmail.com");
+        console.log("Children: mother3@gmail.com, mother4@gmail.com");
+        console.log("Admin password: Admin@123456");
+        console.log("Staff, Mother, and Child accounts do not have usable passwords yet.");
 
-    console.log("\nRecord counts:", counts);
+        const counts = db.prepare(`
+            SELECT
+                (SELECT COUNT(*) FROM User) AS users,
+                (SELECT COUNT(*) FROM Staff) AS staff,
+                (SELECT COUNT(*) FROM Mother) AS mothers,
+                (SELECT COUNT(*) FROM Child) AS children,
+                (SELECT COUNT(*) FROM Appointment) AS appointments,
+                (SELECT COUNT(*) FROM Notification) AS notifications
+        `).get();
 
-    const violations = db.pragma("foreign_key_check");
+        console.log("\nRecord counts:", counts);
 
-    if (violations.length === 0) {
-        console.log("Foreign-key check passed!");
-    } else {
-        console.error("Foreign-key violations:", violations);
+        const violations = db.pragma("foreign_key_check");
+
+        if (violations.length === 0) {
+            console.log("Foreign-key check passed!");
+        } else {
+            console.error("Foreign-key violations:", violations);
+        }
+    } catch (error) {
+        console.error("Failed to insert sample data.");
+        console.error(error.message);
+        process.exitCode = 1;
+    } finally {
+        db.close();
     }
-} catch (error) {
-    console.error("Failed to insert sample data.");
-    console.error(error.message);
-    process.exitCode = 1;
-} finally {
-    db.close();
 }
+
+main().catch(error => {
+    console.error("Failed to generate Admin password hash.");
+    console.error(error.message);
+    db.close();
+    process.exitCode = 1;
+});
