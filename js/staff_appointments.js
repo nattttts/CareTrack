@@ -260,6 +260,7 @@ async function loadAppointments() {
                         data-bs-toggle="modal"
                         data-bs-target="#scheduleFollowUpModal"
                         data-appointment-id="${escapeHtml(appointment.appointment_id)}"
+                        data-user-id="${escapeHtml(appointment.user_id)}"
                     >
                         <i class="bi bi-calendar-plus"></i>
                         Schedule Follow-up
@@ -792,6 +793,44 @@ scheduleAppointmentModal.addEventListener("hidden.bs.modal", () => {
         "alert-success",
         "mt-2"
     );
+});
+
+// Schedule next appointment
+document.addEventListener("click", event => {
+    const button = event.target.closest(".follow-up-button");
+
+    if (!button) return;
+
+    const userId = button.dataset.userId;
+
+    if (!userId) {
+        console.error("No patient ID found for this follow-up.");
+        return;
+    }
+
+    // Find the patient in the currently loaded appointment data
+    const patient = appointmentsData.find(
+        appointment => String(appointment.user_id) === String(userId)
+    );
+
+    if (!patient) {
+        console.error("Patient not found:", userId);
+        return;
+    }
+
+    // Open the existing Schedule Appointment modal
+    const modalElement = document.getElementById(
+        "scheduleAppointmentModal"
+    );
+
+    bootstrap.Modal.getOrCreateInstance(modalElement).show();
+
+    // Select the patient after the modal opens
+    selectPatient({
+        user_id: patient.user_id,
+        full_name: patient.patient_name,
+        role: patient.role
+    });
 });
 
 // Initial Load
