@@ -198,6 +198,20 @@ a {
     box-shadow: 0 2px 8px rgba(30, 80, 130, 0.03);
 }
 
+.staff-table-container {
+    max-height: 450px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* Keep the table headings visible while scrolling */
+.staff-table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #fff;
+}
+
 .staff-table {
     min-width: 950px;
 }
@@ -404,7 +418,7 @@ a {
 /* ================= TABLE FOOTER ================= */
 
 .table-footer {
-    min-height: 55px;
+    min-height: 35px;
 
     padding: 0 18px;
 
@@ -418,42 +432,6 @@ a {
 
     font-size: 11px;
 }
-
-.pagination-buttons {
-    display: flex;
-    gap: 5px;
-}
-
-.pagination-button {
-    width: 32px;
-    height: 32px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: 1px solid #d6e3f0;
-
-    border-radius: 5px;
-
-    background: #ffffff;
-
-    color: #55708f;
-
-    font-size: 12px;
-}
-
-.pagination-button.current {
-    color: #ffffff;
-
-    background: #f9528e;
-    border-color: #f9528e;
-}
-
-.pagination-button:disabled {
-    opacity: 0.5;
-}
-
 
 /* ================= MODALS ================= */
 

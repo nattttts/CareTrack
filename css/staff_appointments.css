@@ -290,6 +290,19 @@ a {
 /* =====================================================
    APPOINTMENT TABLE
 ===================================================== */
+.appointments-table-container {
+    max-height: 450px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* Keep the table headings visible while scrolling */
+.appointments-table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #fff;
+}
 
 .appointment-table {
     min-width: 1050px;
@@ -605,7 +618,7 @@ a {
 ===================================================== */
 
 .table-footer {
-    min-height: 54px;
+    min-height: 35px;
 
     padding: 0 18px;
 
@@ -618,42 +631,6 @@ a {
     color: #748399;
 
     font-size: 10px;
-}
-
-.pagination-buttons {
-    display: flex;
-    gap: 5px;
-}
-
-.pagination-button {
-    width: 30px;
-    height: 30px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: 1px solid #e1dce0;
-
-    border-radius: 5px;
-
-    background: #ffffff;
-
-    color: #61728a;
-
-    font-size: 11px;
-}
-
-.pagination-button.current {
-    color: #ffffff;
-
-    background: var(--caretrack-pink);
-
-    border-color: var(--caretrack-pink);
-}
-
-.pagination-button:disabled {
-    opacity: 0.45;
 }
 
 /* =====================================================
