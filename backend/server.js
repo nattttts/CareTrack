@@ -369,20 +369,30 @@ app.post("/api/login", (req, res) => {
     }
 });
 
- // Get current logged-in user
+// Get current logged-in user
 app.get("/api/me", (req, res) => {
+    // Check whether the user is logged in.
     if (!req.session.user) {
         return res.status(401).json({
-            message: "Not logged in."
+            message: "Please log in to continue."
         });
     }
 
+    const userId = req.session.user.userId;
+
     try {
+        // Get basic information from User.
         const user = db.prepare(`
-            SELECT user_id, full_name, role
+            SELECT
+                user_id,
+                full_name,
+                email,
+                role,
+                account_status,
+                created_at
             FROM User
             WHERE user_id = ?
-        `).get(req.session.user.userId);
+        `).get(userId);
 
         if (!user) {
             return res.status(404).json({
@@ -390,14 +400,108 @@ app.get("/api/me", (req, res) => {
             });
         }
 
-        return res.json({
+        // Common information for all roles.
+        const userInfo = {
             userId: user.user_id,
             fullName: user.full_name,
-            role: user.role
+            email: user.email,
+            role: user.role,
+            accountStatus: user.account_status,
+            createdAt: user.created_at
+        };
+
+        // Get Staff profile.
+        if (user.role === "staff") {
+            const staff = db.prepare(`
+                SELECT staff_id, position, phone_no
+                FROM Staff
+                WHERE user_id = ?
+            `).get(userId);
+
+            if (!staff) {
+                return res.status(404).json({
+                    message: "Staff profile not found."
+                });
+            }
+
+            return res.json({
+                ...userInfo,
+                staffId: staff.staff_id,
+                position: staff.position,
+                phoneNo: staff.phone_no
+            });
+        }
+
+        // Get Mother profile.
+        if (user.role === "mother") {
+            const mother = db.prepare(`
+                SELECT
+                    date_of_birth,
+                    address,
+                    phone_no,
+                    contact_name,
+                    relationship,
+                    contact_phone_no
+                FROM Mother
+                WHERE user_id = ?
+            `).get(userId);
+
+            if (!mother) {
+                return res.status(404).json({
+                    message: "Mother profile not found."
+                });
+            }
+
+            return res.json({
+                ...userInfo,
+                dateOfBirth: mother.date_of_birth,
+                address: mother.address,
+                phoneNo: mother.phone_no,
+                contactName: mother.contact_name,
+                relationship: mother.relationship,
+                contactPhoneNo: mother.contact_phone_no
+            });
+        }
+
+        // Get Child profile.
+        if (user.role === "child") {
+            const child = db.prepare(`
+                SELECT
+                    date_of_birth,
+                    gender,
+                    guardian_name,
+                    phone_no
+                FROM Child
+                WHERE user_id = ?
+            `).get(userId);
+
+            if (!child) {
+                return res.status(404).json({
+                    message: "Child profile not found."
+                });
+            }
+
+            return res.json({
+                ...userInfo,
+                myKid: user.user_id,
+                dateOfBirth: child.date_of_birth,
+                gender: child.gender,
+                guardianName: child.guardian_name,
+                phoneNo: child.phone_no
+            });
+        }
+
+        // Admin only receives basic user information.
+        if (user.role === "admin") {
+            return res.json(userInfo);
+        }
+
+        return res.status(403).json({
+            message: "Unsupported user role."
         });
 
     } catch (error) {
-        console.error("Get user profile error:", error);
+        console.error("Get current user error:", error);
 
         return res.status(500).json({
             message: "Unable to retrieve user information."
@@ -895,6 +999,190 @@ app.get("/api/mothers", requireRole("staff"), (req, res) => {
 
         res.status(500).json({
             message: "Failed to retrieve mother records."
+        });
+    }
+});
+
+// Add a new mother
+app.post("/api/mother", requireRole("staff"), async (req, res) => {
+    const { 
+        user_id,
+        full_name,
+        email,
+        date_of_birth,
+        phone_no,
+        address,
+        contact_name,
+        relationship,
+        contact_phone_no 
+    } = req.body;
+
+    // Validate required fields
+    if (
+        typeof full_name !== "string" ||
+        typeof user_id !== "string" ||
+        typeof email !== "string" ||
+        typeof date_of_birth !== "string" ||
+        typeof phone_no !== "string" ||
+        typeof address !== "string" ||
+        typeof contact_name !== "string" ||
+        typeof relationship !== "string" ||
+        typeof contact_phone_no !== "string"
+    ) {
+        return res.status(400).json({
+            message: "Please provide all required mother details."
+        });
+    }
+
+    const name = full_name.trim();
+    const icNumber = user_id.trim();
+    const motherEmail = email.trim().toLowerCase();
+    const dob = date_of_birth.trim();
+    const phone = phone_no.trim();
+    const motherAddress = address.trim();
+    const contactName = contact_name.trim();
+    const motherRelationship = relationship.trim();
+    const contactPhoneNo = contact_phone_no.trim();
+
+    if (!name || !icNumber || !motherEmail || !dob || !phone || 
+        !motherAddress || !contactName || !motherRelationship || !contactPhoneNo) {
+        return res.status(400).json({
+            message: "All fields are required."
+        });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(motherEmail)) {
+        return res.status(400).json({
+            message: "Please enter a valid email address."
+        });
+    }
+
+    // Validate date of birth
+    const date = new Date(dob);
+
+    if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(dob) ||
+        Number.isNaN(date.getTime()) ||
+        date.toISOString().slice(0, 10) !== dob
+    ) {
+        return res.status(400).json({
+            message: "Please enter a valid date of birth."
+        });
+    }
+
+    try {
+        // Check whether this IC number already has an account
+        const existingUser = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE user_id = ?
+        `).get(icNumber);
+
+        if (existingUser) {
+            return res.status(409).json({
+                message: "An account with this IC number already exists."
+            });
+        }
+
+        // TEMPORARY: Replace with a real password hash before implementing login
+        // The login route must reject accounts where password_set = 0
+        const passwordHash = "TEMP_HASH_REPLACE_BEFORE_AUTH";
+
+        // Create the user, mother profile and invitation together
+        // If any database operation fails, the transaction rolls back
+        const createMother = db.transaction(() => {
+            db.prepare(`
+                INSERT INTO User (
+                    user_id,
+                    full_name,
+                    email,
+                    password_hash,
+                    role,
+                    account_status,
+                    password_set
+                )
+                VALUES (?, ?, ?, ?, 'mother', 'Active', 0)
+            `).run(
+                icNumber,
+                name,
+                motherEmail,
+                passwordHash
+            );
+
+            const result = db.prepare(`
+                INSERT INTO Mother (
+                    user_id,
+                    date_of_birth,
+                    phone_no,
+                    address,
+                    contact_name,
+                    relationship,
+                    contact_phone_no
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(
+                icNumber,
+                dob,
+                phone,
+                motherAddress,
+                contactName,
+                motherRelationship,
+                contactPhoneNo
+            );
+ 
+            // Create an invitation for the newly created mother account.
+            // createInvitation() uses a nested transaction, which
+            // better-sqlite3 supports through a savepoint
+            const token = createInvitation(icNumber);
+
+            return {
+                motherId: result.lastInsertRowid,
+                token
+            };
+        });
+
+        const { motherId, token } = createMother();
+
+        // Construct the invitation URL for local testing
+        const baseUrl = (
+            process.env.APP_BASE_URL || `http://localhost:${PORT}`
+        ).replace(/\/+$/, "");
+
+        const invitationUrl =
+            `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
+        
+        let emailError = false;
+
+        try {
+            await sendInvitationEmail(motherEmail, invitationUrl);
+        } catch (error) {
+            emailError = true;
+            console.error("Failed to send mother invitation email:", error);
+        }
+
+        const response = {
+            message: emailError
+                ? "Mother account created, but the invitation email could not be sent. Please resend it."
+                : "Mother account created and invitation email sent.",
+            mother_id: motherId
+        };
+
+        return res.status(201).json(response);
+
+    } catch (error) {
+        console.error("Error creating mother:", error);
+
+        if (
+            error.code === "SQLITE_CONSTRAINT_PRIMARYKEY" ||
+            error.code === "SQLITE_CONSTRAINT_UNIQUE"
+        ) {
+            return res.status(409).json({
+                message: "A mother account with these details already exists."
+            });
+        }
+
+        return res.status(500).json({
+            message: "Failed to create mother account."
         });
     }
 });
