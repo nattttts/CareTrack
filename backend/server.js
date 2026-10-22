@@ -37,6 +37,68 @@ app.use(session({
     }
 }));
 
+
+/* ================= PROTECT HTML PAGES ================= */
+
+// Public pages that do not require login
+const publicHtmlPages = new Set([
+    "home.html",
+    "about.html",
+    "contact.html",
+    "login.html",
+    "set_password.html"
+]);
+
+// Define which roles can access each protected page
+const pageRoles = {
+    "staff_management.html": ["admin"],
+
+    "staff_dashboard.html": ["staff"],
+    "staff_appointments.html": ["staff"],
+    "patient_management.html": ["staff"],
+    "staff_vaccination.html": ["staff"],
+    "staff_queue.html": ["staff"],
+    "followup_management.html": ["staff"],
+    "staff_profile.html": ["staff"],
+
+    "patient_dashboard.html": ["mother", "child"]
+};
+
+app.use((req, res, next) => {
+    // Only check HTML page requests
+    if (path.extname(req.path).toLowerCase() !== ".html") {
+        return next();
+    }
+
+   
+
+    const pageName = path.basename(req.path).toLowerCase();
+
+    // Allow public pages without login
+    if (publicHtmlPages.has(pageName)) {
+        return next();
+    }
+
+    // Require login for other HTML pages
+    if (!req.session.user) {
+        return res.redirect("/login.html");
+    }
+
+    // Check the required role for known protected pages
+    const allowedRoles = pageRoles[pageName];
+
+    if (
+        allowedRoles &&
+        !allowedRoles.includes(req.session.user.role)
+    ) {
+        return res.status(403).send(
+            "Access denied. You do not have permission to access this page."
+        );
+    }
+
+    next();
+});
+
 // Serve HTML files
 app.use(express.static(path.join(__dirname, "../html")));
 
@@ -51,6 +113,27 @@ app.use("/icons", express.static(path.join(__dirname, "../icons")));
 
 // Serve image files
 app.use("/images", express.static(path.join(__dirname, "../images")));
+
+
+/* ================= API AUTHENTICATION ================= */
+// Check whether the logged-in user has the required role
+function requireRole(...allowedRoles) {
+    return (req, res, next) => {
+        if (!req.session.user) {
+            return res.status(401).json({
+                message: "Please log in first."
+            });
+        }
+
+        if (!allowedRoles.includes(req.session.user.role)) {
+            return res.status(403).json({
+                message: "Access denied. You do not have permission to perform this action."
+            });
+        }
+
+        next();
+    };
+}
 
 const PORT = 3000;
 
@@ -347,7 +430,7 @@ app.post("/api/logout", (req, res) => {
 });
 
 // Get all staff members
-app.get("/api/staff", (req, res) => {
+app.get("/api/staff", requireRole("admin"), (req, res) => {
     try {
         const staff = db.prepare(`
             SELECT
@@ -376,7 +459,7 @@ app.get("/api/staff", (req, res) => {
 });
 
 // Add a new staff
-app.post("/api/staff", async (req, res) => {
+app.post("/api/staff", requireRole("admin"), async (req, res) => {
     const { full_name, user_id, email, phone_no, position } = req.body;
 
     // Validate required fields
@@ -525,7 +608,7 @@ app.post("/api/staff", async (req, res) => {
 });
 
 // Resend invitation link for password setup
-app.post("/api/staff/:staffId/resend-invitation", async (req, res) => {
+app.post("/api/staff/:staffId/resend-invitation", requireRole("admin"), async (req, res) => {
     try {
         const staff = db.prepare(`
             SELECT
@@ -590,7 +673,7 @@ app.post("/api/staff/:staffId/resend-invitation", async (req, res) => {
 });
 
 // Update staff details
-app.patch("/api/staff/:staffId", (req, res) => {
+app.patch("/api/staff/:staffId", requireRole("admin"), (req, res) => {
     const staffId = Number(req.params.staffId);
 
     const {
@@ -725,7 +808,7 @@ app.patch("/api/staff/:staffId", (req, res) => {
 });
 
 // Update a staff account's status (Active or Inactive)
-app.patch("/api/staff/:staffId/status", (req, res) => {
+app.patch("/api/staff/:staffId/status", requireRole("admin"), (req, res) => {
     const staffId = Number(req.params.staffId);
     const { account_status } = req.body;
 
@@ -783,7 +866,7 @@ app.patch("/api/staff/:staffId/status", (req, res) => {
 });
 
 // Get all mothers
-app.get("/api/mothers", (req, res) => {
+app.get("/api/mothers", requireRole("staff"), (req, res) => {
     try {
         const mothers = db.prepare(`
             SELECT
@@ -817,7 +900,7 @@ app.get("/api/mothers", (req, res) => {
 });
 
 // Update mother details
-app.patch("/api/mother/:motherId", (req, res) => {
+app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
     const motherId = Number(req.params.motherId);
 
     const {
@@ -986,7 +1069,7 @@ app.patch("/api/mother/:motherId", (req, res) => {
 });
 
 // Update a mother account's status (Active or Inactive)
-app.patch("/api/mother/:motherId/status", (req, res) => {
+app.patch("/api/mother/:motherId/status", requireRole("staff"), (req, res) => {
     const motherId = Number(req.params.motherId);
     const { account_status } = req.body;
 
@@ -1044,7 +1127,7 @@ app.patch("/api/mother/:motherId/status", (req, res) => {
 });
 
 // Get all children
-app.get("/api/children", (req, res) => {
+app.get("/api/children", requireRole("staff"), (req, res) => {
     try {
         const children = db.prepare(`
             SELECT
@@ -1076,7 +1159,7 @@ app.get("/api/children", (req, res) => {
 });
 
 // Update child details
-app.patch("/api/child/:childId", (req, res) => {
+app.patch("/api/child/:childId", requireRole("staff"), (req, res) => {
     const childId = Number(req.params.childId);
 
     const {
@@ -1224,7 +1307,7 @@ app.patch("/api/child/:childId", (req, res) => {
 });
 
 // Update a child account's status (Active or Inactive)
-app.patch("/api/child/:childId/status", (req, res) => {
+app.patch("/api/child/:childId/status", requireRole("staff"), (req, res) => {
     const childId = Number(req.params.childId);
     const { account_status } = req.body;
 
@@ -1287,7 +1370,7 @@ app.patch("/api/child/:childId/status", (req, res) => {
    ========================================================= */
 
 // GET: Load all children and their vaccination records.
-app.get("/api/vaccination-management/children", (req, res) => {
+app.get("/api/vaccination-management/children", requireRole("staff"), (req, res) => {
     try {
         const children = db.prepare(`
             SELECT
@@ -1341,7 +1424,7 @@ app.get("/api/vaccination-management/children", (req, res) => {
 
 
 // GET: Load available vaccines.
-app.get("/api/vaccination-management/vaccines", (req, res) => {
+app.get("/api/vaccination-management/vaccines", requireRole("staff"), (req, res) => {
     try {
         const vaccines = db.prepare(`
             SELECT
@@ -1368,7 +1451,7 @@ app.get("/api/vaccination-management/vaccines", (req, res) => {
 
 // PATCH: Update a child's details.
 app.patch(
-    "/api/vaccination-management/children/:userId",
+    "/api/vaccination-management/children/:userId", requireRole("staff"),
     (req, res) => {
         const oldUserId = String(req.params.userId || "").trim();
 
@@ -1504,7 +1587,7 @@ app.patch(
 
 // PATCH: Update an existing vaccination record.
 app.patch(
-    "/api/vaccination-management/records/:recordId",
+    "/api/vaccination-management/records/:recordId", requireRole("staff"),
     (req, res) => {
         const recordId = Number(req.params.recordId);
 
@@ -1576,7 +1659,7 @@ app.patch(
 
 // POST: Add a vaccination record for a child.
 app.post(
-    "/api/vaccination-management/children/:userId/records",
+    "/api/vaccination-management/children/:userId/records", requireRole("staff"),
     (req, res) => {
         const userId = String(req.params.userId || "").trim();
 
@@ -1674,7 +1757,7 @@ app.post(
 
 // DELETE: Delete a vaccination record.
 app.delete(
-    "/api/vaccination-management/records/:recordId",
+    "/api/vaccination-management/records/:recordId", requireRole("staff"),
     (req, res) => {
         const recordId = Number(req.params.recordId);
 
@@ -1711,7 +1794,7 @@ app.delete(
 );
 
 // Get all appointments
-app.get("/api/staff/appointments", (req, res) => {
+app.get("/api/staff/appointments", requireRole("staff"), (req, res) => {
     try {
         const appointments = db.prepare(`
             SELECT
@@ -1743,7 +1826,7 @@ app.get("/api/staff/appointments", (req, res) => {
 });
 
 // Search for patients
-app.get("/api/staff/patients/search", (req, res) => {
+app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
     try {
         const searchTerm = req.query.q?.trim();
 
@@ -1780,7 +1863,7 @@ app.get("/api/staff/patients/search", (req, res) => {
 });
 
 // Add new patient appointments
-app.post("/api/staff/appointments", (req, res) => {
+app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
     try {
         const {
             user_id,
