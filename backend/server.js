@@ -596,6 +596,20 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
         });
     }
 
+    // Validate IC number format
+    if (!/^[0-9]{6}-[0-9]{2}-[0-9]{4}$/.test(icNumber)) {
+        return res.status(400).json({
+            message: "Please enter a valid IC number e.g. 920101-07-1234"
+        });
+    }
+
+    // Validate Malaysian mobile number format
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
+        return res.status(400).json({
+            message: "Please enter a valid phone number e.g. 012-3456789"
+        });
+    }
+
     if (!["Doctor", "Nurse"].includes(position)) {
         return res.status(400).json({
             message: "Position must be Doctor or Nurse."
@@ -835,6 +849,20 @@ app.patch("/api/staff/:staffId", requireRole("admin"), (req, res) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
         return res.status(400).json({
             message: "Please enter a valid email address."
+        });
+    }
+
+    // Validate IC number format
+    if (!/^[0-9]{6}-[0-9]{2}-[0-9]{4}$/.test(newIC)) {
+        return res.status(400).json({
+            message: "Please enter a valid IC number e.g. 920101-07-1234"
+        });
+    }
+
+    // Validate Malaysian mobile number format
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
+        return res.status(400).json({
+            message: "Please enter a valid phone number e.g. 012-3456789"
         });
     }
 
@@ -1081,6 +1109,27 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
     ) {
         return res.status(400).json({
             message: "Please enter a valid date of birth."
+        });
+    }
+
+    // Validate IC number format
+    if (!/^[0-9]{6}-[0-9]{2}-[0-9]{4}$/.test(icNumber)) {
+        return res.status(400).json({
+            message: "Please enter a valid IC number e.g. 920101-07-1234"
+        });
+    }
+
+    // Validate Malaysian mobile number format for mother
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
+        return res.status(400).json({
+            message: "Please enter a valid phone number e.g. 012-3456789"
+        });
+    }
+
+    // Validate Malaysian mobile number format for emergency contact
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(contactPhoneNo)) {
+        return res.status(400).json({
+            message: "Please enter a valid emergency contact phone number e.g. 012-3456789"
         });
     }
 
@@ -1353,6 +1402,27 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
     ) {
         return res.status(400).json({
             message: "Please enter a valid date of birth."
+        });
+    }
+
+    // Validate IC number format
+    if (!/^[0-9]{6}-[0-9]{2}-[0-9]{4}$/.test(newIC)) {
+        return res.status(400).json({
+            message: "Please enter a valid IC number e.g. 920101-07-1234"
+        });
+    }
+
+    // Validate Malaysian mobile number format for mother
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
+        return res.status(400).json({
+            message: "Please enter a valid phone number e.g. 012-3456789"
+        });
+    }
+
+    // Validate Malaysian mobile number format for emergency contact
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(contactPhoneNo)) {
+        return res.status(400).json({
+            message: "Please enter a valid emergency contact phone number e.g. 012-3456789"
         });
     }
 
