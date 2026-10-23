@@ -581,16 +581,16 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
 
     const name = full_name.trim();
     const icNumber = user_id.trim();
-    const staffEmail = email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
     const phone = phone_no.trim();
 
-    if (!name || !icNumber || !staffEmail || !phone) {
+    if (!name || !icNumber || !normalizedEmail || !phone) {
         return res.status(400).json({
             message: "All fields are required."
         });
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(staffEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
         return res.status(400).json({
             message: "Please enter a valid email address."
         });
@@ -616,6 +616,19 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
             });
         }
 
+        // Check whether another account uses this email
+        const duplicateEmail = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE LOWER(TRIM(email)) = LOWER(?)
+        `).get(normalizedEmail);
+
+        if (duplicateEmail) {
+            return res.status(409).json({
+                message: "This email is already used by another account."
+            });
+        }
+
         // TEMPORARY: Replace with a real password hash before implementing login
         // The login route must reject accounts where password_set = 0
         const passwordHash = "TEMP_HASH_REPLACE_BEFORE_AUTH";
@@ -637,7 +650,7 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
             `).run(
                 icNumber,
                 name,
-                staffEmail,
+                normalizedEmail,
                 passwordHash
             );
 
@@ -678,7 +691,7 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
         let emailError = false;
 
         try {
-            await sendInvitationEmail(staffEmail, invitationUrl);
+            await sendInvitationEmail(normalizedEmail, invitationUrl);
         } catch (error) {
             emailError = true;
             console.error("Failed to send staff invitation email:", error);
