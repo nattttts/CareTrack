@@ -61,7 +61,12 @@ const pageRoles = {
     "followup_management.html": ["staff"],
     "staff_profile.html": ["staff"],
 
-    "patient_dashboard.html": ["mother", "child"]
+    "patient_dashboard.html": ["mother", "child"],
+    "patient_appointments.html": ["mother", "child"],
+    "child_vaccination.html": ["mother", "child"],
+    "queue.html": ["mother", "child"],
+    "notification.html": ["mother", "child"],
+    "patient_profile.html": ["mother", "child"]
 };
 
 app.use((req, res, next) => {
