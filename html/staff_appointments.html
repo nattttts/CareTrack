@@ -491,7 +491,6 @@
 
 
     <!-- View Appointment Modal -->
-
     <div
         class="modal fade"
         id="viewAppointmentModal"
@@ -562,8 +561,177 @@
 
     </div>
 
-    <!-- Reschedule Modal -->
 
+    <!-- Edit Appointment Modal -->
+    <div
+        class="modal fade"
+        id="editAppointmentModal"
+        tabindex="-1"
+        aria-labelledby="editAppointmentModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h5
+                        class="modal-title"
+                        id="editAppointmentModalLabel"
+                    >
+                        Edit Appointment
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+
+                    <form id="editAppointmentForm">
+
+                        <!-- Patient Information -->
+                        <h6 class="mb-3">Patient Information</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Patient Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editPatientName"
+                                class="form-control"
+                                readonly
+                            >
+                        </div>
+
+                        <div class="mb-4">
+                            <label
+                                for="editAppointmentType"
+                                class="form-label"
+                            >
+                                Appointment Type
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editAppointmentType"
+                                class="form-control"
+                                readonly
+                            >
+                        </div>
+
+                        <hr>
+
+                        <!-- Appointment Schedule -->
+                        <h6 class="mb-3">Appointment Schedule</h6>
+
+                        <!-- Appointment Date -->
+                        <div class="mb-3">
+                            <label
+                                for="editAppointmentDate"
+                                class="form-label"
+                            >
+                                Appointment Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="editAppointmentDate"
+                                class="form-control"
+                                required
+                            >
+
+                            <div
+                                id="editAppointmentDateMessage"
+                                class="form-text"
+                            >
+                                Monday-Friday: 8:30 AM-5:00 PM.
+                                Saturday: 9:00 AM-1:00 PM.
+                                Closed Sundays.
+                            </div>
+                        </div>
+
+                        <!-- Appointment Time -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label
+                                    for="editAppointmentStartTime"
+                                    class="form-label"
+                                >
+                                    Start Time
+                                </label>
+
+                                <input
+                                    type="time"
+                                    id="editAppointmentStartTime"
+                                    class="form-control"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label
+                                    for="editAppointmentEndTime"
+                                    class="form-label"
+                                >
+                                    End Time
+                                </label>
+
+                                <input
+                                    type="time"
+                                    id="editAppointmentEndTime"
+                                    class="form-control"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Validation / Error Message -->
+                        <div
+                            id="editAppointmentMessage"
+                            class="mt-3"
+                            role="alert"
+                            hidden
+                        ></div>
+
+                    </form>
+
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-light cancel-modal-button"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        form="editAppointmentForm"
+                        id="saveAppointmentChangesButton"
+                        class="btn btn-primary schedule-modal-button"
+                    >
+                        <i class="bi bi-check-circle"></i>
+                        Save Changes
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Reschedule Modal -->
     <div
         class="modal fade"
         id="rescheduleModal"

@@ -531,12 +531,14 @@ a {
     white-space: nowrap;
 }
 
-.view-button {
+.view-button,
+.edit-button {
     color: #f9528e;
     border: 1px solid #f9528e;
 }
 
-.view-button:hover {
+.view-button:hover,
+.edit-button:hover {
     background: #fee6ef;
 }
 

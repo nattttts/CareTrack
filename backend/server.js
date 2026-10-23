@@ -2495,6 +2495,201 @@ app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
     }
 });
 
+
+// Edit an existing appointment 
+app.patch("/api/staff/appointments/:appointmentId", (req, res) => {
+    try {
+        const appointmentId = Number(req.params.appointmentId);
+
+        const {
+            appointment_date,
+            start_time,
+            end_time
+        } = req.body;
+
+        // Validate appointment ID
+        if (!Number.isSafeInteger(appointmentId) || appointmentId <= 0) {
+            return res.status(400).json({
+                message: "Invalid appointment ID."
+            });
+        }
+
+        // Validate required fields
+        if (!appointment_date || !start_time || !end_time) {
+            return res.status(400).json({
+                message: "Please provide the appointment date, start time and end time."
+            });
+        }
+
+        // Validate date and time formats
+        if (
+            !/^\d{4}-\d{2}-\d{2}$/.test(appointment_date) ||
+            !/^\d{2}:\d{2}$/.test(start_time) ||
+            !/^\d{2}:\d{2}$/.test(end_time)
+        ) {
+            return res.status(400).json({
+                message: "Invalid date or time format."
+            });
+        }
+
+        // Confirm that the date is a real calendar date
+        const [year, month, day] = appointment_date.split("-").map(Number);
+
+        const selectedDate = new Date(
+            Date.UTC(year, month - 1, day)
+        );
+
+        if (
+            selectedDate.getUTCFullYear() !== year ||
+            selectedDate.getUTCMonth() !== month - 1 ||
+            selectedDate.getUTCDate() !== day
+        ) {
+            return res.status(400).json({
+                message: "Please select a valid appointment date."
+            });
+        }
+
+        // Validate actual time values
+        const [startHour, startMinute] = start_time.split(":").map(Number);
+        const [endHour, endMinute] = end_time.split(":").map(Number);
+
+        if (
+            startHour > 23 ||
+            startMinute > 59 ||
+            endHour > 23 ||
+            endMinute > 59
+        ) {
+            return res.status(400).json({
+                message: "Please enter valid appointment times."
+            });
+        }
+
+        if (end_time <= start_time) {
+            return res.status(400).json({
+                message: "The end time must be later than the start time."
+            });
+        }
+
+        // Get today's date in Malaysia
+        const today = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Kuala_Lumpur",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        }).format(new Date());
+
+        // Only allow editing appointments scheduled for a future date
+        if (appointment_date <= today) {
+            return res.status(400).json({
+                message: "The appointment date must be a future date."
+            });
+        }
+
+        // Find the existing appointment
+        const appointment = db.prepare(`
+            SELECT appointment_id, appointment_type, status
+            FROM Appointment
+            WHERE appointment_id = ?
+        `).get(appointmentId);
+
+        if (!appointment) {
+            return res.status(404).json({
+                message: "Appointment not found."
+            });
+        }
+
+        // Only confirmed appointments can be edited
+        if (appointment.status !== "Confirmed") {
+            return res.status(400).json({
+                message: "Only confirmed appointments can be edited."
+            });
+        }
+
+        // Determine clinic opening and closing times
+        // JavaScript getUTCDay(): Sunday = 0, Saturday = 6
+        const dayOfWeek = selectedDate.getUTCDay();
+
+        if (dayOfWeek === 0) {
+            return res.status(400).json({
+                message: "The clinic is closed on Sundays."
+            });
+        }
+
+        const openingTime = dayOfWeek === 6 ? "09:00" : "08:30";
+        const closingTime = dayOfWeek === 6 ? "13:00" : "17:00";
+
+        if (
+            start_time < openingTime ||
+            end_time > closingTime
+        ) {
+            return res.status(400).json({
+                message: dayOfWeek === 6
+                    ? "Saturday appointments must be between 9:00 AM and 12:30 PM."
+                    : "Weekday appointments must be between 8:30 AM and 5:00 PM."
+            });
+        }
+
+        // Check for overlapping appointments of the same type
+        // Exclude the appointment currently being edited
+        const overlappingAppointment = db.prepare(`
+            SELECT appointment_id, start_time, end_time
+            FROM Appointment
+            WHERE appointment_date = ?
+              AND appointment_type = ?
+              AND status = 'Confirmed'
+              AND appointment_id != ?
+              AND start_time < ?
+              AND end_time > ?
+            LIMIT 1
+        `).get(
+            appointment_date,
+            appointment.appointment_type,
+            appointmentId,
+            end_time,
+            start_time
+        );
+
+        if (overlappingAppointment) {
+            return res.status(409).json({
+                message: `This time slot is unavailable. Another appointment of the same type is scheduled from ${overlappingAppointment.start_time} to ${overlappingAppointment.end_time}. Please choose another time.`
+            });
+        }
+
+        // Update the existing appointment
+        const updateResult = db.prepare(`
+            UPDATE Appointment
+            SET appointment_date = ?,
+                start_time = ?,
+                end_time = ?
+            WHERE appointment_id = ?
+              AND status = 'Confirmed'
+        `).run(
+            appointment_date,
+            start_time,
+            end_time,
+            appointmentId
+        );
+
+        if (updateResult.changes === 0) {
+            return res.status(409).json({
+                message: "The appointment could not be updated. Please refresh and try again."
+            });
+        }
+
+        return res.status(200).json({
+            message: "Appointment updated successfully."
+        });
+
+    } catch (error) {
+        console.error("Error updating appointment:", error);
+
+        return res.status(500).json({
+            message: "An unexpected error occurred while updating the appointment."
+        });
+    }
+});
+
+
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
     console.log("SQLite database connected!");

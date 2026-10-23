@@ -227,7 +227,7 @@ async function loadAppointments() {
                     data-appointment-id="${escapeHtml(appointment.appointment_id)}"
                 >
                     <i class="bi bi-eye"></i>
-                    View Details
+                    View
                 </button>
             `;
 
@@ -260,6 +260,17 @@ async function loadAppointments() {
                         </button>
                     `;
                 }
+            } else if (period === "upcoming" && displayStatus === "Confirmed") {
+                actionButtons += `
+                    <button
+                        type="button"
+                        class="action-button edit-button"
+                        data-appointment-id="${escapeHtml(appointment.appointment_id)}"
+                    >
+                        <i class="bi bi-pencil"></i>
+                        Edit
+                    </button>
+                `;
             }
 
             const row = document.createElement("tr");
@@ -666,7 +677,7 @@ function validateAppointmentSchedule() {
     input.addEventListener("change", validateAppointmentSchedule);
 });
 
-
+// Schedule new appointment
 scheduleAppointmentForm.addEventListener("submit", async event => {
     event.preventDefault();
 
@@ -791,6 +802,7 @@ scheduleAppointmentModal.addEventListener("hidden.bs.modal", () => {
     );
 });
 
+
 // Schedule next appointment
 document.addEventListener("click", event => {
     const button = event.target.closest(".follow-up-button");
@@ -828,6 +840,203 @@ document.addEventListener("click", event => {
         role: patient.role
     });
 });
+
+const editAppointmentModal = document.getElementById("editAppointmentModal");
+const editAppointmentForm = document.getElementById("editAppointmentForm");
+const editPatientName = document.getElementById("editPatientName");
+const editAppointmentType = document.getElementById("editAppointmentType");
+const editAppointmentDate = document.getElementById("editAppointmentDate");
+const editAppointmentStartTime = document.getElementById("editAppointmentStartTime");
+const editAppointmentEndTime = document.getElementById("editAppointmentEndTime");
+const editAppointmentMessage = document.getElementById("editAppointmentMessage");
+const saveAppointmentChangesButton = document.getElementById("saveAppointmentChangesButton");
+
+let editingAppointmentId = null;
+
+// Open the Edit Appointment modal when Edit is clicked
+document.addEventListener("click", function (event) {
+    const editButton = event.target.closest(".edit-button");
+
+    if (!editButton) return;
+
+    const appointmentId = editButton.dataset.appointmentId;
+
+    const appointment = appointmentsData.find(
+        item => String(item.appointment_id) === String(appointmentId)
+    );
+
+    if (!appointment) {
+        showToast("Unable to find this appointment. Please refresh the page.", "error");
+        return;
+    }
+
+    // Only allow editing upcoming confirmed appointments
+    const today = getLocalDateString();
+
+    if (
+        appointment.appointment_date <= today ||
+        appointment.status !== "Confirmed"
+    ) {
+        showToast("Only upcoming confirmed appointments can be edited.", "error");
+        return;
+    }
+
+    editingAppointmentId = appointment.appointment_id;
+
+    editPatientName.value = appointment.patient_name;
+    editAppointmentType.value = appointment.appointment_type;
+    editAppointmentDate.value = appointment.appointment_date;
+    editAppointmentStartTime.value = appointment.start_time;
+    editAppointmentEndTime.value = appointment.end_time;
+
+    editAppointmentMessage.hidden = true;
+    editAppointmentMessage.textContent = "";
+    editAppointmentMessage.className = "mt-3";
+
+    // Remove old validation styling
+    [
+        editAppointmentDate,
+        editAppointmentStartTime,
+        editAppointmentEndTime
+    ].forEach(input => {
+        input.classList.remove("is-invalid");
+        input.setCustomValidity("");
+    });
+
+    bootstrap.Modal.getOrCreateInstance(editAppointmentModal).show();
+});
+
+
+function showEditAppointmentMessage(message) {
+    editAppointmentMessage.textContent = message;
+    editAppointmentMessage.className = "alert alert-danger mt-3";
+    editAppointmentMessage.hidden = false;
+}
+
+// Save edited appointment details
+editAppointmentForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (editingAppointmentId === null) {
+        showEditAppointmentMessage(
+            "No appointment selected. Please close the modal and try again."
+        );
+        return;
+    }
+
+    const appointmentDate = editAppointmentDate.value;
+    const startTime = editAppointmentStartTime.value;
+    const endTime = editAppointmentEndTime.value;
+
+    // Clear previous validation styling
+    [
+        editAppointmentDate,
+        editAppointmentStartTime,
+        editAppointmentEndTime
+    ].forEach(input => {
+        input.classList.remove("is-invalid");
+        input.setCustomValidity("");
+    });
+
+    editAppointmentMessage.hidden = true;
+    editAppointmentMessage.textContent = "";
+
+    let hasError = false;
+
+    // Prevent selecting a past date
+    if (appointmentDate < getLocalDateString()) {
+        editAppointmentDate.classList.add("is-invalid");
+        showEditAppointmentMessage(
+            "The appointment date cannot be in the past."
+        );
+        hasError = true;
+    }
+
+    // Ensure the end time is later than the start time
+    if (startTime && endTime && endTime <= startTime) {
+        editAppointmentEndTime.classList.add("is-invalid");
+        showEditAppointmentMessage(
+            "The end time must be later than the start time."
+        );
+        hasError = true;
+    }
+
+    if (hasError) return;
+
+    saveAppointmentChangesButton.disabled = true;
+    saveAppointmentChangesButton.innerHTML = `
+        <span
+            class="spinner-border spinner-border-sm me-1"
+            aria-hidden="true"
+        ></span>
+        Saving...
+    `;
+
+    try {
+        const response = await fetch(
+            `/api/staff/appointments/${encodeURIComponent(
+                editingAppointmentId
+            )}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    appointment_date: appointmentDate,
+                    start_time: startTime,
+                    end_time: endTime
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            showToast(result.message || "Unable to update the appointment.", "error");
+            return;
+        }
+
+        // Refresh the table using the updated database records
+        await loadAppointments();
+
+        bootstrap.Modal.getOrCreateInstance(editAppointmentModal).hide();
+
+        showToast("Appointment successfully rescheduled.", "success");
+
+    } catch (error) {
+        console.error("Error updating appointment:", error);
+        showToast("A server error occurred. Please try again.", "error");
+
+    } finally {
+        saveAppointmentChangesButton.disabled = false;
+        saveAppointmentChangesButton.innerHTML = `
+            <i class="bi bi-check-circle"></i>
+            Save Changes
+        `;
+    }
+});
+
+
+editAppointmentModal.addEventListener("hidden.bs.modal", function () {
+    editAppointmentForm.reset();
+
+    editingAppointmentId = null;
+
+    editAppointmentMessage.hidden = true;
+    editAppointmentMessage.textContent = "";
+    editAppointmentMessage.className = "mt-3";
+
+    [
+        editAppointmentDate,
+        editAppointmentStartTime,
+        editAppointmentEndTime
+    ].forEach(input => {
+        input.classList.remove("is-invalid");
+        input.setCustomValidity("");
+    });
+});
+
 
 // Initial Load
 loadAppointments();
