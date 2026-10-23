@@ -2444,12 +2444,14 @@ app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
             SELECT appointment_id, start_time, end_time
             FROM Appointment
             WHERE appointment_date = ?
-              AND status = 'Confirmed'
-              AND start_time < ?
-              AND end_time > ?
+                AND appointment_type = ?
+                AND status = 'Confirmed'
+                AND start_time < ?
+                AND end_time > ?
             LIMIT 1
         `).get(
             appointment_date,
+            appointmentType,
             end_time,
             start_time
         );
