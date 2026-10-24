@@ -214,7 +214,7 @@ async function loadAppointments() {
 
             // A pending reschedule takes priority in the displayed status
             const displayStatus =
-                appointment.reschedule_status === "Pending"
+                appointment.has_pending_reschedule
                     ? "Pending Reschedule"
                     : appointment.status;
 
@@ -235,9 +235,7 @@ async function loadAppointments() {
                 actionButtons += `
                     <button
                         type="button"
-                        class="action-button approve-button"
-                        data-bs-toggle="modal"
-                        data-bs-target="#rescheduleModal"
+                        class="action-button reschedule-request-button"
                         data-appointment-id="${escapeHtml(appointment.appointment_id)}"
                     >
                         <i class="bi bi-person-check"></i>
@@ -344,7 +342,7 @@ viewAppointmentModal.addEventListener("show.bs.modal", event => {
     }
 
     const displayStatus =
-        appointment.reschedule_status === "Pending"
+        appointment.has_pending_reschedule
             ? "Pending Reschedule"
             : appointment.status;
 
@@ -352,8 +350,7 @@ viewAppointmentModal.addEventListener("show.bs.modal", event => {
         "Confirmed": "confirmed",
         "Pending Reschedule": "pending-reschedule",
         "Completed": "completed",
-        "Missed": "missed",
-        "Cancelled": "cancelled"
+        "Missed": "missed"
     };
 
     document.getElementById("modalAppointmentType").textContent =
@@ -1035,6 +1032,270 @@ editAppointmentModal.addEventListener("hidden.bs.modal", function () {
         input.classList.remove("is-invalid");
         input.setCustomValidity("");
     });
+});
+
+
+function showRescheduleRequestMessage(message, type = "danger") {
+    rescheduleRequestMessage.textContent = message;
+    rescheduleRequestMessage.className = `alert alert-${type} mt-3`;
+    rescheduleRequestMessage.hidden = false;
+}
+
+function clearRescheduleRequestMessage() {
+    rescheduleRequestMessage.textContent = "";
+    rescheduleRequestMessage.className = "mt-3";
+    rescheduleRequestMessage.hidden = true;
+}
+
+const rescheduleRequestModal = document.getElementById("rescheduleRequestModal");
+const rescheduleRequestMessage = document.getElementById("rescheduleRequestMessage");
+const rescheduleRejectionSection = document.getElementById("rescheduleRejectionSection");
+const rescheduleRejectReason = document.getElementById("rescheduleRejectReason");
+
+const approveRescheduleRequestButton = document.getElementById(
+    "approveRescheduleRequestButton"
+);
+
+const rejectRescheduleRequestButton = document.getElementById(
+    "rejectRescheduleRequestButton"
+);
+
+const confirmRejectRescheduleButton = document.getElementById(
+    "confirmRejectRescheduleButton"
+);
+
+let currentRescheduleRequest = null;
+
+// Open the modal from the Approve / Reject button
+document.addEventListener("click", async function (event) {
+    const manageButton = event.target.closest(".reschedule-request-button");
+
+    if (!manageButton) return;
+
+    const appointmentId = manageButton.dataset.appointmentId;
+
+    currentRescheduleRequest = null;
+
+    clearRescheduleRequestMessage();
+    rescheduleRejectReason.value = "";
+
+    // Reset the modal to its initial state
+    rescheduleRejectionSection.hidden = true;
+    approveRescheduleRequestButton.hidden = false;
+    rejectRescheduleRequestButton.hidden = false;
+    approveRescheduleRequestButton.disabled = true;
+    rejectRescheduleRequestButton.disabled = true;
+
+    document.getElementById("reschedulePatientName").textContent = "Loading...";
+    document.getElementById("reschedulePatientIC").textContent = "";
+    document.getElementById("rescheduleAppointmentType").textContent = "";
+    document.getElementById("rescheduleOriginalDate").textContent = "";
+    document.getElementById("rescheduleOriginalTime").textContent = "";
+    document.getElementById("rescheduleProposedDate").textContent = "";
+    document.getElementById("rescheduleProposedTime").textContent = "";
+
+    const modalInstance =
+        bootstrap.Modal.getOrCreateInstance(rescheduleRequestModal);
+
+    modalInstance.show();
+
+    try {
+        const response = await fetch("/api/staff/reschedule-requests");
+        const requests = await response.json();
+
+        if (!response.ok) {
+            showToast(requests.message || "Failed to load reschedule requests.", "error");
+            throw new Error(
+                requests.message || "Failed to load reschedule requests."
+            );
+        }
+
+        currentRescheduleRequest = requests.find(request =>
+            String(request.appointment_id) === String(appointmentId) &&
+            request.request_status === "Pending"
+        );
+
+        if (!currentRescheduleRequest) {
+            showToast("This reschedule request is no longer pending. Please refresh the appointment list.", "error");
+            throw new Error(
+                "This reschedule request is no longer pending. Please refresh the appointment list."
+            );
+        }
+
+        const request = currentRescheduleRequest;
+
+        document.getElementById("reschedulePatientName").textContent =
+            request.patient_name;
+
+        document.getElementById("reschedulePatientIC").textContent =
+            request.user_id;
+
+        document.getElementById("rescheduleAppointmentType").textContent =
+            request.appointment_type;
+
+        document.getElementById("rescheduleOriginalDate").textContent =
+            formatDate(request.original_date);
+
+        document.getElementById("rescheduleOriginalTime").textContent =
+            `${formatTime(request.original_start_time)} – ${formatTime(request.original_end_time)}`;
+
+        document.getElementById("rescheduleProposedDate").textContent =
+            formatDate(request.proposed_date);
+
+        document.getElementById("rescheduleProposedTime").textContent =
+            `${formatTime(request.proposed_start_time)} – ${formatTime(request.proposed_end_time)}`;
+
+        // Enable the decision buttons once the request has loaded
+        approveRescheduleRequestButton.disabled = false;
+        rejectRescheduleRequestButton.disabled = false;
+
+    } catch (error) {
+        console.error("Error loading reschedule request:", error);
+
+        showRescheduleRequestMessage(error.message);
+
+        // Prevent decisions when request details fail to load
+        approveRescheduleRequestButton.disabled = true;
+        rejectRescheduleRequestButton.disabled = true;
+    }
+});
+
+
+async function submitRescheduleDecision(action) {
+    if (!currentRescheduleRequest) {
+        showRescheduleRequestMessage(
+            "No reschedule request is selected."
+        );
+        return;
+    }
+
+    const requestId = currentRescheduleRequest.reschedule_request_id;
+
+    const actionButton = action === "approve"
+        ? approveRescheduleRequestButton
+        : confirmRejectRescheduleButton;
+
+    const otherButton = action === "approve"
+        ? rejectRescheduleRequestButton
+        : approveRescheduleRequestButton;
+
+    const originalButtonHTML = actionButton.innerHTML;
+
+    actionButton.disabled = true;
+    otherButton.disabled = true;
+
+    actionButton.innerHTML = `
+        <span
+            class="spinner-border spinner-border-sm me-1"
+            aria-hidden="true"
+        ></span>
+        Processing...
+    `;
+
+    clearRescheduleRequestMessage();
+
+    try {
+        const body = action === "reject"
+            ? { reject_reason: rescheduleRejectReason.value.trim() }
+            : {};
+
+        const response = await fetch(
+            `/api/staff/reschedule-requests/${encodeURIComponent(requestId)}/${action}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            showRescheduleRequestMessage(
+                result.message || `Failed to ${action} the request.`
+            );
+            return;
+        }
+
+        // Refresh the table so the pending status and buttons update
+        await loadAppointments();
+
+        // Close after a successful decision
+        bootstrap.Modal.getOrCreateInstance(rescheduleRequestModal).hide();
+
+        showToast(result.message || "Reschedule request processed successfully.", "success");
+    } catch (error) {
+        console.error(`Error trying to ${action} reschedule request:`, error);
+        showToast("A server error occurred. Please try again.", "error");
+    } finally {
+        actionButton.disabled = false;
+        otherButton.disabled = false;
+
+        actionButton.innerHTML = originalButtonHTML;
+    }
+}
+
+approveRescheduleRequestButton.addEventListener("click", () => {
+    submitRescheduleDecision("approve");
+});
+
+rejectRescheduleRequestButton.addEventListener("click", () => {
+    // Reveal the rejection reason and confirmation button
+    rescheduleRejectionSection.hidden = false;
+
+    // Hide the original reject button to avoid confusion
+    rejectRescheduleRequestButton.hidden = true;
+});
+
+confirmRejectRescheduleButton.addEventListener("click", () => {
+    const rejectReason = rescheduleRejectReason.value.trim();
+
+    if (!rejectReason) {
+        rescheduleRejectReason.classList.add("is-invalid");
+        rescheduleRejectReason.focus();
+        showRescheduleRequestMessage(
+            "Please enter a reason for rejecting this reschedule request."
+        );
+        return;
+    }
+
+    rescheduleRejectReason.classList.remove("is-invalid");
+    submitRescheduleDecision("reject");
+});
+
+rescheduleRejectReason.addEventListener("input", () => {
+    if (rescheduleRejectReason.value.trim()) {
+        rescheduleRejectReason.classList.remove("is-invalid");
+        clearRescheduleRequestMessage();
+    }
+});
+
+// Reset reschedule request modal state when it closes
+rescheduleRequestModal.addEventListener("hidden.bs.modal", () => {
+    currentRescheduleRequest = null;
+    rescheduleAction = null;
+
+    rescheduleRejectReason.value = "";
+
+    rescheduleRejectionSection.hidden = true;
+    confirmRejectRescheduleButton.disabled = false;
+    confirmRejectRescheduleButton.textContent = "Confirm Rejection";
+
+    approveRescheduleRequestButton.hidden = false;
+    rejectRescheduleRequestButton.hidden = false;
+
+    approveRescheduleRequestButton.disabled = false;
+    rejectRescheduleRequestButton.disabled = false;
+
+    approveRescheduleRequestButton.innerHTML =
+        '<i class="bi bi-check-circle"></i> Approve';
+
+    rejectRescheduleRequestButton.innerHTML =
+        '<i class="bi bi-x-circle"></i> Reject';
+
+    clearRescheduleRequestMessage();
 });
 
 

@@ -489,19 +489,6 @@ a {
     background: #e5394c;
 }
 
-
-/* Cancelled */
-
-.status-badge.cancelled {
-    color: #727c8c;
-    background: #f1f2f4;
-}
-
-.status-badge.cancelled > span {
-    background: #8b94a2;
-}
-
-
 /* =====================================================
    APPOINTMENT ACTIONS
 ===================================================== */
@@ -556,7 +543,7 @@ a {
     background: var(--caretrack-pink-dark);
 }
 
-.approve-button {
+.reschedule-request-button {
     border: 1px solid #e8b454;
 
     color: #a86c00;
@@ -564,7 +551,7 @@ a {
     background: #fffaf0;
 }
 
-.approve-button:hover {
+.reschedule-request-button:hover {
     background: #fff2d5;
 }
 
@@ -791,97 +778,17 @@ a {
 
 
 /* Reschedule */
-
-.request-icon {
-    width: 55px;
-    height: 55px;
-
-    margin: 0 auto 14px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: #fff5dc;
-
-    color: #d39100;
-}
-
-.request-icon i {
-    font-size: 25px;
-}
-
-.modal-description {
-    color: #6e7e94;
-
-    font-size: 11px;
-
-    line-height: 1.6;
-}
-
-.reschedule-details {
-    margin-top: 17px;
-
-    padding: 13px;
-
-    background: #fff9fb;
-
-    border: 1px solid #f3dce5;
-
-    border-radius: 8px;
-}
-
-.reschedule-details > div {
-    padding: 7px 0;
-
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-.reschedule-details span {
-    color: #78869a;
-
-    font-size: 10px;
-}
-
-.reschedule-details strong {
+.request-details {
     color: #354b69;
 
-    font-size: 10px;
+    font-size: 13px;
 
-    text-align: right;
 }
-
-.approval-note {
-    margin-top: 13px;
-
-    padding: 11px;
-
-    display: flex;
-    gap: 8px;
-
-    color: #a16d0b;
-
-    background: #fff7e5;
-
-    border-radius: 7px;
-
-    font-size: 10px;
-}
-
-.approval-note i {
-    font-size: 14px;
-}
-
 
 /* =====================================================
    BUTTONS
 ===================================================== */
 
-.primary-button,
 .approve-modal-button {
     color: #ffffff;
 
@@ -889,10 +796,8 @@ a {
 
     border-color: var(--caretrack-pink);
 
-    font-size: 11px;
 }
 
-.primary-button:hover,
 .approve-modal-button:hover {
     color: #ffffff;
 
@@ -914,21 +819,6 @@ a {
 .cancel-button:hover {
     background: #f7f8fa;
 }
-
-.reject-button {
-    color: #d33e52;
-
-    background: #ffffff;
-
-    border: 1px solid #efb5bf;
-
-    font-size: 11px;
-}
-
-.reject-button:hover {
-    background: #fff0f2;
-}
-
 
 /* =====================================================
    DELETE MODAL

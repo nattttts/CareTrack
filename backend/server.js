@@ -2257,14 +2257,19 @@ app.get("/api/staff/appointments", requireRole("staff"), (req, res) => {
                 a.appointment_id,
                 a.user_id,
                 u.full_name AS patient_name,
+                u.role,
+                u.account_status,
+                a.appointment_type,
                 a.appointment_date,
                 a.start_time,
                 a.end_time,
                 a.status,
-                a.reschedule_status,
-                a.appointment_type,
-                u.role,
-                u.account_status
+                EXISTS (
+                    SELECT 1
+                    FROM Reschedule_Request AS rr
+                    WHERE rr.appointment_id = a.appointment_id
+                    AND rr.status = 'Pending'
+                ) AS has_pending_reschedule
             FROM Appointment a
             JOIN User u
                 ON a.user_id = u.user_id
@@ -2282,6 +2287,61 @@ app.get("/api/staff/appointments", requireRole("staff"), (req, res) => {
         });
     }
 });
+
+
+// Get pending reschedule requests 
+app.get("/api/staff/reschedule-requests", (req, res) => {
+    try {
+        const requests = db.prepare(`
+            SELECT
+                rr.reschedule_request_id,
+                rr.appointment_id,
+                rr.appointment_date AS proposed_date,
+                rr.start_time AS proposed_start_time,
+                rr.end_time AS proposed_end_time,
+                rr.status AS request_status,
+                rr.reject_reason,
+                rr.created_at,
+
+                a.user_id,
+                u.full_name AS patient_name,
+                u.role AS patient_role,
+                u.account_status,
+
+                a.appointment_type,
+                a.appointment_date AS original_date,
+                a.start_time AS original_start_time,
+                a.end_time AS original_end_time,
+                a.status AS appointment_status
+
+            FROM Reschedule_Request AS rr
+
+            JOIN Appointment AS a
+                ON rr.appointment_id = a.appointment_id
+
+            JOIN User AS u
+                ON a.user_id = u.user_id
+
+            WHERE rr.status = 'Pending'
+
+            ORDER BY
+                rr.created_at ASC,
+                rr.reschedule_request_id ASC
+        `).all();
+
+        res.json(requests);
+    } catch (error) {
+        console.error(
+            "Error loading pending reschedule requests:",
+            error
+        );
+
+        res.status(500).json({
+            message: "Failed to load pending reschedule requests."
+        });
+    }
+});
+
 
 // Search for patients
 app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
@@ -2319,6 +2379,7 @@ app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
         });
     }
 });
+
 
 // Add new patient appointments
 app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
@@ -2396,7 +2457,7 @@ app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
             });
         } else if (dayOfWeek === 6) {
             openingTime = "09:00";
-            closingTime = "12:30";
+            closingTime = "13:00";
         } else {
             openingTime = "08:30";
             closingTime = "17:00";
@@ -2629,7 +2690,7 @@ app.patch("/api/staff/appointments/:appointmentId", (req, res) => {
         ) {
             return res.status(400).json({
                 message: dayOfWeek === 6
-                    ? "Saturday appointments must be between 9:00 AM and 12:30 PM."
+                    ? "Saturday appointments must be between 9:00 AM and 1:00 PM."
                     : "Weekday appointments must be between 8:30 AM and 5:00 PM."
             });
         }
@@ -2690,6 +2751,279 @@ app.patch("/api/staff/appointments/:appointmentId", (req, res) => {
 
         return res.status(500).json({
             message: "An unexpected error occurred while updating the appointment."
+        });
+    }
+});
+
+
+// Approve a reschedule request
+app.patch("/api/staff/reschedule-requests/:requestId/approve", (req, res) => {
+    try {
+        const requestId = Number(req.params.requestId);
+
+        if (!Number.isSafeInteger(requestId) || requestId <= 0) {
+            return res.status(400).json({
+                message: "Invalid reschedule request ID."
+            });
+        }
+
+        const request = db.prepare(`
+            SELECT
+                rr.reschedule_request_id,
+                rr.appointment_id,
+                rr.appointment_date AS proposed_date,
+                rr.start_time AS proposed_start_time,
+                rr.end_time AS proposed_end_time,
+                rr.status AS request_status,
+                a.appointment_type,
+                a.status AS appointment_status
+            FROM Reschedule_Request AS rr
+            JOIN Appointment AS a
+                ON a.appointment_id = rr.appointment_id
+            WHERE rr.reschedule_request_id = ?
+        `).get(requestId);
+
+        if (!request) {
+            return res.status(404).json({
+                message: "Reschedule request not found."
+            });
+        }
+
+        if (request.request_status !== "Pending") {
+            return res.status(409).json({
+                message: "This reschedule request has already been processed."
+            });
+        }
+
+        if (request.appointment_status !== "Confirmed") {
+            return res.status(409).json({
+                message: "The original appointment is no longer confirmed."
+            });
+        }
+
+        const date = request.proposed_date;
+        const startTime = request.proposed_start_time;
+        const endTime = request.proposed_end_time;
+
+        if (
+            !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+            !/^\d{2}:\d{2}$/.test(startTime) ||
+            !/^\d{2}:\d{2}$/.test(endTime)
+        ) {
+            return res.status(400).json({
+                message: "The proposed date or time is invalid."
+            });
+        }
+
+        const [year, month, day] = date.split("-").map(Number);
+        const selectedDate = new Date(
+            Date.UTC(year, month - 1, day)
+        );
+
+        if (
+            selectedDate.getUTCFullYear() !== year ||
+            selectedDate.getUTCMonth() !== month - 1 ||
+            selectedDate.getUTCDate() !== day
+        ) {
+            return res.status(400).json({
+                message: "The proposed date is not a valid calendar date."
+            });
+        }
+
+        const [startHour, startMinute] = startTime.split(":").map(Number);
+        const [endHour, endMinute] = endTime.split(":").map(Number);
+
+        if (
+            startHour > 23 || startMinute > 59 ||
+            endHour > 23 || endMinute > 59 ||
+            endTime <= startTime
+        ) {
+            return res.status(400).json({
+                message: "The proposed appointment times are invalid."
+            });
+        }
+
+        const today = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Kuala_Lumpur",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        }).format(new Date());
+
+        if (date <= today) {
+            return res.status(400).json({
+                message: "The proposed appointment date must be in the future."
+            });
+        }
+
+        const dayOfWeek = selectedDate.getUTCDay();
+
+        if (dayOfWeek === 0) {
+            return res.status(400).json({
+                message: "The clinic is closed on Sundays."
+            });
+        }
+
+        const openingTime = dayOfWeek === 6 ? "09:00" : "08:30";
+        const closingTime = dayOfWeek === 6 ? "13:00" : "17:00";
+
+        if (startTime < openingTime || endTime > closingTime) {
+            return res.status(400).json({
+                message: dayOfWeek === 6
+                    ? "Saturday appointments must be between 9:00 AM and 1:00 PM."
+                    : "Weekday appointments must be between 8:30 AM and 5:00 PM."
+            });
+        }
+
+        const overlappingAppointment = db.prepare(`
+            SELECT appointment_id, start_time, end_time
+            FROM Appointment
+            WHERE appointment_date = ?
+                AND appointment_type = ?
+                AND status = 'Confirmed'
+                AND appointment_id != ?
+                AND start_time < ?
+                AND end_time > ?
+            LIMIT 1
+        `).get(
+            date,
+            request.appointment_type,
+            request.appointment_id,
+            endTime,
+            startTime
+        );
+
+        if (overlappingAppointment) {
+            return res.status(409).json({
+                message: `Cannot approve this request. Another appointment of the same type is scheduled from ${overlappingAppointment.start_time} to ${overlappingAppointment.end_time}.`
+            });
+        }
+
+        const approveTransaction = db.transaction(() => {
+            const updatedRequest = db.prepare(`
+                UPDATE Reschedule_Request
+                SET status = 'Approved'
+                WHERE reschedule_request_id = ?
+                    AND status = 'Pending'
+            `).run(requestId);
+
+            if (updatedRequest.changes !== 1) {
+                throw new Error("REQUEST_ALREADY_PROCESSED");
+            }
+
+            const updatedAppointment = db.prepare(`
+                UPDATE Appointment
+                SET appointment_date = ?,
+                    start_time = ?,
+                    end_time = ?
+                WHERE appointment_id = ?
+                    AND status = 'Confirmed'
+            `).run(
+                date,
+                startTime,
+                endTime,
+                request.appointment_id
+            );
+
+            if (updatedAppointment.changes !== 1) {
+                throw new Error("APPOINTMENT_NOT_UPDATED");
+            }
+        });
+
+        approveTransaction();
+
+        return res.json({
+            message: "Reschedule request approved successfully."
+        });
+
+    } catch (error) {
+        if (error.message === "REQUEST_ALREADY_PROCESSED") {
+            return res.status(409).json({
+                message: "This reschedule request has already been processed."
+            });
+        }
+
+        if (error.message === "APPOINTMENT_NOT_UPDATED") {
+            return res.status(409).json({
+                message: "The appointment could not be updated."
+            });
+        }
+
+        console.error("Error approving reschedule request:", error);
+
+        return res.status(500).json({
+            message: "An error occurred while approving the request."
+        });
+    }   
+});
+
+
+// Reject a reschedule request
+app.patch("/api/staff/reschedule-requests/:requestId/reject", (req, res) => {
+    try {
+        const requestId = Number(req.params.requestId);
+
+        if (!Number.isSafeInteger(requestId) || requestId <= 0) {
+            return res.status(400).json({
+                message: "Invalid reschedule request ID."
+            });
+        }
+
+        const rejectReason =
+            typeof req.body.reject_reason === "string"
+                ? req.body.reject_reason.trim()
+                : "";
+
+        if (!rejectReason) {
+            return res.status(400).json({
+                message: "A rejection reason is required."
+            });
+        }
+            
+        if (rejectReason.length > 500) {
+            return res.status(400).json({
+                message: "The rejection reason cannot exceed 500 characters."
+            });
+        }
+
+        const updateResult = db.prepare(`
+            UPDATE Reschedule_Request
+            SET status = 'Rejected',
+                reject_reason = ?
+            WHERE reschedule_request_id = ?
+                AND status = 'Pending'
+        `).run(
+            rejectReason || null,
+            requestId
+        );
+
+        if (updateResult.changes === 0) {
+            const request = db.prepare(`
+                SELECT reschedule_request_id, status
+                FROM Reschedule_Request
+                WHERE reschedule_request_id = ?
+            `).get(requestId);
+
+            if (!request) {
+                return res.status(404).json({
+                    message: "Reschedule request not found."
+                });
+            }
+
+            return res.status(409).json({
+                message: "This reschedule request has already been processed."
+            });
+        }
+
+        return res.json({
+            message: "Reschedule request rejected successfully."
+        });
+
+    } catch (error) {
+        console.error("Error rejecting reschedule request:", error);
+
+        return res.status(500).json({
+            message: "An error occurred while rejecting the request."
         });
     }
 });
