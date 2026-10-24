@@ -258,6 +258,17 @@ async function loadAppointments() {
                         </button>
                     `;
                 }
+            } else if (displayStatus === "Missed") {
+                actionButtons += `
+                    <button
+                        type="button"
+                        class="action-button reschedule-appointment-button"
+                        data-user-id="${escapeHtml(appointment.user_id)}"
+                    >
+                        <i class="bi bi-calendar-plus"></i>
+                        Reschedule Appointment
+                    </button>
+                `;
             } else if (period === "upcoming" && displayStatus === "Confirmed") {
                 actionButtons += `
                     <button
@@ -802,7 +813,7 @@ scheduleAppointmentModal.addEventListener("hidden.bs.modal", () => {
 
 // Schedule next appointment
 document.addEventListener("click", event => {
-    const button = event.target.closest(".follow-up-button");
+    const button = event.target.closest(".follow-up-button, .reschedule-appointment-button");
 
     if (!button) return;
 
