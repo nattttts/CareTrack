@@ -4,51 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>My Profile | CareTrack</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
     <link rel="stylesheet" href="../css/profile.css">
     <link rel="stylesheet" href="../css/patient_header.css">
     <link rel="stylesheet" href="../css/sidebar.css">
-    <script src = "../js/profile.js" defer></script>
-</head>
 
+    <script src="../js/profile.js" defer></script>
+</head>
 
 <body>
 
-<!-- ================= HEADER ================= -->
-
+    <!-- ================= HEADER ================= -->
     <header class="top-header">
-
         <a href="index.html" class="logo">
             <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
 
             <div class="logo-text">
                 <h1>CareTrack</h1>
-                <p>Maternal & Child Healthcare</p>
+                <p>Maternal &amp; Child Healthcare</p>
             </div>
         </a>
-        
+
+        <div class="header-right">
             <div class="profile">
-
                 <img src="../icons/user.png" alt="Profile">
-
                 <span id="userName"></span>
-
             </div>
-
         </div>
-
     </header>
 
-
     <!-- ================= MAIN LAYOUT ================= -->
-
     <div class="page-layout d-flex">
 
-
         <!-- ================= SIDEBAR ================= -->
-
         <aside class="sidebar">
 
             <nav class="sidebar-nav">
@@ -78,89 +71,61 @@
                     <span>Notifications</span>
                 </a>
 
-                <a href="profile.html" class="sidebar-link active">
+                <a href="patient_profile.html" class="sidebar-link active">
                     <img src="../icons/user.png" alt="">
                     <span>My Profile</span>
                 </a>
-                
-                <a href="login.html" id="logoutButton" class="sidebar-link logout-link">
+
+                <a href="login.html"
+                   id="logoutButton"
+                   class="sidebar-link logout-link">
+
                     <img src="../icons/logout.png" alt="">
                     <span>Log Out</span>
+
                 </a>
+
             </nav>
 
         </aside>
 
         <!-- ================= MAIN CONTENT ================= -->
-
         <main class="main-content">
 
-
-            <!-- ================= PAGE TITLE ================= -->
-
+            <!-- ================= PROFILE HEADER ================= -->
             <section class="profile-page-header">
-
 
                 <div class="profile-title">
 
-
                     <div class="profile-title-avatar">
-
                         <img src="../icons/user.png"
                              alt="Profile Picture">
-
                     </div>
-
 
                     <div>
-
-                        <h2 id="profileName">
-                            Jane Smith
-                        </h2>
-
-                        <p>
-                            Mother
-                        </p>
-
+                        <h2 id="profileName"></h2>
+                        <p id="userRole"></p>
                     </div>
 
-
                 </div>
-
 
             </section>
 
             <!-- ================= PERSONAL INFORMATION ================= -->
-
-            <section class="profile-card">
-
-
-                <!-- CARD HEADER -->
+            <section class="profile-card" id="personalInformationCard">
 
                 <div class="profile-card-title">
 
-
                     <div class="card-title-left">
 
-
                         <div class="card-icon">
-
-                            <img src="../icons/user.png"
-                                 alt="">
-
+                            <img src="../icons/user.png" alt="">
                         </div>
-
 
                         <div>
-
                             <h3>Personal Information</h3>
-
-                            <p>
-                                Your personal information
-                            </p>
-
+                            <p>Your personal information</p>
                         </div>
-
 
                     </div>
 
@@ -173,223 +138,155 @@
 
                     </button>
 
-
                 </div>
 
-                <!-- ================= INFORMATION ================= -->
-
+                <!-- ================= INFORMATION GRID ================= -->
                 <div class="profile-information-grid">
 
+                    <!-- Full Name -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <img src="../icons/user.png"
-                                 alt="">
-
+                            <img src="../icons/user.png" alt="">
                         </div>
 
-
                         <div class="information-text">
-
                             <span>Full Name</span>
-
-
-                            <strong id="nameText">
-                                Jane Smith
-                            </strong>
-
+                            <strong id="nameText"></strong>
 
                             <input type="text"
                                    id="nameInput"
-                                   value="Jane Smith"
-                                   class="profile-input">
-
+                                   class="profile-input"
+                                   autocomplete="name">
                         </div>
 
                     </div>
-                
+
+                    <!-- NRIC / IC Number -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <img src="../icons/identity-card.png"
-                                 alt="">
-
+                            <img src="../icons/identity-card.png" alt="">
                         </div>
 
-
                         <div class="information-text">
-
                             <span>NRIC</span>
-
-
-                            <strong id="nricText">
-                                XXXXXX-XX-XXXX
-                            </strong>
-
+                            <strong id="nricText"></strong>
 
                             <input type="text"
                                    id="nricInput"
-                                   value="XXXXXX-XX-XXXX"
-                                   class="profile-input">
-
+                                   class="profile-input"
+                                   autocomplete="off"
+                                   readonly>
                         </div>
 
                     </div>
 
+                    <!-- Date of Birth -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <img src="../icons/calendar2.png"
-                                 alt="">
-
+                            <img src="../icons/calendar2.png" alt="">
                         </div>
 
-
                         <div class="information-text">
-
                             <span>Date of Birth</span>
-
-
-                            <strong id="dobText">
-                                15 March 1995
-                            </strong>
-
+                            <strong id="dobText"></strong>
 
                             <input type="date"
                                    id="dobInput"
-                                   value="1995-03-15"
                                    class="profile-input">
-
                         </div>
 
                     </div>
 
+                    <!-- Phone Number -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <span>☎</span>
-
+                            <span aria-hidden="true">☎</span>
                         </div>
 
-
                         <div class="information-text">
-
                             <span>Phone Number</span>
+                            <strong id="phoneText"></strong>
 
-
-                            <strong id="phoneText">
-                                012-345 6789
-                            </strong>
-
-
-                            <input type="text"
+                            <input type="tel"
                                    id="phoneInput"
-                                   value="012-345 6789"
-                                   class="profile-input">
-
+                                   class="profile-input"
+                                   autocomplete="tel">
                         </div>
 
                     </div>
 
+                    <!-- Email Address -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <span>✉</span>
-
+                            <span aria-hidden="true">✉</span>
                         </div>
 
-
                         <div class="information-text">
-
                             <span>Email Address</span>
-
-
-                            <strong id="emailText">
-                                jane.smith@email.com
-                            </strong>
-
+                            <strong id="emailText"></strong>
 
                             <input type="email"
                                    id="emailInput"
-                                   value="jane.smith@email.com"
-                                   class="profile-input">
-
+                                   class="profile-input"
+                                   autocomplete="email">
                         </div>
 
                     </div>
-
-                    <div class="information-item">
+                                    
+                    <!-- Address for Mother / Gender for Child -->
+                    <div class="information-item" id="addressItem">
 
                         <div class="information-icon">
-
-                            <span>⌖</span>
-
+                            <img id="addressGenderIcon"
+                                src="../icons/location.png"
+                                alt="Address">
                         </div>
 
-
                         <div class="information-text">
+                            <span id="addressLabel">Address</span>
 
-                            <span>Address</span>
-
-
-                            <strong id="addressText">
-                                123, Jalan Example, George Town,
-                                Penang 10000
-                            </strong>
-
+                            <strong id="addressText">Not available</strong>
 
                             <textarea id="addressInput"
-                                      class="profile-input"
-                                      rows="3">123, Jalan Example, George Town, Penang 10000</textarea>
-
+                                    class="profile-input"
+                                    rows="3"
+                                    autocomplete="street-address"></textarea>
                         </div>
 
                     </div>
 
-                    <button type="button"
-                        id="resetPassword"
-                        class="reset-password-button"
-                        onclick="resetPassword()">
-
+                        <button type="button"
+                            id="resetPassword"
+                            class="reset-password-button"
+                            onclick="resetPassword()">
                         Reset Password
-
                     </button>
 
                 </div>
-
             </section>
 
-            <section class="profile-card">
-
+            <!-- ================= EMERGENCY CONTACT ================= -->
+            <section class="profile-card" id="emergencyContactCard">
 
                 <div class="profile-card-title">
 
-
                     <div class="card-title-left">
 
-
                         <div class="card-icon">
-
-                            <span>☎</span>
-
+                            <span aria-hidden="true">☎</span>
                         </div>
-
 
                         <div>
-
                             <h3>Emergency Contact</h3>
-
-                            <p>
+                            <p id="emergencyContactDescription">
                                 Person to contact in case of emergency
                             </p>
-
                         </div>
-
 
                     </div>
 
@@ -402,109 +299,77 @@
 
                     </button>
 
-
                 </div>
 
                 <div class="profile-information-grid">
 
+                    <!-- Emergency Contact Name -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <img src="../icons/user.png"
-                                 alt="">
-
+                            <img src="../icons/user.png" alt="">
                         </div>
 
-
                         <div class="information-text">
-
                             <span>Name</span>
-
-
-                            <strong id="emergencyNameText">
-                                John Smith
-                            </strong>
-
+                            <strong id="emergencyNameText"></strong>
 
                             <input type="text"
                                    id="emergencyNameInput"
-                                   value="John Smith"
                                    class="profile-input">
-
                         </div>
 
                     </div>
 
+                    <!-- Relationship -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <span>♙</span>
-
+                            <span aria-hidden="true">♙</span>
                         </div>
 
-
                         <div class="information-text">
-
                             <span>Relationship</span>
-
-
-                            <strong id="relationshipText">
-                                Husband
-                            </strong>
-
+                            <strong id="relationshipText"></strong>
 
                             <input type="text"
                                    id="relationshipInput"
-                                   value="Husband"
                                    class="profile-input">
-
                         </div>
 
                     </div>
 
+                    <!-- Emergency Contact Phone -->
                     <div class="information-item">
 
                         <div class="information-icon">
-
-                            <span>☎</span>
-
+                            <span aria-hidden="true">☎</span>
                         </div>
 
-
                         <div class="information-text">
-
                             <span>Phone Number</span>
+                            <strong id="emergencyPhoneText"></strong>
 
-
-                            <strong id="emergencyPhoneText">
-                                012-987 6543
-                            </strong>
-
-
-                            <input type="text"
+                            <input type="tel"
                                    id="emergencyPhoneInput"
-                                   value="012-987 6543"
                                    class="profile-input">
-
                         </div>
 
                     </div>
-
 
                 </div>
 
             </section>
 
+        </main>
+
+    </div>
+
+    <!-- ================= SCRIPTS ================= -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Header JavaScript -->
     <script src="../js/header.js"></script>
-    
-    <!-- Logout JavaScript -->
     <script src="../js/logout.js"></script>
 
 </body>
-
 </html>
