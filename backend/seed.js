@@ -55,7 +55,13 @@ const insert = {
 
     appointment: db.prepare(`
         INSERT INTO Appointment
-            (appointment_id, user_id, appointment_type, appointment_date, start_time, end_time, status, reschedule_status)
+            (appointment_id, user_id, appointment_type, appointment_date, start_time, end_time, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `),
+
+    rescheduleRequest: db.prepare(`
+        INSERT INTO Reschedule_Request
+            (reschedule_request_id, appointment_id, appointment_date, start_time, end_time, status, reject_reason, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `),
 
@@ -127,7 +133,7 @@ async function main() {
         mothers.forEach(row => insert.mother.run(...row));
 
         // =========================================
-        // 5. CHILDREN
+        // 4. CHILDREN
         // =========================================
         const children = [
             [1, "260801-07-0007", "2026-08-01", "Male", "Nurul binti Rashid", "012-4001001"],
@@ -137,7 +143,7 @@ async function main() {
         children.forEach(row => insert.child.run(...row));
 
         // =========================================
-        // 6. SERVICES
+        // 5. SERVICES
         // =========================================
         const services = [
             [1, "Maternal Follow-up", "Maternal healthcare follow-up appointments"],
@@ -147,7 +153,7 @@ async function main() {
         services.forEach(row => insert.service.run(...row));
 
         // =========================================
-        // 7. VACCINATION CATALOGUE
+        // 6. VACCINATION CATALOGUE
         // =========================================
         const vaccines = [
             [1, "DTaP-IPV-HepB-Hib", "Diphteria-Tetanus-Pertussis-Polio-Hepatitis B-Haemophilus influenzae type B", 3, 1],
@@ -158,25 +164,34 @@ async function main() {
         vaccines.forEach(row => insert.vaccine.run(...row));
 
         // =========================================
-        // 9. APPOINTMENTS
-        // reschedule_status: None / Pending / Approved / Rejected
+        // 7. APPOINTMENTS
         // =========================================
         const appointments = [
-            [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "11:30", "Completed", "None"],
-            [2, "980108-07-0012", "Maternal Follow-up", "2026-08-20", "10:30", "11:00", "Completed", "None"],
-            [3, "260801-07-0007", "Child Vaccination", "2026-10-01", "10:00", "10:30", "Completed", "None"],
-            [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "09:30", "Completed", "Approved"],
-            [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "09:30", "Confirmed", "Pending"],
-            [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "10:30", "Missed", "None"],
-            [7, "960106-07-0008", "Maternal Follow-up", "2026-10-20", "10:00", "10:30", "Confirmed", "None"],
-            [8, "260801-07-0007", "Child Vaccination", "2026-11-01", "10:00", "10:30", "Confirmed", "None"],
-            [9, "260902-07-0003", "Child Vaccination", "2026-11-01", "09:00", "09:30", "Confirmed", "Pending"]
+            [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "11:30", "Completed"],
+            [2, "980108-07-0012", "Maternal Follow-up", "2026-08-20", "10:30", "11:00", "Completed"],
+            [3, "260801-07-0007", "Child Vaccination", "2026-10-01", "10:00", "10:30", "Completed"],
+            [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "09:30", "Completed"],
+            [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "09:30", "Confirmed"],
+            [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "10:30", "Missed"],
+            [7, "960106-07-0008", "Maternal Follow-up", "2026-11-01", "10:00", "10:30", "Confirmed"],
+            [8, "260801-07-0007", "Child Vaccination", "2026-11-01", "10:00", "10:30", "Confirmed"],
+            [9, "260902-07-0003", "Child Vaccination", "2026-11-01", "09:00", "09:30", "Confirmed"]
         ];
 
         appointments.forEach(row => insert.appointment.run(...row));
+        // =========================================
+        // 9. RESCHEDULE REQUEST
+        // =========================================
+        const rescheduleRequests = [
+            [1, 4, "2026-10-13", "09:00", "09:30", "Approved", null, "2026-09-21 12:00:00"],
+            [2, 5, "2026-11-17", "09:30", "10:00", "Pending", null, "2026-10-20 12:00:00"],
+            [3, 9, "2026-11-10", "09:30", "10:00", "Pending", null, "2026-10-21 14:00:00"]
+        ]
+
+        rescheduleRequests.forEach(row => insert.rescheduleRequest.run(...row));
 
         // =========================================
-        // 10. CHILD VACCINATION RECORDS
+        // 9. CHILD VACCINATION RECORDS
         // =========================================
         const childVaccinations = [
             [1, "260801-07-0007", 1, "2026-10-01", "Dose 1", "Completed"],
@@ -187,7 +202,7 @@ async function main() {
         childVaccinations.forEach(row => insert.childVaccination.run(...row));
 
         // =========================================
-        // 11. NOTIFICATIONS
+        // 10. NOTIFICATIONS
         // Both linked records can be provided for vaccination
         // appointment notifications.
         // is_read: 0 = unread, 1 = read.
@@ -230,7 +245,7 @@ async function main() {
         notifications.forEach(row => insert.notification.run(...row));
 
         // =========================================
-        // 12. QUEUE ENTRIES
+        // 11. QUEUE ENTRIES
         // Only appointments that have checked in.
         // =========================================
         const queueEntries = [

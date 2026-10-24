@@ -137,24 +137,36 @@ CREATE TABLE IF NOT EXISTS Appointment (
                 'Missed'
             )
         ),
-    reschedule_status TEXT NOT NULL DEFAULT 'None'
-    CHECK (
-        reschedule_status IN (
-            'None',
-            'Pending',
-            'Approved',
-            'Rejected'
-        )
-    ),
 
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
         ON UPDATE CASCADE
 );
 
+-- =========================================
+-- 9. RESCHEDULE REQUEST
+-- Tracks reschedule requests by patients
+-- =========================================
+CREATE TABLE IF NOT EXISTS Reschedule_Request (
+    reschedule_request_id INTEGER PRIMARY KEY,
+    appointment_id INTEGER NOT NULL,
+    appointment_date TEXT NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Pending'
+        CHECK (
+            status IN ('Pending', 'Approved', 'Rejected')
+        ), 
+    reject_reason TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (appointment_id)
+        REFERENCES Appointment(appointment_id)
+);
+
 
 -- =========================================
--- 9. CHILD VACCINATION
+-- 10. CHILD VACCINATION
 -- Tracks a child's vaccine/dose and due date
 -- appointment_id links to its associated booking
 -- =========================================
