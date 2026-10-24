@@ -53,7 +53,25 @@ CREATE TABLE IF NOT EXISTS Invitation_Token (
 );
 
 -- =========================================
--- 4. MOTHER
+-- 4. PASSWORD RESET TOKEN
+-- Stores tokens used to reset existing passwords
+-- =========================================
+CREATE TABLE IF NOT EXISTS Password_Reset_Token (
+    reset_id INTEGER PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TEXT NOT NULL,
+    used_at TEXT,
+    revoked_at TEXT,
+
+    FOREIGN KEY (user_id)
+        REFERENCES User(user_id)
+        ON UPDATE CASCADE
+);
+
+-- =========================================
+-- 5. MOTHER
 -- Mother/patient profile
 -- =========================================
 CREATE TABLE IF NOT EXISTS Mother (
@@ -72,7 +90,7 @@ CREATE TABLE IF NOT EXISTS Mother (
 );
 
 -- =========================================
--- 5. CHILD
+-- 6. CHILD
 -- =========================================
 CREATE TABLE IF NOT EXISTS Child (
     child_id INTEGER PRIMARY KEY,
@@ -90,7 +108,7 @@ CREATE TABLE IF NOT EXISTS Child (
 
 
 -- =========================================
--- 6. SERVICE
+-- 7. SERVICE
 -- E.g. Maternal follow-up, Child vaccination
 -- =========================================
 CREATE TABLE IF NOT EXISTS Service (
@@ -101,7 +119,7 @@ CREATE TABLE IF NOT EXISTS Service (
 
 
 -- =========================================
--- 7. VACCINATION
+-- 8. VACCINATION
 -- Catalogue of available vaccines
 -- =========================================
 CREATE TABLE IF NOT EXISTS Vaccination (
@@ -114,7 +132,7 @@ CREATE TABLE IF NOT EXISTS Vaccination (
 
 
 -- =========================================
--- 8. APPOINTMENT
+-- 9. APPOINTMENT
 -- =========================================
 CREATE TABLE IF NOT EXISTS Appointment (
     appointment_id INTEGER PRIMARY KEY,
@@ -144,7 +162,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
 );
 
 -- =========================================
--- 9. RESCHEDULE REQUEST
+-- 10. RESCHEDULE REQUEST
 -- Tracks reschedule requests by patients
 -- =========================================
 CREATE TABLE IF NOT EXISTS Reschedule_Request (
@@ -166,7 +184,7 @@ CREATE TABLE IF NOT EXISTS Reschedule_Request (
 
 
 -- =========================================
--- 10. CHILD VACCINATION
+-- 11. CHILD VACCINATION
 -- Tracks a child's vaccine/dose and due date
 -- appointment_id links to its associated booking
 -- =========================================
@@ -191,7 +209,7 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
 
 
 -- =========================================
--- 10. NOTIFICATION
+-- 12. NOTIFICATION
 -- Each user can receive multiple notifications.
 -- A notification may refer to an appointment,
 -- a vaccination record, or both.
@@ -221,7 +239,7 @@ CREATE TABLE IF NOT EXISTS Notification (
 
 
 -- =========================================
--- 11. QUEUE ENTRY
+-- 13. QUEUE ENTRY
 -- Created when a patient checks in
 -- =========================================
 CREATE TABLE IF NOT EXISTS Queue_Entry (
