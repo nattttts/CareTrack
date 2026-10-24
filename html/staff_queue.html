@@ -240,7 +240,7 @@
                                 type="text"
                                 id="searchInput"
                                 class="form-control"
-                                placeholder="Search by patient, child, or queue number"
+                                placeholder="Search by mother's name, child's name or queue number"
                             >
                         </div>
                     </div>
@@ -297,13 +297,13 @@
                     <span class="queue-date">Fri, 25 Sep 2026</span>
                 </div>
 
-                <div class="table-responsive">
+                <div class="table-responsive queue-table-container">
 
                     <table class="queue-table">
                         <thead>
                             <tr>
                                 <th>Queue No.</th>
-                                <th>Patient</th>
+                                <th>Mother / Child</th>
                                 <th>Service</th>
                                 <th>Appointment</th>
                                 <th class="status-column">Status</th>
@@ -328,11 +328,7 @@
 
                                 <td>
                                     <div class="patient-cell">
-                                        <img src="../icons/user.png" alt="" class="patient-avatar">
-                                        <div class="patient-info">
-                                            <h6>Mei Ling</h6>
-                                            <p>Child: Ryan</p>
-                                        </div>
+                                        <h6>Mei Ling</h6>
                                     </div>
                                 </td>
 
@@ -379,11 +375,7 @@
 
                                 <td>
                                     <div class="patient-cell">
-                                        <img src="../icons/user.png" alt="" class="patient-avatar">
-                                        <div class="patient-info">
-                                            <h6>Sarah Lee</h6>
-                                            <p>Child: Emma</p>
-                                        </div>
+                                        <h6>Sarah Lee</h6>
                                     </div>
                                 </td>
 
@@ -430,11 +422,7 @@
 
                                 <td>
                                     <div class="patient-cell">
-                                        <img src="../icons/user.png" alt="" class="patient-avatar">
-                                        <div class="patient-info">
-                                            <h6>Aisyah Rahman</h6>
-                                            <p>Mother</p>
-                                        </div>
+                                        <h6>Aisyah Rahman</h6>
                                     </div>
                                 </td>
 
@@ -481,11 +469,7 @@
 
                                 <td>
                                     <div class="patient-cell">
-                                        <img src="../icons/user.png" alt="" class="patient-avatar">
-                                        <div class="patient-info">
-                                            <h6>Nur Izzati</h6>
-                                            <p>Child: Adam</p>
-                                        </div>
+                                        <h6>Adam</h6>
                                     </div>
                                 </td>
 
@@ -532,11 +516,7 @@
 
                                 <td>
                                     <div class="patient-cell">
-                                        <img src="../icons/user.png" alt="" class="patient-avatar">
-                                        <div class="patient-info">
-                                            <h6>Jane Tan</h6>
-                                            <p>Mother</p>
-                                        </div>
+                                        <h6>Jane Tan</h6>
                                     </div>
                                 </td>
 
@@ -583,11 +563,7 @@
 
                                 <td>
                                     <div class="patient-cell">
-                                        <img src="../icons/user.png" alt="" class="patient-avatar">
-                                        <div class="patient-info">
-                                            <h6>Nurul Syazwani</h6>
-                                            <p>Mother</p>
-                                        </div>
+                                        <h6>Nurul Syazwani</h6>
                                     </div>
                                 </td>
 
@@ -633,11 +609,7 @@
 
                                 <td>
                                     <div class="patient-cell">
-                                        <img src="../icons/user.png" alt="" class="patient-avatar">
-                                        <div class="patient-info">
-                                            <h6>Nurul Syazwani</h6>
-                                            <p>Mother</p>
-                                        </div>
+                                        <h6>Nurul Syazwani</h6>
                                     </div>
                                 </td>
 
@@ -683,21 +655,7 @@
 
                 <!-- TABLE FOOTER -->
                 <div class="table-footer">
-
-                    <span id="queueCount">Showing 7 queue records</span>
-
-                    <div class="pagination-buttons">
-                        <button class="pagination-button" disabled>
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-
-                        <button class="pagination-button current">1</button>
-
-                        <button class="pagination-button" disabled>
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
-
+                    <span id="queueCount"></span>
                 </div>
 
             </section>
