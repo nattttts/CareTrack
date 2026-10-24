@@ -1,8 +1,7 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+    const API_BASE = "http://localhost:3000/api/notifications";
 
     const inboxList = document.getElementById("inboxList");
-    const items = Array.from(inboxList.querySelectorAll(".inbox-item"));
-
     const inboxEmpty = document.getElementById("inboxEmpty");
     const totalCount = document.getElementById("totalCount");
     const inboxSubtitle = document.getElementById("inboxSubtitle");
@@ -23,287 +22,340 @@ document.addEventListener("DOMContentLoaded", function () {
     const markOneRead = document.getElementById("markOneRead");
     const closeDetail = document.getElementById("closeDetail");
 
-    let selectedItem = null;
+    let notifications = [];
+    let selectedId = null;
 
-    // Notification content
-    const notificationDetails = {
-        "1": {
-            title: "Appointment Reminder",
+    const typeStyles = {
+        appointment: {
             icon: "bi-calendar-event",
-            iconClass: "pink-icon",
-            date: "Today · 2 hours ago",
-
-            message:
-                "Dear Jane Smith,\n\n" +
-                "This is a reminder that your appointment with " +
-                "Dr. Tan Wei Ling is scheduled for 26 April 2026 " +
-                "at 10:00 AM.\n\n" +
-                "Please arrive 15 minutes early and bring your " +
-                "relevant healthcare records.",
-
-            extra: true,
-            appointmentDate: "26 April 2026",
-            appointmentTime: "10:00 AM",
-
-            note: "Please arrive 15 minutes before your appointment."
+            iconClass: "pink-icon"
         },
-
-        "2": {
-            title: "Vaccination Due",
-            icon: "bi-eyedropper",
-            iconClass: "blue-icon",
-            date: "Yesterday · 1 day ago",
-
-            message:
-                "Dear Jane Smith,\n\n" +
-                "Your child, Ethan Lee, is due for a scheduled " +
-                "vaccination.\n\n" +
-                "Please check Ethan's vaccination schedule and " +
-                "contact your healthcare clinic to arrange a visit.",
-
-            extra: false,
-
-            note: "Please check your child's vaccination schedule."
-        },
-
-        "3": {
-            title: "System Maintenance",
-            icon: "bi-gear",
-            iconClass: "purple-icon",
-            date: "2 days ago",
-
-            message:
-                "Dear CareTrack User,\n\n" +
-                "CareTrack may be temporarily unavailable during " +
-                "scheduled maintenance on 28 April 2026.\n\n" +
-                "We apologise for any inconvenience.",
-
-            extra: false,
-
-            note: "Thank you for your patience."
-        },
-
-        "4": {
-            title: "Appointment Confirmed",
+        confirmed: {
             icon: "bi-calendar-check",
-            iconClass: "pink-icon",
-            date: "3 days ago",
-
-            message:
-                "Dear Jane Smith,\n\n" +
-                "Your appointment with Dr. Tan Wei Ling on " +
-                "20 April 2026 at 2:00 PM has been confirmed.\n\n" +
-                "Please review your appointment details.",
-
-            extra: true,
-            appointmentDate: "20 April 2026",
-            appointmentTime: "2:00 PM",
-
-            note: "Please arrive on time for your appointment."
+            iconClass: "pink-icon"
         },
-
-        "5": {
-            title: "Vaccination Completed",
+        vaccination: {
+            icon: "bi-eyedropper",
+            iconClass: "blue-icon"
+        },
+        completed: {
             icon: "bi-shield-check",
-            iconClass: "green-icon",
-            date: "5 days ago",
-
-            message:
-                "Dear Jane Smith,\n\n" +
-                "Ethan Lee's vaccination record has been updated " +
-                "to reflect his completed vaccination.\n\n" +
-                "Please review his record for the next scheduled dose.",
-
-            extra: false,
-
-            note: "Keep your child's vaccination record for future visits."
+            iconClass: "green-icon"
+        },
+        maintenance: {
+            icon: "bi-gear",
+            iconClass: "purple-icon"
+        },
+        general: {
+            icon: "bi-bell",
+            iconClass: "pink-icon"
         }
     };
 
-    // Update the notification count and unread count.
-    function updateCounts() {
-        const unreadTotal = items.filter(function (item) {
-            return item.classList.contains("unread");
-        }).length;
-
-        totalCount.textContent = items.length;
-
-        inboxSubtitle.textContent =
-            unreadTotal + " unread · " + items.length + " notifications";
-
-        inboxEmpty.hidden = items.length !== 0;
+    function getStyle(type) {
+        return typeStyles[String(type || "general").toLowerCase()]
+            || typeStyles.general;
     }
 
-    // Update the opened notification's read status.
+    function formatDate(value) {
+        if (!value) return "Date unavailable";
+
+        const date = new Date(
+            value.includes("T") ? value : value.replace(" ", "T") + "Z"
+        );
+
+        if (Number.isNaN(date.getTime())) return value;
+
+        return date.toLocaleString("en-MY", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit"
+        });
+    }
+
+    function timeAgo(value) {
+        if (!value) return "";
+
+        const date = new Date(
+            value.includes("T") ? value : value.replace(" ", "T") + "Z"
+        );
+
+        if (Number.isNaN(date.getTime())) return "";
+
+        const seconds = Math.max(
+            0,
+            Math.floor((Date.now() - date.getTime()) / 1000)
+        );
+
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) {
+            return Math.floor(seconds / 60) + " minutes ago";
+        }
+        if (seconds < 86400) {
+            return Math.floor(seconds / 3600) + " hours ago";
+        }
+        if (seconds < 604800) {
+            return Math.floor(seconds / 86400) + " days ago";
+        }
+
+        return date.toLocaleDateString("en-MY", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        });
+    }
+
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[character]);
+    }
+
+    function getNotification(id) {
+        return notifications.find(
+            notification => Number(notification.notification_id) === Number(id)
+        );
+    }
+
+    function updateCounts() {
+        const unreadCount = notifications.filter(
+            notification => Number(notification.is_read) === 0
+        ).length;
+
+        totalCount.textContent = notifications.length;
+
+        inboxSubtitle.textContent =
+            `${unreadCount} unread · ${notifications.length} notifications`;
+
+        inboxEmpty.hidden = notifications.length !== 0;
+    }
+
     function updateDetailStatus() {
-        if (!selectedItem) {
+        const notification = getNotification(selectedId);
+
+        if (!notification) {
+            markOneRead.disabled = true;
             return;
         }
 
-        const unread = selectedItem.classList.contains("unread");
+        const unread = Number(notification.is_read) === 0;
 
         detailStatus.textContent = unread ? "Unread" : "Read";
-
         detailStatus.className =
-            "detail-status " +
-            (unread ? "unread-badge" : "read-badge");
+            "detail-status " + (unread ? "unread-badge" : "read-badge");
 
         markOneRead.disabled = !unread;
-
         markOneRead.innerHTML = unread
             ? '<i class="bi bi-check2-circle"></i> Mark as Read'
             : '<i class="bi bi-check2-circle"></i> Already Read';
     }
 
-    // Mark a notification as read.
-    function markAsRead(item) {
-        item.classList.remove("unread");
+    function renderList() {
+        inboxList.innerHTML = notifications.map(notification => {
+            const style = getStyle(notification.type);
+            const unread = Number(notification.is_read) === 0;
+            const active =
+                Number(notification.notification_id) === Number(selectedId);
 
-        const dot = item.querySelector(".unread-dot");
+            return `
+                <article
+                    class="inbox-item ${unread ? "unread" : ""} ${active ? "active" : ""}"
+                    data-id="${Number(notification.notification_id)}"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="${active}"
+                >
+                    <div class="item-icon ${style.iconClass}">
+                        <i class="bi ${style.icon}"></i>
+                    </div>
 
-        if (dot) {
-            dot.style.display = "none";
-        }
+                    <div class="item-info">
+                        <div class="item-title-row">
+                            <h4>${escapeHTML(notification.title)}</h4>
+                            <span class="unread-dot"
+                                style="display:${unread ? "inline-block" : "none"}">
+                            </span>
+                        </div>
 
-        if (item === selectedItem) {
-            updateDetailStatus();
-        }
+                        <p>${escapeHTML(notification.message)}</p>
+
+                        <div class="item-bottom">
+                            <span class="item-time">
+                                ${escapeHTML(timeAgo(notification.created_at))}
+                            </span>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join("");
 
         updateCounts();
     }
 
-    // Display a notification's full details.
-    function openNotification(item) {
-        const data = notificationDetails[item.dataset.id];
+    function resetDetails() {
+        selectedId = null;
 
-        if (!data) {
-            console.error(
-                "Notification details not found for ID:",
-                item.dataset.id
-            );
-            return;
-        }
-
-        selectedItem = item;
-
-        // Highlight the selected notification.
-        items.forEach(function (otherItem) {
-            const active = otherItem === item;
-
-            otherItem.classList.toggle("active", active);
-            otherItem.setAttribute("aria-pressed", String(active));
-        });
-
-        // Notification heading and icon.
-        detailTitle.textContent = data.title;
-
-        detailIcon.className = "detail-icon " + data.iconClass;
-
-        detailIcon.innerHTML =
-            '<i class="bi ' + data.icon + '"></i>';
-
-        // Date and full message.
-        detailDate.textContent = data.date;
-
-        detailMessage.textContent =
-            data.message || "No message available.";
-
-        // Appointment information.
-        detailExtra.hidden = !data.extra;
-
-        if (data.extra) {
-            extraDate.textContent = data.appointmentDate || "";
-            extraTime.textContent = data.appointmentTime || "";
-        }
-
-        // Additional information note.
-        detailNote.hidden = !data.note;
-
-        detailNoteText.textContent = data.note || "";
-
-        // Update read/unread status.
-        updateDetailStatus();
-    }
-
-    // Open notifications when clicked or activated by keyboard.
-    items.forEach(function (item) {
-
-        item.addEventListener("click", function () {
-            openNotification(item);
-        });
-
-        item.addEventListener("keydown", function (event) {
-            if (event.target !== item) {
-                return;
-            }
-
-            if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                openNotification(item);
-            }
-        });
-
-    });
-
-    // Mark the selected notification as read.
-    markOneRead.addEventListener("click", function () {
-        if (!selectedItem) {
-            return;
-        }
-
-        markAsRead(selectedItem);
-    });
-
-    // Done marks the notification as read and resets the details panel.
-    closeDetail.addEventListener("click", function () {
-
-        if (selectedItem) {
-            markAsRead(selectedItem);
-
-            selectedItem.classList.remove("active");
-            selectedItem.setAttribute("aria-pressed", "false");
-
-            selectedItem = null;
-        }
-
-        // Reset the details panel.
-        detailTitle.textContent = "You're all caught up!";
-
+        detailTitle.textContent = "Select a notification";
         detailIcon.className = "detail-icon green-icon";
-
-        detailIcon.innerHTML =
-            '<i class="bi bi-check-circle"></i>';
-
-        detailDate.textContent = "Notification completed";
+        detailIcon.innerHTML = '<i class="bi bi-bell"></i>';
+        detailDate.textContent = "No notification selected";
 
         detailMessage.textContent =
-            "Select another notification from the list to read its details.";
+            "Select a notification from the list to read its details.";
 
         detailExtra.hidden = true;
         detailNote.hidden = true;
 
-        detailStatus.textContent = "Completed";
+        detailStatus.textContent = "No selection";
         detailStatus.className = "detail-status read-badge";
 
         markOneRead.disabled = true;
-
         markOneRead.innerHTML =
             '<i class="bi bi-check2-circle"></i> Mark as Read';
 
-        items.forEach(function (item) {
-            item.classList.remove("active");
-            item.setAttribute("aria-pressed", "false");
-        });
-
-        updateCounts();
-    });
-
-    // Initialise the page.
-    updateCounts();
-
-    // Open the first notification without marking it as read.
-    if (items.length > 0) {
-        openNotification(items[0]);
+        renderList();
     }
 
+    function openNotification(id) {
+        const notification = getNotification(id);
+
+        if (!notification) return;
+
+        selectedId = Number(notification.notification_id);
+
+        const style = getStyle(notification.type);
+
+        detailTitle.textContent = notification.title;
+        detailIcon.className = "detail-icon " + style.iconClass;
+        detailIcon.innerHTML = `<i class="bi ${style.icon}"></i>`;
+
+        detailDate.textContent = formatDate(notification.created_at);
+        detailMessage.textContent = notification.message || "No message available.";
+
+        const hasAppointment =
+            Boolean(notification.appointment_date) ||
+            Boolean(notification.appointment_time);
+
+        detailExtra.hidden = !hasAppointment;
+
+        extraDate.textContent = notification.appointment_date || "Not specified";
+        extraTime.textContent = notification.appointment_time || "Not specified";
+
+        detailNote.hidden = !notification.note;
+        detailNoteText.textContent = notification.note || "";
+
+        renderList();
+        updateDetailStatus();
+    }
+
+    async function loadNotifications() {
+        inboxList.innerHTML = "<p>Loading notifications...</p>";
+
+        try {
+            const response = await fetch(API_BASE, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to load notifications.");
+            }
+
+            notifications = Array.isArray(result) ? result : [];
+
+            renderList();
+
+            if (notifications.length > 0) {
+                openNotification(notifications[0].notification_id);
+            } else {
+                resetDetails();
+            }
+        } catch (error) {
+            console.error("Loading notifications failed:", error);
+
+            inboxList.innerHTML = "";
+            inboxEmpty.hidden = false;
+            inboxEmpty.querySelector("p").textContent =
+                "Unable to load notifications. Please log in and try again.";
+
+            totalCount.textContent = "0";
+            inboxSubtitle.textContent = "Notifications unavailable";
+
+            resetDetails();
+        }
+    }
+
+    async function markAsRead() {
+        if (selectedId === null) return;
+
+        const notification = getNotification(selectedId);
+
+        if (!notification || Number(notification.is_read) === 1) return;
+
+        markOneRead.disabled = true;
+
+        try {
+            const response = await fetch(
+                `${API_BASE}/${encodeURIComponent(selectedId)}/read`,
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to update notification.");
+            }
+
+            notification.is_read = 1;
+
+            renderList();
+            updateDetailStatus();
+        } catch (error) {
+            console.error("Mark as read failed:", error);
+            alert(error.message || "Unable to mark the notification as read.");
+            updateDetailStatus();
+        }
+    }
+
+    // Event delegation also works after the list is rebuilt.
+    inboxList.addEventListener("click", function (event) {
+        const item = event.target.closest(".inbox-item");
+
+        if (item) {
+            openNotification(item.dataset.id);
+        }
+    });
+
+    inboxList.addEventListener("keydown", function (event) {
+        const item = event.target.closest(".inbox-item");
+
+        if (
+            item &&
+            (event.key === "Enter" || event.key === " ")
+        ) {
+            event.preventDefault();
+            openNotification(item.dataset.id);
+        }
+    });
+
+    markOneRead.addEventListener("click", markAsRead);
+
+    // Done closes the details panel without changing read status.
+    closeDetail.addEventListener("click", resetDetails);
+
+    await loadNotifications();
 });

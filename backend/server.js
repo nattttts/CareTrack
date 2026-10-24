@@ -3311,6 +3311,561 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", (req, res) => {
     }
 });
 
+// =========================================
+// GET NOTIFICATIONS FOR THE LOGGED-IN USER
+// =========================================
+
+app.get(
+    "/api/notifications",
+    requireRole("mother", "child"),
+    (req, res) => {
+        try {
+            const userId = req.session.user.userId;
+
+            const notifications = db.prepare(`
+                SELECT
+                    notification_id,
+                    title,
+                    type,
+                    message,
+                    created_at,
+                    is_read,
+                    appointment_date,
+                    appointment_time,
+                    note
+                FROM Notification
+                WHERE user_id = ?
+                ORDER BY created_at DESC, notification_id DESC
+            `).all(userId);
+
+            res.json(notifications);
+        } catch (error) {
+            console.error("Error loading notifications:", error);
+
+            res.status(500).json({
+                message: "Failed to load notifications."
+            });
+        }
+    }
+);
+
+// =========================================
+// NOTIFICATIONS TABLE
+// =========================================
+db.exec(`
+    CREATE TABLE IF NOT EXISTS Notification (
+        notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'general',
+        message TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        is_read INTEGER NOT NULL DEFAULT 0,
+        appointment_date TEXT,
+        appointment_time TEXT,
+        note TEXT,
+        FOREIGN KEY (user_id) REFERENCES User(user_id)
+            ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_notification_user
+    ON Notification(user_id, created_at);
+`);
+
+// =========================================
+// MARK ONE NOTIFICATION AS READ
+// =========================================
+app.patch(
+    "/api/notifications/:id/read",
+    requireRole("mother", "child"),
+    (req, res) => {
+        const notificationId = Number(req.params.id);
+        const userId = req.session.user.userId;
+
+        if (
+            !Number.isSafeInteger(notificationId) ||
+            notificationId <= 0
+        ) {
+            return res.status(400).json({
+                message: "Invalid notification ID."
+            });
+        }
+
+        try {
+            const result = db.prepare(`
+                UPDATE Notification
+                SET is_read = 1
+                WHERE notification_id = ?
+                  AND user_id = ?
+            `).run(notificationId, userId);
+
+            if (result.changes === 0) {
+                return res.status(404).json({
+                    message: "Notification not found."
+                });
+            }
+
+            res.json({
+                message: "Notification marked as read."
+            });
+        } catch (error) {
+            console.error("Error updating notification:", error);
+
+            res.status(500).json({
+                message: "Failed to update notification."
+            });
+        }
+    }
+);
+
+
+/* =========================================================
+   PATIENT CHILD VACCINATION API
+   Used by child_vaccination.html
+   ========================================================= */
+
+// Get children the logged-in user is allowed to view.
+app.get(
+    "/api/patient/vaccination-children",
+    requireRole("mother", "child"),
+    (req, res) => {
+        try {
+            const { userId, role } = req.session.user;
+
+            let children;
+
+            if (role === "child") {
+                // A child account can only see its own profile.
+                children = db.prepare(`
+                    SELECT
+                        User.user_id,
+                        User.full_name,
+                        Child.gender,
+                        Child.date_of_birth
+                    FROM User
+                    INNER JOIN Child
+                        ON Child.user_id = User.user_id
+                    WHERE User.user_id = ?
+                      AND User.role = 'child'
+                `).all(userId);
+            } else {
+                // A mother can see children whose guardian name
+                // matches the logged-in mother's full name.
+                children = db.prepare(`
+                    SELECT
+                        Child.user_id,
+                        User.full_name,
+                        Child.gender,
+                        Child.date_of_birth
+                    FROM Child
+                    INNER JOIN User
+                        ON User.user_id = Child.user_id
+                    WHERE User.role = 'child'
+                      AND LOWER(TRIM(Child.guardian_name)) = (
+                          SELECT LOWER(TRIM(full_name))
+                          FROM User
+                          WHERE user_id = ?
+                            AND role = 'mother'
+                      )
+                    ORDER BY User.full_name
+                `).all(userId);
+            }
+
+            return res.json(children);
+        } catch (error) {
+            console.error(
+                "Error retrieving patient vaccination children:",
+                error
+            );
+
+            return res.status(500).json({
+                message: "Unable to load child information."
+            });
+        }
+    }
+);
+
+// Get vaccination records for an authorised child.
+app.get(
+    "/api/patient/vaccinations/:userId",
+    requireRole("mother", "child"),
+    (req, res) => {
+        try {
+            const loggedInUserId = req.session.user.userId;
+            const role = req.session.user.role;
+            const requestedChildId = String(req.params.userId || "").trim();
+
+            let child;
+
+            if (role === "child") {
+                // A child cannot request another child's records.
+                if (requestedChildId !== loggedInUserId) {
+                    return res.status(403).json({
+                        message: "You are not allowed to view this child's records."
+                    });
+                }
+
+                child = db.prepare(`
+                    SELECT
+                        User.user_id,
+                        User.full_name,
+                        Child.gender,
+                        Child.date_of_birth
+                    FROM User
+                    INNER JOIN Child
+                        ON Child.user_id = User.user_id
+                    WHERE User.user_id = ?
+                      AND User.role = 'child'
+                `).get(loggedInUserId);
+            } else {
+                // Verify the child belongs to this mother using the
+                // guardian-name relationship before returning records.
+                child = db.prepare(`
+                    SELECT
+                        Child.user_id,
+                        User.full_name,
+                        Child.gender,
+                        Child.date_of_birth
+                    FROM Child
+                    INNER JOIN User
+                        ON User.user_id = Child.user_id
+                    WHERE Child.user_id = ?
+                      AND User.role = 'child'
+                      AND LOWER(TRIM(Child.guardian_name)) = (
+                          SELECT LOWER(TRIM(full_name))
+                          FROM User
+                          WHERE user_id = ?
+                            AND role = 'mother'
+                      )
+                `).get(requestedChildId, loggedInUserId);
+            }
+
+            if (!child) {
+                return res.status(404).json({
+                    message: "Child not found or you do not have permission to view this child."
+                });
+            }
+
+            const records = db.prepare(`
+                SELECT
+                    cv.child_vaccination_id,
+                    cv.vaccination_id,
+                    v.vaccine_name,
+                    cv.dose,
+                    cv.status,
+                    cv.due_date
+                FROM Child_Vaccination AS cv
+                INNER JOIN Vaccination AS v
+                    ON v.vaccination_id = cv.vaccination_id
+                WHERE cv.user_id = ?
+                ORDER BY
+                    CASE WHEN cv.status = 'Upcoming' THEN 0 ELSE 1 END,
+                    cv.due_date,
+                    cv.child_vaccination_id
+            `).all(child.user_id);
+
+            return res.json({
+                child,
+                records
+            });
+        } catch (error) {
+            console.error(
+                "Error retrieving patient vaccination records:",
+                error
+            );
+
+            return res.status(500).json({
+                message: "Unable to load vaccination records."
+            });
+        }
+    }
+);
+
+
+/* =========================================
+   CHILD PROFILE: GET MOTHER EMERGENCY CONTACT
+========================================= */
+
+app.get("/api/patient/emergency-contact", (req, res) => {
+    if (!req.session?.user) {
+        return res.status(401).json({
+            message: "Please log in to continue."
+        });
+    }
+
+    const userId =
+        req.session.user.userId || req.session.user.user_id;
+
+    if (String(req.session.user.role || "").toLowerCase() !== "child") {
+        return res.status(403).json({
+            message: "This endpoint is for child accounts only."
+        });
+    }
+
+    try {
+        const child = db.prepare(`
+            SELECT guardian_name
+            FROM Child
+            WHERE user_id = ?
+        `).get(userId);
+
+        if (!child || !child.guardian_name?.trim()) {
+            return res.status(404).json({
+                message: "Guardian name is missing from the child record."
+            });
+        }
+
+        const mother = db.prepare(`
+            SELECT
+                User.full_name,
+                Mother.phone_no
+            FROM User
+            INNER JOIN Mother
+                ON Mother.user_id = User.user_id
+            WHERE LOWER(TRIM(User.full_name)) =
+                  LOWER(TRIM(?))
+            LIMIT 1
+        `).get(child.guardian_name);
+
+        if (!mother) {
+            console.error(
+                "Mother not found for guardian:",
+                child.guardian_name
+            );
+
+            return res.status(404).json({
+                message: "No matching mother account was found."
+            });
+        }
+
+        return res.json({
+            mother: {
+                fullName: mother.full_name,
+                phoneNo: mother.phone_no || "",
+                relationship: "Mother"
+            }
+        });
+    } catch (error) {
+        console.error("Error loading mother's details:", error);
+
+        return res.status(500).json({
+            message: "Unable to load mother's details."
+        });
+    }
+});
+
+app.put("/api/mother/emergency-contact", (req, res) => {
+    try {
+        // Check login session
+        if (!req.session || !req.session.user) {
+            return res.status(401).json({
+                message: "Please log in to continue."
+            });
+        }
+
+        const user = req.session.user;
+
+        const userId = user.userId || user.user_id;
+        const role = String(user.role || "").trim().toLowerCase();
+
+        // Only mother accounts can edit their emergency contact
+        if (role !== "mother") {
+            return res.status(403).json({
+                message: "Only mother accounts can edit emergency contacts."
+            });
+        }
+
+        const contactName = String(
+            req.body.contactName || ""
+        ).trim();
+
+        const relationship = String(
+            req.body.relationship || ""
+        ).trim();
+
+        const contactPhone = String(
+            req.body.contactPhone || ""
+        ).trim();
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "User ID is missing from the login session."
+            });
+        }
+
+        if (!contactName || !relationship || !contactPhone) {
+            return res.status(400).json({
+                message: "Please fill in all emergency contact fields."
+            });
+        }
+
+        // Save to the existing Mother table
+        const result = db.prepare(`
+            UPDATE Mother
+            SET contact_name = ?,
+                relationship = ?,
+                contact_phone_no = ?
+            WHERE user_id = ?
+        `).run(
+            contactName,
+            relationship,
+            contactPhone,
+            userId
+        );
+
+        if (result.changes === 0) {
+            return res.status(404).json({
+                message: "Mother profile not found in the database."
+            });
+        }
+
+        return res.status(200).json({
+            message: "Emergency contact saved successfully.",
+            contact: {
+                contactName,
+                relationship,
+                contactPhone
+            }
+        });
+
+    } catch (error) {
+        console.error(
+            "Emergency contact database error:",
+            error
+        );
+
+        return res.status(500).json({
+            message: "Unable to save emergency contact. Check the backend terminal for details."
+        });
+    }
+});
+
+app.put("/api/me", (req, res) => {
+    try {
+        // Use the logged-in session to identify the user.
+        const sessionUser = req.session?.user;
+
+        const userId =
+            sessionUser?.user_id ||
+            sessionUser?.userId ||
+            sessionUser?.id;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Please log in again."
+            });
+        }
+
+        const {
+            fullName,
+            phoneNo,
+            email,
+            dateOfBirth,
+            address
+        } = req.body;
+
+        if (!fullName?.trim() || !email?.trim()) {
+            return res.status(400).json({
+                message: "Name and email are required."
+            });
+        }
+
+        // Update only columns that must exist in your User table.
+        const statement = db.prepare(`
+            UPDATE User
+            SET full_name = ?,
+                email = ?
+            WHERE user_id = ?
+        `);
+
+        const result = statement.run(
+            fullName.trim(),
+            email.trim(),
+            userId
+        );
+
+        if (result.changes === 0) {
+            return res.status(404).json({
+                message: "User not found or no changes were made."
+            });
+        }
+
+        // Phone, DOB and address are not saved by this query yet.
+        return res.json({
+            message: "Name and email updated successfully.",
+            fullName: fullName.trim(),
+            email: email.trim()
+        });
+
+    } catch (error) {
+        console.error("Profile update error:", error);
+
+        return res.status(500).json({
+            message: "Unable to update profile."
+        });
+    }
+});
+
+app.put("/api/mother/emergency-contact", (req, res) => {
+    if (!req.session?.user) {
+        return res.status(401).json({
+            message: "Please log in to continue."
+        });
+    }
+
+    const userId =
+        req.session.user.userId || req.session.user.user_id;
+
+    if (
+        String(req.session.user.role || "").toLowerCase() !== "mother"
+    ) {
+        return res.status(403).json({
+            message: "Only mother accounts can update emergency contacts."
+        });
+    }
+
+    const contactName = String(req.body.contactName || "").trim();
+    const relationship = String(req.body.relationship || "").trim();
+    const contactPhone = String(req.body.contactPhone || "").trim();
+
+    if (!contactName || !relationship || !contactPhone) {
+        return res.status(400).json({
+            message: "Please fill in all emergency contact fields."
+        });
+    }
+
+    try {
+        const result = db.prepare(`
+            UPDATE Mother
+            SET
+                contact_name = ?,
+                relationship = ?,
+                contact_phone_no = ?
+            WHERE user_id = ?
+        `).run(
+            contactName,
+            relationship,
+            contactPhone,
+            userId
+        );
+
+        if (result.changes === 0) {
+            return res.status(404).json({
+                message: "Mother profile not found."
+            });
+        }
+
+        return res.json({
+            message: "Emergency contact saved successfully."
+        });
+    } catch (error) {
+        console.error("Emergency contact save error:", error);
+
+        return res.status(500).json({
+            message: "Unable to save emergency contact."
+        });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);

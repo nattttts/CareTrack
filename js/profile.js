@@ -1,130 +1,419 @@
-function editProfile() {
+/* ========================================
+   LOAD LOGGED-IN ACCOUNT
+======================================== */
+async function loadLoggedInProfile() {
+    try {
+        const response = await fetch("/api/me", {
+            method: "GET",
+            credentials: "same-origin",
+            headers: {
+                Accept: "application/json"
+            }
+        });
 
-    const card = document.querySelector(".profile-card");
-
-    const button = document.getElementById("editButton");
-
-    if (card.classList.contains("editing")) {
-
-        // Get values from input boxes
-        const name =
-            document.getElementById("nameInput").value;
-
-        const nric =
-            document.getElementById("nricInput").value;
-
-        const dobInput =
-            document.getElementById("dobInput").value;
-
-        const phone =
-            document.getElementById("phoneInput").value;
-
-        const email =
-            document.getElementById("emailInput").value;
-
-        const address =
-            document.getElementById("addressInput").value;
-
-        // Convert date into readable format
-        let dob = dobInput;
-
-        if (dobInput !== "") {
-
-            const date = new Date(dobInput);
-
-            dob = date.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric"
-            });
-
+        if (response.status === 401) {
+            window.location.href = "login.html";
+            return;
         }
 
-        // Update displayed information
-        document.getElementById("profileName").textContent = name;
+        const user = await response.json();
 
-        document.getElementById("headerProfileName").textContent = name;
+        if (!response.ok) {
+            throw new Error(user.message || "Unable to load profile.");
+        }
 
-        document.getElementById("nameText").textContent = name;
+        const role = String(user.role || "")
+            .trim()
+            .toLowerCase();
 
-        document.getElementById("nricText").textContent = nric;
+        const isChild = role === "child";
+        const isMother = role === "mother";
 
-        document.getElementById("dobText").textContent = dob;
+        if (!isChild && !isMother) {
+            throw new Error("Unsupported account role.");
+        }
 
-        document.getElementById("phoneText").textContent = phone;
+        const fullName =
+            user.fullName ?? user.full_name ?? user.name ?? "";
 
-        document.getElementById("emailText").textContent = email;
-
-        document.getElementById("addressText").textContent = address;
-
-
-        // Leave edit mode
-        card.classList.remove("editing");
-
-        button.innerHTML = "✎ Edit Profile";
-
-    }
-
-    else {
-
-        // Enter edit mode
-        card.classList.add("editing");
-
-        button.innerHTML = "✓ Save Changes";
-
-    }
-
-}
-
-function editEmergency() {
-
-    const emergencyCard =
-        document.querySelectorAll(".profile-card")[1];
-
-    const button =
-        document.getElementById("emergencyEditButton");
-
-
-    if (emergencyCard.classList.contains("editing")) {
-
-        const name =
-            document.getElementById("emergencyNameInput").value;
-
-        const relationship =
-            document.getElementById("relationshipInput").value;
+        const userId =
+            user.userId ?? user.user_id ?? user.icNo ?? user.ic_no ?? "";
 
         const phone =
-            document.getElementById("emergencyPhoneInput").value;
+            user.phoneNo ?? user.phone_no ?? user.phone ?? "";
 
-        // Update displayed information
-        document.getElementById("emergencyNameText")
-            .textContent = name;
+        const email = user.email ?? "";
 
-        document.getElementById("relationshipText")
-            .textContent = relationship;
+        const dob =
+            user.dateOfBirth ?? user.date_of_birth ?? user.dob ?? "";
 
-        document.getElementById("emergencyPhoneText")
-            .textContent = phone;
+        const gender =
+            user.gender ?? user.sex ?? "";
 
+        const address =
+            user.address ?? user.homeAddress ?? user.home_address ?? "";
 
-        // Leave edit mode
+        /* ========================================
+           PROFILE HEADER
+        ======================================== */
+        const headerName = document.getElementById("userName");
+        const profileName = document.getElementById("profileName");
+        const roleLabel = document.getElementById("userRole");
 
-        emergencyCard.classList.remove("editing");
+        if (headerName) headerName.textContent = fullName;
+        if (profileName) profileName.textContent = fullName;
 
-        button.innerHTML = "✎ Edit";
+        if (roleLabel) {
+            roleLabel.textContent =
+                role.charAt(0).toUpperCase() + role.slice(1);
+        }
 
+        /* ========================================
+           PERSONAL INFORMATION
+        ======================================== */
+        setProfileField("nameText", "nameInput", fullName);
+        setProfileField("nricText", "nricInput", userId);
+        setProfileField("phoneText", "phoneInput", phone);
+        setProfileField("emailText", "emailInput", email);
+        setProfileField("dobText", "dobInput", dob);
+
+        const dobText = document.getElementById("dobText");
+
+        if (dobText) {
+            dobText.textContent = dob
+                ? formatProfileDate(dob)
+                : "Not available";
+        }
+
+        /* ========================================
+           ADDRESS / GENDER
+        ======================================== */
+        const addressItem = document.getElementById("addressItem");
+        const addressLabel = document.getElementById("addressLabel");
+        const addressText = document.getElementById("addressText");
+        const addressInput = document.getElementById("addressInput");
+        const addressGenderIcon =
+            document.getElementById("addressGenderIcon");
+
+        if (addressItem) {
+            addressItem.style.display = "";
+        }
+
+        if (isChild) {
+            // Child profile displays Gender instead of Address.
+            if (addressLabel) {
+                addressLabel.textContent = "Gender";
+            }
+
+            if (addressText) {
+                addressText.textContent = gender || "Not available";
+            }
+
+            if (addressGenderIcon) {
+                addressGenderIcon.src = "../icons/gender.png";
+                addressGenderIcon.alt = "Gender";
+            }
+
+            if (addressInput) {
+                addressInput.value = gender;
+                addressInput.style.display = "none";
+                addressInput.readOnly = true;
+            }
+
+            const editButton = document.getElementById("editButton");
+            const resetPasswordButton =
+                document.getElementById("resetPassword");
+
+            // Children cannot edit their personal information,
+            // but they can reset their own password.
+            if (editButton) {
+                editButton.style.display = "none";
+            }
+
+            if (resetPasswordButton) {
+                resetPasswordButton.style.display = "";
+            }
+        } else {
+            // Mother profile displays Address instead of Gender.
+            if (addressLabel) {
+                addressLabel.textContent = "Address";
+            }
+
+            if (addressText) {
+                addressText.textContent = address || "Not available";
+            }
+
+            if (addressGenderIcon) {
+                addressGenderIcon.src = "../icons/location.png";
+                addressGenderIcon.alt = "Address";
+            }
+
+            if (addressInput) {
+                addressInput.value = address;
+                addressInput.style.display = "";
+                addressInput.readOnly = false;
+            }
+
+            const editButton = document.getElementById("editButton");
+            const resetPasswordButton =
+                document.getElementById("resetPassword");
+
+            if (editButton) editButton.style.display = "";
+            if (resetPasswordButton) {
+                resetPasswordButton.style.display = "";
+            }
+        }
+
+        /* ========================================
+           EMERGENCY CONTACT
+        ======================================== */
+        const emergencyCard =
+            document.getElementById("emergencyContactCard");
+
+        const emergencyEditButton =
+            document.getElementById("emergencyEditButton");
+
+        const emergencyDescription =
+            document.getElementById("emergencyContactDescription");
+
+        // Explicitly display the card for both supported roles.
+        if (emergencyCard) {
+            emergencyCard.style.display = "block";
+        }
+
+        if (isMother) {
+            if (emergencyDescription) {
+                emergencyDescription.textContent =
+                    "Person to contact in case of emergency";
+            }
+
+            setProfileField(
+                "emergencyNameText",
+                "emergencyNameInput",
+                user.contactName ??
+                user.contact_name ??
+                user.emergencyName ??
+                user.emergency_name
+            );
+
+            setProfileField(
+                "relationshipText",
+                "relationshipInput",
+                user.relationship ??
+                user.contactRelationship ??
+                user.contact_relationship
+            );
+
+            setProfileField(
+                "emergencyPhoneText",
+                "emergencyPhoneInput",
+                user.contactPhoneNo ??
+                user.contact_phone_no ??
+                user.contactPhone ??
+                user.contact_phone ??
+                user.emergencyPhone ??
+                user.emergency_phone
+            );
+
+            if (emergencyEditButton) {
+                emergencyEditButton.style.display = "";
+            }
+
+            setEmergencyInputsReadOnly(false);
+
+        } else {
+            // Child sees the linked mother's contact details.
+            if (emergencyDescription) {
+                emergencyDescription.textContent =
+                    "Your mother's emergency contact details";
+            }
+
+            if (emergencyEditButton) {
+                emergencyEditButton.style.display = "none";
+            }
+
+            setEmergencyInputsReadOnly(true);
+
+            setProfileField(
+                "emergencyNameText",
+                "emergencyNameInput",
+                "Loading..."
+            );
+
+            setProfileField(
+                "relationshipText",
+                "relationshipInput",
+                "Mother"
+            );
+
+            setProfileField(
+                "emergencyPhoneText",
+                "emergencyPhoneInput",
+                "Loading..."
+            );
+
+            await loadChildEmergencyContact();
+        }
+
+    } catch (error) {
+        console.error("Profile loading error:", error);
+        alert("Unable to load your profile. Please try again.");
     }
-
-    else {
-        // Enter edit mode
-        emergencyCard.classList.add("editing");
-
-        button.innerHTML = "✓ Save";
-
-    }
-
 }
 
+/* ========================================
+   LOAD CHILD'S MOTHER EMERGENCY CONTACT
+======================================== */
+async function loadChildEmergencyContact() {
+    try {
+        const response = await fetch(
+            "/api/patient/emergency-contact",
+            {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    Accept: "application/json"
+                }
+            }
+        );
+
+        const responseText = await response.text();
+        let result;
+
+        try {
+            result = JSON.parse(responseText);
+        } catch {
+            throw new Error(
+                `Emergency contact API returned HTML (HTTP ${response.status}).`
+            );
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Unable to load emergency contact."
+            );
+        }
+
+        const mother = result.mother || {};
+
+        setProfileField(
+            "emergencyNameText",
+            "emergencyNameInput",
+            mother.fullName || ""
+        );
+
+        setProfileField(
+            "relationshipText",
+            "relationshipInput",
+            mother.relationship || "Mother"
+        );
+
+        setProfileField(
+            "emergencyPhoneText",
+            "emergencyPhoneInput",
+            mother.phoneNo || ""
+        );
+
+        setEmergencyInputsReadOnly(true);
+
+    } catch (error) {
+        console.error("Child emergency contact error:", error);
+
+        setProfileField(
+            "emergencyNameText",
+            "emergencyNameInput",
+            "Not available"
+        );
+
+        setProfileField(
+            "relationshipText",
+            "relationshipInput",
+            "Mother"
+        );
+
+        setProfileField(
+            "emergencyPhoneText",
+            "emergencyPhoneInput",
+            "Not available"
+        );
+    }
+}
+
+/* ========================================
+   HELPER: EMERGENCY INPUT PERMISSIONS
+======================================== */
+function setEmergencyInputsReadOnly(readOnly) {
+    [
+        "emergencyNameInput",
+        "relationshipInput",
+        "emergencyPhoneInput"
+    ].forEach(id => {
+        const input = document.getElementById(id);
+
+        if (input) {
+            input.readOnly = readOnly;
+        }
+    });
+}
+
+/* ========================================
+   HELPER: SET PROFILE FIELD
+======================================== */
+function setProfileField(textId, inputId, value) {
+    const textElement = document.getElementById(textId);
+    const inputElement = document.getElementById(inputId);
+
+    const hasValue =
+        value !== null &&
+        value !== undefined &&
+        String(value).trim() !== "";
+
+    const displayValue = hasValue
+        ? String(value)
+        : "Not available";
+
+    if (textElement) {
+        textElement.textContent = displayValue;
+    }
+
+    if (inputElement) {
+        inputElement.value = hasValue ? String(value) : "";
+    }
+}
+
+/* ========================================
+   HELPER: FORMAT DATE
+======================================== */
+function formatProfileDate(dateValue) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(
+        String(dateValue || "")
+    );
+
+    if (match) {
+        const [, year, month, day] = match;
+
+        return new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day)
+        ).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric"
+        });
+    }
+
+    return dateValue;
+}
+
+/* ========================================
+   PAGE LOAD
+======================================== */
+document.addEventListener("DOMContentLoaded", loadLoggedInProfile);
+
+/* ========================================
+   RESET PASSWORD BUTTON
+======================================== */
 function resetPassword() {
 
     // Ask for the current password
@@ -134,48 +423,230 @@ function resetPassword() {
     if (currentPassword === null) {
         return;
     }
-
     if (currentPassword.trim() === "") {
         alert("Please Enter Your Current Password: ");
         return;
-    }
-
+    } 
     // Ask for the new password
     const newPassword = prompt("Please Enter Your New Password: ");
 
     if (newPassword === null) {
         return;
-    }
-
-    if (newPassword.length < 8) {
+    } if (newPassword.length < 8) {
         alert("Your New Password MUST Contain At Least 8 CHARACTERS.");
         return;
-    }
-
-    // Confirm the new password
-    const confirmPassword = prompt("Please Confirm Your New Password:");
-
-    if (confirmPassword === null) {
-        return;
-    }
-
-    if (newPassword !== confirmPassword) {
-        alert("The New Passwords DO NOT MATCH. Please Try Again.");
-        return;
-    }
-
-    if (currentPassword === newPassword) {
+    }if (currentPassword === newPassword) {
         alert("Your New Password MUST Be Different From Your Current Password.");
         return;
     }
+    // Confirm the new password
+    const confirmPassword = prompt("Please Confirm Your New Password:"); 
 
+    if (confirmPassword === null) {
+        return;
+    }if (newPassword !== confirmPassword) {
+        alert("The New Passwords DO NOT MATCH. Please Try Again.");
+        return;
+    }
+    
     // Confirm the action
     const confirmReset = confirm("Are You Sure You Want To Reset Your Password?");
 
     if (!confirmReset) {
         return;
     }
-
     alert("Password Validation Successful !!!");
+}
 
+async function editProfile() {
+    const card = document.getElementById("personalInformationCard");
+    const button = document.getElementById("editButton");
+
+    if (!card || !button) {
+        console.error("Profile card or Edit button not found.");
+        return;
+    }
+
+    // Enter edit mode.
+    if (!card.classList.contains("editing")) {
+        card.classList.add("editing");
+        button.textContent = "✓ Save Changes";
+        return;
+    }
+
+    const name = document.getElementById("nameInput").value.trim();
+    const phone = document.getElementById("phoneInput").value.trim();
+    const email = document.getElementById("emailInput").value.trim();
+    const dob = document.getElementById("dobInput").value;
+    const address = document.getElementById("addressInput").value.trim();
+
+    if (!name || !phone || !email) {
+        alert("Please fill in your name, phone number, and email.");
+        return;
+    }
+
+    if (!document.getElementById("emailInput").checkValidity()) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
+    try {
+        button.disabled = true;
+        button.textContent = "Saving...";
+
+        const response = await fetch("http://localhost:3000/api/me", {
+            method: "PUT",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                fullName: name,
+                phoneNo: phone,
+                email: email,
+                dateOfBirth: dob,
+                address: address
+            })
+        });
+
+        // Read response safely, even if the server returns HTML.
+        const responseText = await response.text();
+        let result;
+
+        try {
+            result = JSON.parse(responseText);
+        } catch {
+            console.error("Non-JSON response:", responseText);
+
+            throw new Error(
+                `Backend returned HTML or invalid JSON (HTTP ${response.status}). ` +
+                `Check whether PUT /api/me exists in server.js.`
+            );
+        }
+
+        if (!response.ok) {
+            throw new Error(result.message || `HTTP ${response.status}`);
+        }
+
+        document.getElementById("profileName").textContent = name;
+        document.getElementById("userName").textContent = name;
+        document.getElementById("nameText").textContent = name;
+        document.getElementById("phoneText").textContent = phone;
+        document.getElementById("emailText").textContent = email;
+        document.getElementById("dobText").textContent =
+            dob ? formatProfileDate(dob) : "Not available";
+        document.getElementById("addressText").textContent =
+            address || "Not available";
+
+        card.classList.remove("editing");
+        button.textContent = "✎ Edit Profile";
+
+        alert("Profile updated successfully.");
+
+    } catch (error) {
+        console.error("Profile save error:", error);
+        alert(error.message || "Unable to save your profile.");
+        button.textContent = "✓ Save Changes";
+    } finally {
+        button.disabled = false;
+    }
+}
+
+async function editEmergency() {
+    const card = document.getElementById("emergencyContactCard");
+    const button = document.getElementById("emergencyEditButton");
+
+    if (!card || !button) {
+        console.error("Emergency contact card or button not found.");
+        return;
+    }
+
+    // First click: enter edit mode.
+    if (!card.classList.contains("editing")) {
+        card.classList.add("editing");
+        button.textContent = "✓ Save Changes";
+        return;
+    }
+
+    const contactName =
+        document.getElementById("emergencyNameInput").value.trim();
+
+    const relationship =
+        document.getElementById("relationshipInput").value.trim();
+
+    const contactPhone =
+        document.getElementById("emergencyPhoneInput").value.trim();
+
+    if (!contactName || !relationship || !contactPhone) {
+        alert("Please fill in all emergency contact fields.");
+        return;
+    }
+
+    try {
+        button.disabled = true;
+        button.textContent = "Saving...";
+        
+        const response = await fetch("/api/mother/emergency-contact", {
+            method: "PUT",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                contactName: document.getElementById("emergencyNameInput").value.trim(),
+                relationship: document.getElementById("relationshipInput").value.trim(),
+                contactPhone: document.getElementById("emergencyPhoneInput").value.trim()
+            })
+        });
+
+        const responseText = await response.text();
+            let result;
+
+            try {
+                result = JSON.parse(responseText);
+            } catch {
+                throw new Error(
+                    `Invalid server response (HTTP ${response.status}). Check server.js.`
+                );
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Unable to save emergency contact."
+                );
+            }
+
+        setProfileField(
+            "emergencyNameText",
+            "emergencyNameInput",
+            contactName
+        );
+
+        setProfileField(
+            "relationshipText",
+            "relationshipInput",
+            relationship
+        );
+
+        setProfileField(
+            "emergencyPhoneText",
+            "emergencyPhoneInput",
+            contactPhone
+        );
+
+        card.classList.remove("editing");
+        button.textContent = "✎ Edit";
+
+        alert("Emergency contact saved successfully.");
+
+    } catch (error) {
+        console.error("Emergency contact save error:", error);
+        alert(error.message || "Unable to save emergency contact.");
+
+        button.textContent = "✓ Save Changes";
+    } finally {
+        button.disabled = false;
+    }
 }
