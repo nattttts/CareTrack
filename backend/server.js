@@ -5,7 +5,8 @@ const db = require("./database");
 const { createInvitation } = require("./invitation");
 const crypto = require("node:crypto");
 const { hashPassword, verifyPassword } = require("./password");
-const { sendInvitationEmail } = require("./email");
+const { createPasswordReset } = require("./password_reset");
+const { sendInvitationEmail, sendPasswordResetEmail } = require("./email");
 const session = require("express-session");
 const SqliteStore = require("better-sqlite3-session-store")(session);
 require("dotenv").config({
@@ -46,7 +47,9 @@ const publicHtmlPages = new Set([
     "about.html",
     "contact.html",
     "login.html",
-    "set_password.html"
+    "set_password.html",
+    "forgot_password.html",
+    "reset_password.html"
 ]);
 
 // Define which roles can access each protected page
@@ -295,6 +298,212 @@ app.post("/api/set-password", async (req, res) => {
 
         return res.status(500).json({
             message: "Unable to set your password right now. Please try again."
+        });
+    }
+});
+
+// Request a password reset link
+app.post("/api/forgot-password", async (req, res) => {
+    const genericMessage =
+        "If an eligible account matches the information provided, a password reset link will be sent to its registered email address.";
+
+    try {
+        const { userId } = req.body;
+
+        if (typeof userId !== "string" || !userId.trim()) {
+            return res.json({ message: genericMessage });
+        }
+
+        const user = db.prepare(`
+            SELECT user_id, email
+            FROM User
+            WHERE user_id = ?
+              AND account_status = 'Active'
+              AND password_set = 1
+        `).get(userId.trim());
+
+        // Return the same public response if no eligible account is found.
+        if (!user) {
+            return res.json({ message: genericMessage });
+        }
+
+        // Create a reset token and save its hash.
+        const resetToken = createPasswordReset(user.user_id);
+
+        const baseUrl = (
+            process.env.APP_BASE_URL || "http://localhost:3000"
+        ).replace(/\/+$/, "");
+
+        const resetUrl =
+            `${baseUrl}/reset_password.html?token=${resetToken}`;
+
+        await sendPasswordResetEmail(user.email, resetUrl);
+
+        return res.json({ message: genericMessage });
+
+    } catch (error) {
+        console.error("Error requesting password reset:", error);
+        return res.json({ message: genericMessage });
+    }
+});
+
+// Reset an existing account password
+app.post("/api/reset-password", async (req, res) => {
+    try {
+        const { token, password, confirmPassword } = req.body;
+
+        // Validate required fields.
+        if (
+            typeof token !== "string" ||
+            typeof password !== "string" ||
+            typeof confirmPassword !== "string"
+        ) {
+            return res.status(400).json({
+                message: "Please complete all required fields."
+            });
+        }
+
+        // Check the token format.
+        if (!/^[a-f0-9]{64}$/i.test(token)) {
+            return res.status(400).json({
+                message: "This password reset link is invalid or has expired. Please request a new link."
+            });
+        }
+
+        // Enforce the same password policy as initial setup.
+        if (password.length < 12 || password.length > 128) {
+            return res.status(400).json({
+                message: "Your password must be between 12 and 128 characters."
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                message: "The passwords do not match."
+            });
+        }
+
+        // Hash the submitted token before looking it up.
+        const tokenHash = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        // Find the reset token and its associated account.
+        const resetRecord = db.prepare(`
+            SELECT
+                Password_Reset_Token.reset_id,
+                Password_Reset_Token.user_id,
+                Password_Reset_Token.expires_at,
+                Password_Reset_Token.used_at,
+                Password_Reset_Token.revoked_at,
+                User.password_set,
+                User.account_status
+            FROM Password_Reset_Token
+            INNER JOIN User
+                ON Password_Reset_Token.user_id = User.user_id
+            WHERE Password_Reset_Token.token_hash = ?
+        `).get(tokenHash);
+
+        // Reject invalid, expired, used, revoked, or ineligible tokens.
+        if (
+            !resetRecord ||
+            resetRecord.used_at ||
+            resetRecord.revoked_at ||
+            new Date(resetRecord.expires_at).getTime() <= Date.now() ||
+            Number(resetRecord.password_set) !== 1 ||
+            resetRecord.account_status !== "Active"
+        ) {
+            return res.status(400).json({
+                message: "This password reset link is invalid or has expired. Please request a new link."
+            });
+        }
+
+        // Hash the new password using the existing Argon2id helper.
+        const passwordHash = await hashPassword(password);
+
+        // Recheck the token and account inside a transaction.
+        const completeReset = db.transaction(() => {
+            const currentRecord = db.prepare(`
+                SELECT
+                    Password_Reset_Token.user_id,
+                    Password_Reset_Token.expires_at,
+                    User.password_set,
+                    User.account_status
+                FROM Password_Reset_Token
+                INNER JOIN User
+                    ON Password_Reset_Token.user_id = User.user_id
+                WHERE Password_Reset_Token.reset_id = ?
+                  AND Password_Reset_Token.token_hash = ?
+                  AND Password_Reset_Token.used_at IS NULL
+                  AND Password_Reset_Token.revoked_at IS NULL
+            `).get(resetRecord.reset_id, tokenHash);
+
+            if (
+                !currentRecord ||
+                new Date(currentRecord.expires_at).getTime() <= Date.now() ||
+                Number(currentRecord.password_set) !== 1 ||
+                currentRecord.account_status !== "Active"
+            ) {
+                return false;
+            }
+
+            // Update the password hash, never the plain-text password.
+            const updateUser = db.prepare(`
+                UPDATE User
+                SET password_hash = ?
+                WHERE user_id = ?
+                  AND password_set = 1
+                  AND account_status = 'Active'
+            `).run(passwordHash, currentRecord.user_id);
+
+            if (updateUser.changes !== 1) {
+                return false;
+            }
+
+            // Mark this token as used.
+            const useToken = db.prepare(`
+                UPDATE Password_Reset_Token
+                SET used_at = CURRENT_TIMESTAMP
+                WHERE reset_id = ?
+                  AND used_at IS NULL
+                  AND revoked_at IS NULL
+            `).run(resetRecord.reset_id);
+
+            if (useToken.changes !== 1) {
+                throw new Error("Could not mark the reset token as used.");
+            }
+
+            // Invalidate any other outstanding reset links for this account.
+            db.prepare(`
+                UPDATE Password_Reset_Token
+                SET revoked_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+                  AND reset_id != ?
+                  AND used_at IS NULL
+                  AND revoked_at IS NULL
+            `).run(currentRecord.user_id, resetRecord.reset_id);
+
+            return true;
+        });
+
+        const success = completeReset();
+
+        if (!success) {
+            return res.status(400).json({
+                message: "This password reset link is invalid or has expired. Please request a new link."
+            });
+        }
+
+        return res.json({
+            message: "Your password has been reset successfully. You can now log in."
+        });
+
+    } catch (error) {
+        console.error("Error resetting password:", error);
+
+        return res.status(500).json({
+            message: "Unable to reset your password right now. Please try again."
         });
     }
 });
