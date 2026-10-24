@@ -173,9 +173,9 @@ async function main() {
             [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "09:30", "Completed"],
             [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "09:30", "Confirmed"],
             [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "10:30", "Missed"],
-            [7, "960106-07-0008", "Maternal Follow-up", "2026-11-01", "10:00", "10:30", "Confirmed"],
-            [8, "260801-07-0007", "Child Vaccination", "2026-11-01", "10:00", "10:30", "Confirmed"],
-            [9, "260902-07-0003", "Child Vaccination", "2026-11-01", "09:00", "09:30", "Confirmed"]
+            [7, "960106-07-0008", "Maternal Follow-up", "2026-11-02", "10:00", "10:30", "Confirmed"],
+            [8, "260801-07-0007", "Child Vaccination", "2026-11-02", "10:00", "10:30", "Confirmed"],
+            [9, "260902-07-0003", "Child Vaccination", "2026-11-02", "09:00", "09:30", "Confirmed"]
         ];
 
         appointments.forEach(row => insert.appointment.run(...row));
