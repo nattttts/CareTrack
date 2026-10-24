@@ -3742,7 +3742,6 @@ app.put("/api/mother/emergency-contact", (req, res) => {
 
 app.put("/api/me", (req, res) => {
     try {
-        // Use the logged-in session to identify the user.
         const sessionUser = req.session?.user;
 
         const userId =
@@ -3770,31 +3769,63 @@ app.put("/api/me", (req, res) => {
             });
         }
 
-        // Update only columns that must exist in your User table.
-        const statement = db.prepare(`
-            UPDATE User
-            SET full_name = ?,
-                email = ?
+        const newFullName = fullName.trim();
+        const newEmail = email.trim();
+
+        // Get the user's existing name and role before updating.
+        const existingUser = db.prepare(`
+            SELECT full_name, role
+            FROM User
             WHERE user_id = ?
-        `);
+        `).get(userId);
 
-        const result = statement.run(
-            fullName.trim(),
-            email.trim(),
-            userId
-        );
-
-        if (result.changes === 0) {
+        if (!existingUser) {
             return res.status(404).json({
-                message: "User not found or no changes were made."
+                message: "User not found."
             });
         }
 
-        // Phone, DOB and address are not saved by this query yet.
+        const oldFullName = existingUser.full_name;
+        const role = String(existingUser.role || "").toLowerCase();
+
+        // Update the User table and synchronize child guardian names
+        // in one transaction so both changes succeed together.
+        const updateProfile = db.transaction(() => {
+            db.prepare(`
+                UPDATE User
+                SET full_name = ?,
+                    email = ?
+                WHERE user_id = ?
+            `).run(newFullName, newEmail, userId);
+
+            // Only synchronize children when a mother changes her name.
+            if (
+                role === "mother" &&
+                oldFullName &&
+                oldFullName.trim().toLowerCase() !==
+                    newFullName.toLowerCase()
+            ) {
+                db.prepare(`
+                    UPDATE Child
+                    SET guardian_name = ?
+                    WHERE LOWER(TRIM(guardian_name)) =
+                          LOWER(TRIM(?))
+                `).run(newFullName, oldFullName);
+            }
+        });
+
+        updateProfile();
+
+        // Keep the session name current if it is stored there.
+        if (sessionUser) {
+            sessionUser.fullName = newFullName;
+            sessionUser.full_name = newFullName;
+        }
+
         return res.json({
-            message: "Name and email updated successfully.",
-            fullName: fullName.trim(),
-            email: email.trim()
+            message: "Profile updated successfully.",
+            fullName: newFullName,
+            email: newEmail
         });
 
     } catch (error) {
