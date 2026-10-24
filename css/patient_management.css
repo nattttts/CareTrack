@@ -237,10 +237,24 @@ a {
     box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
 }
 
+.patient-table-container {
+    max-height: 450px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* Keep the table headings visible while scrolling */
+.patient-table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #fff;
+}
+
 .management-table {
     width: 100%; 
     min-width: 1000px;
-} 
+}
 
 .management-table thead th {
     padding: 14px 18px;
@@ -463,7 +477,7 @@ a {
 
 /* ================= TABLE FOOTER ================= */
 .table-footer {
-    min-height: 54px;
+    min-height: 35px;
     padding: 0 18px;
 
     display: flex;
@@ -473,36 +487,6 @@ a {
     border-top: 1px solid #f0e5ea;
     color: #748399;
     font-size: 10px;
-}
-
-.pagination-buttons {
-    display: flex;
-    gap: 5px;
-}
-
-.pagination-button {
-    width: 30px;
-    height: 30px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: 1px solid #e1dce0;
-    border-radius: 5px;
-    background: var(--white);
-    color: #61728a;
-    font-size: 11px;
-}
-
-.pagination-button.current {
-    color: var(--white);
-    background: var(--caretrack-pink);
-    border-color: var(--caretrack-pink);
-}
-
-.pagination-button:disabled {
-    opacity: 0.45;
 }
 
 /* ================= ADD MODALS ================= */
