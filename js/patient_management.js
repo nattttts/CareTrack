@@ -3,9 +3,6 @@ import { showToast } from "./popup_message.js";
 let allMother = [];
 let allChild = [];
 
-let requestedMotherStatus = null;
-let requestedChildStatus = null;
-
 // ================= LOAD MOTHER =================
 async function loadMother() {
     const tableBody = document.getElementById("motherTableBody");
@@ -149,115 +146,6 @@ async function loadMother() {
     }
 }
 
-// ================= LOAD CHILD =================
-async function loadChild() {
-    const tableBody = document.getElementById("childTableBody");
-
-    try {
-        const response = await fetch("http://localhost:3000/api/children");
-
-        if (!response.ok) {
-            throw new Error("Failed to retrieve child records.");
-        }
-
-        const childList = await response.json();
-        
-        allChild = childList;
-
-        // Remove old rows, but keep the "no matching child" message
-        tableBody.querySelectorAll(".child-row").forEach(row => row.remove());
-
-        childList.forEach(child => {
-            const row = document.createElement("tr");
-            row.classList.add("child-row");
-
-            row.dataset.search = [
-                child.full_name,
-                child.user_id,
-                child.guardian_name
-            ].join(" ").toLowerCase();
-
-            row.dataset.status = child.account_status;
-
-            row.innerHTML = `
-                <td>
-                    <strong>${child.full_name}</strong>
-                </td>
-
-                <td>${child.user_id}</td>
-                <td>${child.gender}</td>
-                <td>${child.guardian_name}</td>
-                
-                <td>
-                    <span class="status-badge ${
-                        child.account_status === "Active"
-                            ? "active-status"
-                            : "inactive-status"
-                    }">
-                        <span class="status-dot"></span>
-                        ${child.account_status}
-                    </span>
-                </td>
-                <td>${new Date(child.created_at).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                })}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button type="button" class="action-button view-button">
-                            <i class="bi bi-eye"></i>
-                            <span>View</span>
-                        </button>
-
-                        <button type="button" class="action-button edit-button">
-                            <i class="bi bi-pencil"></i>
-                            <span>Edit</span>
-                        </button>
-                        
-                        <button
-                            type="button"
-                            class="action-button ${
-                                child.account_status === "Active"
-                                    ? "deactivate-button"
-                                    : "activate-button"
-                            }"
-                        >
-                            <i class="bi ${
-                                child.account_status === "Active"
-                                    ? "bi-person-x"
-                                    : "bi-person-check"
-                            }"></i>
-                            <span>${
-                                child.account_status === "Active"
-                                    ? "Deactivate"
-                                    : "Activate"
-                            }</span>
-                        </button>
-
-                    </div>
-                </td>
-            `;
-
-            row.dataset.childId = child.child_id;
-
-            tableBody.appendChild(row);
-        });
-
-        applyChildFilters();
-
-    } catch (error) {
-        console.error("Error loading children:", error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center">
-                    Unable to load child records.
-                </td>
-            </tr>
-        `;
-    }
-}
-
 // ================= MOTHER SEARCH & FILTER =================
 function applyMotherFilters() {
     const searchInput = document
@@ -301,60 +189,11 @@ function applyMotherFilters() {
         `Showing ${visibleCount} of ${allMother.length} mother`;
 }
 
-// ================= CHILD SEARCH & FILTER =================
-function applyChildFilters() {
-    const searchInput = document
-        .getElementById("childSearch")
-        .value
-        .toLowerCase()
-        .trim();
-
-    const selectedStatus = document.getElementById("childStatusFilter").value;
-
-    const rows = document.querySelectorAll(
-        "#childTableBody .child-row"
-    );
-
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-        const matchesSearch =
-            row.dataset.search.includes(searchInput);
-
-        const matchesStatus =
-            selectedStatus === "all" ||
-            row.dataset.status === selectedStatus;
-
-        const matches = matchesSearch && matchesStatus;
-
-        row.style.display = matches ? "" : "none";
-
-        if (matches) {
-            visibleCount++;
-        }
-    });
-
-    const noChildFound = document.getElementById("noChildFound");
-
-    if (noChildFound) {
-        noChildFound.hidden = visibleCount > 0;
-    }
-
-    document.getElementById("childCount").textContent =
-        `Showing ${visibleCount} of ${allChild.length} child`;
-}
-
-// ================= RESET FILTERS =================
+// ================= RESET MOTHER FILTERS =================
 function resetMotherFilters() {
     document.getElementById("motherSearch").value = "";
     document.getElementById("motherStatusFilter").value = "all";
     applyMotherFilters();
-}
-
-function resetChildFilters() {
-    document.getElementById("childSearch").value = "";
-    document.getElementById("childStatusFilter").value = "all";
-    applyChildFilters();
 }
 
 async function resendMotherInvitation(motherId, button) {
@@ -413,6 +252,7 @@ async function resendMotherInvitation(motherId, button) {
 const motherTableBody = document.getElementById("motherTableBody");
 
 let selectedMother = null;
+let requestedMotherStatus = null;
 
 motherTableBody.addEventListener("click", function (event) {
     const button = event.target.closest("button");
@@ -812,10 +652,256 @@ document
     });
 
 
+// ================= LOAD CHILD =================
+async function loadChild() {
+    const tableBody = document.getElementById("childTableBody");
+
+    try {
+        const response = await fetch("http://localhost:3000/api/children");
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve child records.");
+        }
+
+        const childList = await response.json();
+        
+        allChild = childList;
+
+        // Remove old rows, but keep the "no matching child" message
+        tableBody.querySelectorAll(".child-row").forEach(row => row.remove());
+
+        childList.forEach(child => {
+            const row = document.createElement("tr");
+            row.classList.add("child-row");
+
+            row.dataset.search = [
+                child.full_name,
+                child.user_id,
+                child.guardian_name
+            ].join(" ").toLowerCase();
+
+            row.dataset.status = child.account_status;
+
+            row.innerHTML = `
+                <td>
+                    <strong>${child.full_name}</strong>
+                </td>
+
+                <td>${child.user_id}</td>
+                <td>${child.gender}</td>
+                <td>${child.guardian_name}</td>
+                
+                <td>
+                    <div class="account-status-group">
+                        <span class="status-badge ${
+                            child.account_status === "Active"
+                                ? "active-status"
+                                : "inactive-status"
+                        }">
+                            <span class="status-dot"></span>
+                            ${child.account_status}
+                        </span>
+
+                        <span class="password-status ${
+                            Number(child.password_set) === 1
+                                ? "password-set"
+                                : "password-not-set"
+                        }">
+                            <i class="bi ${
+                                Number(child.password_set) === 1
+                                    ? "bi-check-circle"
+                                    : "bi-clock"
+                            }"></i>
+
+                            ${
+                                Number(child.password_set) === 1
+                                    ? "Password set"
+                                    : "Password not set"
+                            }
+                        </span>
+                    </div>
+                </td>
+                <td>${new Date(child.created_at).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                })}</td>
+                <td class="patient-actions-cell">
+                    <div class="action-buttons">
+                        <button type="button" class="action-button view-button">
+                            <i class="bi bi-eye"></i>
+                            <span>View</span>
+                        </button>
+
+                        <button type="button" class="action-button edit-button">
+                            <i class="bi bi-pencil"></i>
+                            <span>Edit</span>
+                        </button>
+                        
+                        <button
+                            type="button"
+                            class="action-button ${
+                                child.account_status === "Active"
+                                    ? "deactivate-button"
+                                    : "activate-button"
+                            }"
+                        >
+                            <i class="bi ${
+                                child.account_status === "Active"
+                                    ? "bi-person-x"
+                                    : "bi-person-check"
+                            }"></i>
+                            <span>${
+                                child.account_status === "Active"
+                                    ? "Deactivate"
+                                    : "Activate"
+                            }</span>
+                        </button>
+                    </div>
+
+                    ${
+                        Number(child.password_set) !== 1
+                            ? `
+                                <button
+                                    type="button"
+                                    class="action-button resend-invitation-button"
+                                    data-child-id="${child.child_id}"
+                                >
+                                    <i class="bi bi-envelope"></i>
+                                    <span>Resend Invitation</span>
+                                </button>
+                            `
+                            : ""
+                    }
+                </td>
+            `;
+
+            row.dataset.childId = child.child_id;
+
+            tableBody.appendChild(row);
+        });
+
+        applyChildFilters();
+
+    } catch (error) {
+        console.error("Error loading children:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    Unable to load child records.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// ================= CHILD SEARCH & FILTER =================
+function applyChildFilters() {
+    const searchInput = document
+        .getElementById("childSearch")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const selectedStatus = document.getElementById("childStatusFilter").value;
+
+    const rows = document.querySelectorAll(
+        "#childTableBody .child-row"
+    );
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const matchesSearch =
+            row.dataset.search.includes(searchInput);
+
+        const matchesStatus =
+            selectedStatus === "all" ||
+            row.dataset.status === selectedStatus;
+
+        const matches = matchesSearch && matchesStatus;
+
+        row.style.display = matches ? "" : "none";
+
+        if (matches) {
+            visibleCount++;
+        }
+    });
+
+    const noChildFound = document.getElementById("noChildFound");
+
+    if (noChildFound) {
+        noChildFound.hidden = visibleCount > 0;
+    }
+
+    document.getElementById("childCount").textContent =
+        `Showing ${visibleCount} of ${allChild.length} child`;
+}
+
+// ================= RESET CHILD FILTERS =================
+function resetChildFilters() {
+    document.getElementById("childSearch").value = "";
+    document.getElementById("childStatusFilter").value = "all";
+    applyChildFilters();
+}
+
+async function resendChildInvitation(childId, button) {
+    const originalText = button.innerHTML;
+
+    try {
+        // Prevent repeated clicks while the request is processing
+        button.disabled = true;
+        button.textContent = "Sending...";
+
+        // Ask the backend to generate a new invitation
+        const response = await fetch(
+            `http://localhost:3000/api/child/${childId}/resend-invitation`,
+            {
+                method: "POST"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to resend invitation."
+            );
+        }
+
+        showToast("Invitation sent successfully.", "success");
+
+
+        // Development only: show the returned invitation URL
+        // if the backend provides one
+        if (result.developmentInvitationUrl) {
+            console.log(
+                "Development invitation URL:",
+                result.developmentInvitationUrl
+            );
+        }
+
+        // Refresh the child table to reflect the latest account data
+        await loadChild();
+
+    } catch (error) {
+        console.error("Error resending invitation:", error);
+        showToast(error.message || "Failed to resend invitation.", "error");
+    } finally {
+        // The original button may have been removed by loadChild()
+        // Restore it only if it is still present on the page
+        if (button.isConnected) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+}
+
 // ================= HANDLE CHILD ACTION BUTTONS =================
 const childTableBody = document.getElementById("childTableBody");
 
 let selectedChild = null;
+let requestedChildStatus = null;
 
 childTableBody.addEventListener("click", function (event) {
     const button = event.target.closest("button");
@@ -974,7 +1060,75 @@ childTableBody.addEventListener("click", function (event) {
             )
             .show();
     }
+
+    // RESEND INVITATION
+    else if (button.classList.contains("resend-invitation-button")) {
+        resendChildInvitation(child.child_id, button);
+    }
 });
+
+// Add new child
+document
+    .getElementById("addChildForm")
+    .addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const submitButton = this.querySelector(
+            'button[type="submit"]'
+        );
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Adding...";
+
+        const childData = {
+            full_name: document.getElementById("addChildName").value,
+            user_id: document.getElementById("addChildMyKid").value,
+            date_of_birth: document.getElementById("addChildDOB").value,
+            gender: document.getElementById("addChildGender").value,
+            guardian_name: document.getElementById("addChildGuardianName").value,
+            phone_no: document.getElementById("addChildGuardianPhone").value,
+            email: document.getElementById("addChildGuardianEmail").value
+        };
+
+        try {
+            const response = await fetch("http://localhost:3000/api/child", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(childData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to add child.");
+            }
+
+            // Close the modal and clear the form
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    document.getElementById("addChildModal")
+                )
+                .hide();
+
+            this.reset();
+
+            // Refresh the child table
+            await loadChild();
+
+            showToast("Child added successfully!", "success");
+
+        } catch (error) {
+            console.error("Error adding child:", error);
+            showToast(error.message, "error");
+            
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Add Child";
+        }
+    });
 
 // ================= UPDATE CHILD DETAILS =================
 document.getElementById("editChildForm").addEventListener(
@@ -1156,6 +1310,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Disable future dates in birth date pickers
     const motherDOB = document.getElementById("addMotherDOB");
     const editMotherDOB = document.getElementById("editMotherDOB");
+    const childDOB = document.getElementById("addChildDOB");
     const editChildDOB = document.getElementById("editChildDOB");
 
     const today = new Date().toLocaleDateString("sv-SE");
@@ -1168,25 +1323,19 @@ document.addEventListener("DOMContentLoaded", () => {
         editMotherDOB.max = today;
     }
 
+    if (childDOB) {
+        childDOB.max = today;
+    }
+
     if (editChildDOB) {
         editChildDOB.max = today;
     }
 
-    document.getElementById("motherSearch")
-        .addEventListener("input", applyMotherFilters);
+    document.getElementById("motherSearch").addEventListener("input", applyMotherFilters);
+    document.getElementById("motherStatusFilter").addEventListener("change", applyMotherFilters);
+    document.getElementById("motherResetFilters").addEventListener("click", resetMotherFilters);
 
-    document.getElementById("motherStatusFilter")
-        .addEventListener("change", applyMotherFilters);
-
-    document.getElementById("motherResetFilters")
-        .addEventListener("click", resetMotherFilters);
-
-    document.getElementById("childSearch")
-        .addEventListener("input", applyChildFilters);
-
-    document.getElementById("childStatusFilter")
-        .addEventListener("change", applyChildFilters);
-
-    document.getElementById("childResetFilters")
-        .addEventListener("click", resetChildFilters);
+    document.getElementById("childSearch").addEventListener("input", applyChildFilters);
+    document.getElementById("childStatusFilter").addEventListener("change", applyChildFilters);
+    document.getElementById("childResetFilters").addEventListener("click", resetChildFilters);
 });

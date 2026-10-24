@@ -1052,17 +1052,7 @@ app.get("/api/mothers", requireRole("staff"), (req, res) => {
 
 // Add a new mother
 app.post("/api/mother", requireRole("staff"), async (req, res) => {
-    const { 
-        user_id,
-        full_name,
-        email,
-        date_of_birth,
-        phone_no,
-        address,
-        contact_name,
-        relationship,
-        contact_phone_no 
-    } = req.body;
+    const { full_name, user_id, email, date_of_birth, phone_no, address, contact_name, relationship, contact_phone_no } = req.body;
 
     // Validate required fields
     if (
@@ -1596,7 +1586,8 @@ app.get("/api/children", requireRole("staff"), (req, res) => {
                 Child.date_of_birth,
                 Child.gender,
                 Child.guardian_name,
-                Child.phone_no
+                Child.phone_no,
+                User.password_set
             FROM Child
             INNER JOIN User
                 ON Child.user_id = User.user_id
@@ -1610,6 +1601,269 @@ app.get("/api/children", requireRole("staff"), (req, res) => {
 
         res.status(500).json({
             message: "Failed to retrieve child records."
+        });
+    }
+});
+
+// Add a new child
+app.post("/api/child", requireRole("staff"), async (req, res) => {
+    const { full_name, user_id, date_of_birth, gender, guardian_name, phone_no, email } = req.body;
+
+    // Validate required fields
+    if (
+        typeof full_name !== "string" ||
+        typeof user_id !== "string" ||
+        typeof date_of_birth !== "string" ||
+        typeof gender !== "string" ||
+        typeof guardian_name !== "string" ||
+        typeof phone_no !== "string" ||
+        typeof email !== "string"
+    ) {
+        return res.status(400).json({
+            message: "Please provide all required child details."
+        });
+    }
+
+    const name = full_name.trim();
+    const myKidNumber = user_id.trim();
+    const dob = date_of_birth.trim();
+    const guardianName = guardian_name.trim();
+    const guardianPhone = phone_no.trim();
+    const guardianEmail = email.trim().toLowerCase();
+
+    if (!name || !myKidNumber || !dob || !guardianName || !guardianPhone || !guardianEmail) {
+        return res.status(400).json({
+            message: "All fields are required."
+        });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guardianEmail)) {
+        return res.status(400).json({
+            message: "Please enter a valid email address."
+        });
+    }
+
+    // Validate date of birth
+    const date = new Date(dob);
+
+    if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(dob) ||
+        Number.isNaN(date.getTime()) ||
+        date.toISOString().slice(0, 10) !== dob
+    ) {
+        return res.status(400).json({
+            message: "Please enter a valid date of birth."
+        });
+    }
+
+     if (!["Male", "Female"].includes(gender)) {
+        return res.status(400).json({
+            message: "Please select a valid gender."
+        });
+    }
+
+    // Validate MyKid number format
+    if (!/^[0-9]{6}-[0-9]{2}-[0-9]{4}$/.test(myKidNumber)) {
+        return res.status(400).json({
+            message: "Please enter a valid MyKid number e.g. 260101-07-1234"
+        });
+    }
+
+    // Validate Malaysian mobile number format
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(guardianPhone)) {
+        return res.status(400).json({
+            message: "Please enter a valid phone number e.g. 012-3456789"
+        });
+    }
+
+    try {
+        // Check whether this MyKid number already has an account
+        const existingUser = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE user_id = ?
+        `).get(myKidNumber);
+
+        if (existingUser) {
+            return res.status(409).json({
+                message: "An account with this MyKid number already exists."
+            });
+        }
+
+        // Check whether the email is used by a staff or admin account
+        const duplicateEmail = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE LOWER(TRIM(email)) = LOWER(?)
+            AND role IN ('staff', 'admin')
+        `).get(guardianEmail);
+
+        if (duplicateEmail) {
+            return res.status(409).json({
+                message: "This email is already used by another account."
+            });
+        }
+
+        // TEMPORARY: Replace with a real password hash before implementing login
+        // The login route must reject accounts where password_set = 0
+        const passwordHash = "TEMP_HASH_REPLACE_BEFORE_AUTH";
+
+        // Create the user, child profile and invitation together
+        // If any database operation fails, the transaction rolls back
+        const createChild = db.transaction(() => {
+            db.prepare(`
+                INSERT INTO User (
+                    user_id,
+                    full_name,
+                    email,
+                    password_hash,
+                    role,
+                    account_status,
+                    password_set
+                )
+                VALUES (?, ?, ?, ?, 'child', 'Active', 0)
+            `).run(
+                myKidNumber,
+                name,
+                guardianEmail,
+                passwordHash
+            );
+
+            const result = db.prepare(`
+                INSERT INTO Child (
+                    user_id,
+                    date_of_birth,
+                    gender,
+                    guardian_name,
+                    phone_no
+                )
+                VALUES (?, ?, ?, ?, ?)
+            `).run(
+                myKidNumber,
+                dob,
+                gender,
+                guardianName,
+                guardianPhone
+            );
+ 
+            // Create an invitation for the newly created child account.
+            // createInvitation() uses a nested transaction, which
+            // better-sqlite3 supports through a savepoint
+            const token = createInvitation(myKidNumber);
+
+            return {
+                childId: result.lastInsertRowid,
+                token
+            };
+        });
+
+        const { childId, token } = createChild();
+
+        // Construct the invitation URL for local testing
+        const baseUrl = (
+            process.env.APP_BASE_URL || `http://localhost:${PORT}`
+        ).replace(/\/+$/, "");
+
+        const invitationUrl =
+            `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
+        
+        let emailError = false;
+
+        try {
+            await sendInvitationEmail(guardianEmail, invitationUrl);
+        } catch (error) {
+            emailError = true;
+            console.error("Failed to send child invitation email:", error);
+        }
+
+        const response = {
+            message: emailError
+                ? "Child account created, but the invitation email could not be sent. Please resend it."
+                : "Child account created and invitation email sent.",
+            child_id: childId
+        };
+
+        return res.status(201).json(response);
+
+    } catch (error) {
+        console.error("Error creating child:", error);
+
+        if (
+            error.code === "SQLITE_CONSTRAINT_PRIMARYKEY" ||
+            error.code === "SQLITE_CONSTRAINT_UNIQUE"
+        ) {
+            return res.status(409).json({
+                message: "A child account with these details already exists."
+            });
+        }
+
+        return res.status(500).json({
+            message: "Failed to create child account."
+        });
+    }
+});
+
+// Resend invitation link for password setup
+app.post("/api/child/:childId/resend-invitation", requireRole("staff"), async (req, res) => {
+    try {
+        const child = db.prepare(`
+            SELECT
+                Child.user_id,
+                User.email,
+                User.password_set,
+                User.account_status
+            FROM Child
+            INNER JOIN User
+                ON Child.user_id = User.user_id
+            WHERE Child.child_id = ?
+        `).get(req.params.childId);
+
+        if (!child) {
+            return res.status(404).json({
+                message: "Child account not found."
+            });
+        }
+
+        if (Number(child.password_set) === 1) {
+            return res.status(409).json({
+                message: "This child member has already set their password."
+            });
+        }
+
+        if (child.account_status !== "Active") {
+            return res.status(409).json({
+                message: "Activate this child account before sending an invitation."
+            });
+        }
+
+        const token = createInvitation(child.user_id);
+
+        const baseUrl =
+            process.env.APP_BASE_URL || `http://localhost:${PORT}`;
+
+        const invitationUrl =
+            `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
+
+        try {
+            await sendInvitationEmail(child.email, invitationUrl);
+
+            return res.status(200).json({
+                message: "Invitation email sent successfully."
+            });
+
+        } catch (error) {
+            console.error("Failed to resend child invitation:", error);
+
+            return res.status(500).json({
+                message: "The new invitation was created, but the email could not be sent. Please try resending it."
+            });
+        }
+
+    } catch (error) {
+        console.error("Error creating child invitation:", error);
+
+        return res.status(500).json({
+            message: "Failed to create the child invitation."
         });
     }
 });
@@ -1650,14 +1904,14 @@ app.patch("/api/child/:childId", requireRole("staff"), (req, res) => {
         });
     }
 
-    const newIC = user_id.trim();
+    const newMyKid = user_id.trim();
     const name = full_name.trim();
     const dob = date_of_birth.trim();
     const guardianName = guardian_name.trim();
     const phone = phone_no.trim();
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (!newIC || !name || !dob || !guardianName || !phone || !normalizedEmail) {
+    if (!newMyKid || !name || !dob || !guardianName || !phone || !normalizedEmail) {
         return res.status(400).json({
             message: "All fields are required."
         });
@@ -1688,6 +1942,20 @@ app.patch("/api/child/:childId", requireRole("staff"), (req, res) => {
         });
     }
 
+    // Validate MyKid number format
+    if (!/^[0-9]{6}-[0-9]{2}-[0-9]{4}$/.test(newMyKid)) {
+        return res.status(400).json({
+            message: "Please enter a valid MyKid number e.g. 260101-07-1234"
+        });
+    }
+
+    // Validate Malaysian mobile number format
+    if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
+        return res.status(400).json({
+            message: "Please enter a valid phone number e.g. 012-3456789"
+        });
+    }
+
     try {
         // Find the existing child account
         const existingChild = db.prepare(`
@@ -1703,16 +1971,31 @@ app.patch("/api/child/:childId", requireRole("staff"), (req, res) => {
         }
 
         // Check whether the new MyKid number belongs to another account
-        const duplicateIC = db.prepare(`
+        const duplicateMyKid = db.prepare(`
             SELECT user_id
             FROM User
             WHERE user_id = ?
             AND user_id != ?
-        `).get(newIC, existingChild.user_id);
+        `).get(newMyKid, existingChild.user_id);
 
-        if (duplicateIC) {
+        if (duplicateMyKid) {
             return res.status(409).json({
-                message: "This IC number is already registered."
+                message: "This MyKid number is already registered."
+            });
+        }
+
+        // Check whether the email is used by a staff or admin account
+        const duplicateEmail = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE LOWER(TRIM(email)) = LOWER(?)
+            AND user_id != ?
+            AND role IN ('staff', 'admin')
+        `).get(normalizedEmail, existingChild.user_id);
+
+        if (duplicateEmail) {
+            return res.status(409).json({
+                message: "This email is already used by a staff or admin account."
             });
         }
 
@@ -1725,7 +2008,7 @@ app.patch("/api/child/:childId", requireRole("staff"), (req, res) => {
                     email = ?
                 WHERE user_id = ?
             `).run(
-                newIC,
+                newMyKid,
                 name,
                 normalizedEmail,
                 existingChild.user_id
@@ -1990,7 +2273,7 @@ app.patch(
 
             if (duplicate) {
                 return res.status(409).json({
-                    message: "This IC number is already registered."
+                    message: "This MyKid number is already registered."
                 });
             }
 
