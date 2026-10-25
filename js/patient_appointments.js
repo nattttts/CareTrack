@@ -1,5 +1,12 @@
 import { showToast } from "./popup_message.js";
 
+let appointmentsData = [];
+const appointmentsPerPage = 5;
+
+let pastCurrentPage = 1;
+let missedCurrentPage = 1;
+
+
 // Get all tabs and appointment sections
 const tabs = document.querySelectorAll(".appointment-tab");
 const sections = document.querySelectorAll(".appointment-section");
@@ -167,6 +174,58 @@ function createAppointmentCard(appointment) {
 }
 
 
+function renderPagination(appointments, container, currentPage, onPageChange) {
+    const totalPages = Math.ceil(
+        appointments.length / appointmentsPerPage
+    );
+
+    container.replaceChildren();
+
+    if (totalPages <= 1) {
+        return;
+    }
+
+    const previousButton = document.createElement("button");
+    previousButton.type = "button";
+    previousButton.textContent = "Previous";
+    previousButton.disabled = currentPage === 1;
+
+    previousButton.addEventListener("click", () => {
+        onPageChange(currentPage - 1);
+    });
+
+    container.appendChild(previousButton);
+
+    for (let page = 1; page <= totalPages; page++) {
+        const pageButton = document.createElement("button");
+        pageButton.type = "button";
+        pageButton.textContent = page;
+
+        if (page === currentPage) {
+            pageButton.classList.add("active");
+            pageButton.setAttribute("aria-current", "page");
+        }
+
+        pageButton.addEventListener("click", () => {
+            onPageChange(page);
+        });
+
+        container.appendChild(pageButton);
+    }
+
+    const nextButton = document.createElement("button");
+    nextButton.type = "button";
+    nextButton.textContent = "Next";
+    nextButton.disabled = currentPage === totalPages;
+
+    nextButton.addEventListener("click", () => {
+        onPageChange(currentPage + 1);
+    });
+
+    container.appendChild(nextButton);
+}
+
+
 function renderAppointments() {
     const categories = [
         {
@@ -179,13 +238,25 @@ function renderAppointments() {
             status: "Completed",
             containerId: "pastAppointments",
             emptyId: "pastEmpty",
-            countId: "pastCount"
+            countId: "pastCount",
+            paginationId: "pastPagination",
+            getPage: () => pastCurrentPage,
+            setPage: page => {
+                pastCurrentPage = page;
+                renderAppointments();
+            }
         },
         {
             status: "Missed",
             containerId: "missedAppointments",
             emptyId: "missedEmpty",
-            countId: "missedCount"
+            countId: "missedCount",
+            paginationId: "missedPagination",
+            getPage: () => missedCurrentPage,
+            setPage: page => {
+                missedCurrentPage = page;
+                renderAppointments();
+            }
         }
     ];
 
@@ -194,18 +265,74 @@ function renderAppointments() {
         const emptyMessage = document.getElementById(category.emptyId);
         const count = document.getElementById(category.countId);
 
-        const matchingAppointments = appointmentsData.filter(
-            appointment => appointment.status === category.status
-        );
+        const matchingAppointments = appointmentsData
+            .filter(appointment => appointment.status === category.status)
+            .sort((a, b) => {
+                // Upcoming appointments remain in their original order
+                if (category.status === "Confirmed") {
+                    return 0;
+                }
+
+                // Past and Missed: newest date and time first
+                const dateTimeA = `${a.appointment_date}T${a.start_time}`;
+                const dateTimeB = `${b.appointment_date}T${b.start_time}`;
+
+                return dateTimeB.localeCompare(dateTimeA);
+            });
 
         container.replaceChildren();
 
-        matchingAppointments.forEach(appointment => {
+        count.textContent = matchingAppointments.length;
+        emptyMessage.hidden = matchingAppointments.length > 0;
+
+        if (!category.paginationId) {
+            // Upcoming: display every matching appointment
+            matchingAppointments.forEach(appointment => {
+                container.appendChild(createAppointmentCard(appointment));
+            });
+
+            return;
+        }
+
+        const paginationContainer = document.getElementById(
+            category.paginationId
+        );
+
+        const totalPages = Math.ceil(
+            matchingAppointments.length / appointmentsPerPage
+        );
+
+        // Keep the current page within the valid range
+        const currentPage = Math.min(
+            category.getPage(),
+            Math.max(totalPages, 1)
+        );
+
+        if (currentPage !== category.getPage()) {
+            if (category.status === "Completed") {
+                pastCurrentPage = currentPage;
+            } else {
+                missedCurrentPage = currentPage;
+            }
+        }
+
+        const startIndex = (currentPage - 1) * appointmentsPerPage;
+
+        const pageAppointments = matchingAppointments.slice(
+            startIndex,
+            startIndex + appointmentsPerPage
+        );
+
+        pageAppointments.forEach(appointment => {
             container.appendChild(createAppointmentCard(appointment));
         });
 
-        emptyMessage.hidden = matchingAppointments.length > 0;
-        count.textContent = matchingAppointments.length;
+        renderPagination(
+            matchingAppointments,
+            paginationContainer,
+            currentPage,
+            category.setPage
+        );
     });
 }
 
@@ -455,8 +582,6 @@ document.getElementById("rescheduleRequestForm")
         }
     }
 );
-
-let appointmentsData = [];
 
 // Load the logged-in patient's appointments
 async function loadAppointments() {

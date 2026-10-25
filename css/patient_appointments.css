@@ -456,6 +456,44 @@ img {
     justify-content: center;
 }
 
+/* Pagination */
+.appointment-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 24px 0;
+}
+
+.appointment-pagination button {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #dce9f6;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #405a7c;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.appointment-pagination button:hover:not(:disabled) {
+    border-color: #f9528e;
+    color: #f9528e;
+}
+
+.appointment-pagination button.active {
+    border-color: #f9528e;
+    background: #f9528e;
+    color: #ffffff;
+}
+
+.appointment-pagination button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* Modal Detail */
 
 .appointment-modal-header {
