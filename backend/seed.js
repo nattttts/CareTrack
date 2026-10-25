@@ -59,12 +59,6 @@ const insert = {
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `),
 
-    rescheduleRequest: db.prepare(`
-        INSERT INTO Reschedule_Request
-            (reschedule_request_id, appointment_id, appointment_date, start_time, end_time, status, reject_reason, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `),
-
     childVaccination: db.prepare(`
         INSERT INTO Child_Vaccination
             (child_vaccination_id, user_id, vaccination_id, due_date, dose, status)
@@ -73,8 +67,8 @@ const insert = {
 
     notification: db.prepare(`
         INSERT INTO Notification
-            (notification_id, user_id, appointment_id, child_vaccination_id, title, message, is_read)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (notification_id, user_id, title, message, is_read)
+        VALUES (?, ?, ?, ?, ?)
     `),
 
     queue: db.prepare(`
@@ -179,16 +173,6 @@ async function main() {
         ];
 
         appointments.forEach(row => insert.appointment.run(...row));
-        // =========================================
-        // 9. RESCHEDULE REQUEST
-        // =========================================
-        const rescheduleRequests = [
-            [1, 4, "2026-10-13", "09:00", "09:30", "Approved", null, "2026-09-21 12:00:00"],
-            [2, 5, "2026-11-17", "09:30", "10:00", "Pending", null, "2026-10-20 12:00:00"],
-            [3, 9, "2026-11-10", "09:30", "10:00", "Pending", null, "2026-10-21 14:00:00"]
-        ]
-
-        rescheduleRequests.forEach(row => insert.rescheduleRequest.run(...row));
 
         // =========================================
         // 9. CHILD VACCINATION RECORDS
@@ -203,42 +187,40 @@ async function main() {
 
         // =========================================
         // 10. NOTIFICATIONS
-        // Both linked records can be provided for vaccination
-        // appointment notifications.
         // is_read: 0 = unread, 1 = read.
         // =========================================
         const notifications = [
-            [1, "970107-07-0010", 1, null, "Appointment Scheduled",
+            [1, "970107-07-0010", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 20 July 2026 at 11:00.", 1],
 
-            [2, "980108-07-0012", 2, null, "Appointment Scheduled",
+            [2, "980108-07-0012", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 20 August 2026 at 10:30.", 1],
 
-            [3, "950105-07-0006", 6, null, "Appointment Scheduled",
+            [3, "950105-07-0006", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 13 October 2026 at 09:00.", 0],
 
-            [4, "260801-07-0007", 3, 1, "Vaccination Appointment Scheduled",
+            [4, "260801-07-0007", "Vaccination Appointment Scheduled",
                 "Your next vaccination appointment has been scheduled on 1 October 2026", 1],
 
-            [5, "950105-07-0006", 4, null, "Appointment Scheduled",
+            [5, "950105-07-0006", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 12 October 2026 at 09:00.", 1],
             
-            [6, "950105-07-0006", 4, null, "Appointment Successfully Rescheduled",
+            [6, "950105-07-0006", "Appointment Successfully Rescheduled",
                 "Your appointment has been rescheduled to 13 October 2026 at 09:00.", 1],
             
-            [7, "950105-07-0006", 5, null, "Appointment Scheduled",
+            [7, "950105-07-0006", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 13 November 2026 at 09:00.", 0],
 
-            [8, "960106-07-0008", 6, null, "Missed Appointment",
+            [8, "960106-07-0008", "Missed Appointment",
                 "Your appointment that was scheduled on 13 October 2026 was missed.", 1],
             
-            [9, "960106-07-0008", 7, null, "Appointment Scheduled",
+            [9, "960106-07-0008", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 20 October 2026", 0],
             
-            [10, "260801-07-0007", 8, 2, "Vaccination Appointment Scheduled",
+            [10, "260801-07-0007", "Vaccination Appointment Scheduled",
                 "Your next vaccination appointment has been scheduled on 1 November 2026", 0],
 
-            [11, "260902-07-0003", 9, 3, "Vaccination Appointment Scheduled",
+            [11, "260902-07-0003", "Vaccination Appointment Scheduled",
                 "Your next vaccination appointment has been scheduled on 1 November 2026", 0]
         ];
 

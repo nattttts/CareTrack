@@ -211,14 +211,10 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
 -- =========================================
 -- 12. NOTIFICATION
 -- Each user can receive multiple notifications.
--- A notification may refer to an appointment,
--- a vaccination record, or both.
 -- =========================================
 CREATE TABLE IF NOT EXISTS Notification (
     notification_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
-    appointment_id INTEGER,
-    child_vaccination_id INTEGER,
 
     title TEXT NOT NULL,
     message TEXT NOT NULL,
@@ -228,13 +224,7 @@ CREATE TABLE IF NOT EXISTS Notification (
 
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
-        ON UPDATE CASCADE,
-
-    FOREIGN KEY (appointment_id)
-        REFERENCES Appointment(appointment_id),
-
-    FOREIGN KEY (child_vaccination_id)
-        REFERENCES Child_Vaccination(child_vaccination_id)
+        ON UPDATE CASCADE
 );
 
 
