@@ -85,6 +85,14 @@ async function loadLoggedInProfile() {
                 : "Not available";
         }
 
+        // Hide the personal phone number for child accounts.
+        // The mother's phone number is displayed in Emergency Contact.
+        const phoneItem = document.getElementById("phoneItem");
+
+        if (phoneItem) {
+            phoneItem.style.display = isChild ? "none" : "";
+        }
+
         /* ========================================
            ADDRESS / GENDER
         ======================================== */
@@ -176,6 +184,15 @@ async function loadLoggedInProfile() {
         const emergencyDescription =
             document.getElementById("emergencyContactDescription");
 
+        const relationshipItem =
+            document.getElementById("relationshipItem");
+
+        const emergencyEmailItem =
+            document.getElementById("emergencyEmailItem");
+
+        const emergencyNameLabel =
+            document.getElementById("emergencyNameLabel");
+
         // Explicitly display the card for both supported roles.
         if (emergencyCard) {
             emergencyCard.style.display = "block";
@@ -185,6 +202,14 @@ async function loadLoggedInProfile() {
             if (emergencyDescription) {
                 emergencyDescription.textContent =
                     "Person to contact in case of emergency";
+            }
+
+            // Keep the mother's existing emergency contact fields.
+            if (relationshipItem) relationshipItem.style.display = "";
+            if (emergencyEmailItem) emergencyEmailItem.style.display = "none";
+
+            if (emergencyNameLabel) {
+                emergencyNameLabel.textContent = "Name";
             }
 
             setProfileField(
@@ -230,6 +255,14 @@ async function loadLoggedInProfile() {
 
             if (emergencyEditButton) {
                 emergencyEditButton.style.display = "none";
+            }
+
+            // Child sees the mother's name, phone number and email only.
+            if (relationshipItem) relationshipItem.style.display = "none";
+            if (emergencyEmailItem) emergencyEmailItem.style.display = "";
+
+            if (emergencyNameLabel) {
+                emergencyNameLabel.textContent = "Mother's Name";
             }
 
             setEmergencyInputsReadOnly(true);
@@ -284,13 +317,13 @@ async function loadChildEmergencyContact() {
             result = JSON.parse(responseText);
         } catch {
             throw new Error(
-                `Emergency contact API returned HTML (HTTP ${response.status}).`
+                `Emergency contact API returned invalid JSON (HTTP ${response.status}).`
             );
         }
 
         if (!response.ok) {
             throw new Error(
-                result.message || "Unable to load emergency contact."
+                result.message || "Unable to load mother's details."
             );
         }
 
@@ -303,17 +336,18 @@ async function loadChildEmergencyContact() {
         );
 
         setProfileField(
-            "relationshipText",
-            "relationshipInput",
-            mother.relationship || "Mother"
-        );
-
-        setProfileField(
             "emergencyPhoneText",
             "emergencyPhoneInput",
             mother.phoneNo || ""
         );
 
+        setProfileField(
+            "emergencyEmailText",
+            "emergencyEmailInput",
+            mother.email || ""
+        );
+
+        // Relationship is not displayed for child accounts.
         setEmergencyInputsReadOnly(true);
 
     } catch (error) {
@@ -326,16 +360,18 @@ async function loadChildEmergencyContact() {
         );
 
         setProfileField(
-            "relationshipText",
-            "relationshipInput",
-            "Mother"
-        );
-
-        setProfileField(
             "emergencyPhoneText",
             "emergencyPhoneInput",
             "Not available"
         );
+
+        setProfileField(
+            "emergencyEmailText",
+            "emergencyEmailInput",
+            "Not available"
+        );
+
+        setEmergencyInputsReadOnly(true);
     }
 }
 
@@ -346,7 +382,8 @@ function setEmergencyInputsReadOnly(readOnly) {
     [
         "emergencyNameInput",
         "relationshipInput",
-        "emergencyPhoneInput"
+        "emergencyPhoneInput",
+        "emergencyEmailInput"
     ].forEach(id => {
         const input = document.getElementById(id);
 

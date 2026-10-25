@@ -19,7 +19,7 @@
 
 <body>
 
-    <!-- ================= HEADER ================= -->
+    <!-- HEADER -->
     <header class="top-header">
         <a href="index.html" class="logo">
             <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
@@ -38,12 +38,11 @@
         </div>
     </header>
 
-    <!-- ================= MAIN LAYOUT ================= -->
+    <!-- MAIN LAYOUT -->
     <div class="page-layout d-flex">
 
-        <!-- ================= SIDEBAR ================= -->
+        <!-- SIDEBAR -->
         <aside class="sidebar">
-
             <nav class="sidebar-nav">
 
                 <a href="patient_dashboard.html" class="sidebar-link">
@@ -79,27 +78,22 @@
                 <a href="login.html"
                    id="logoutButton"
                    class="sidebar-link logout-link">
-
                     <img src="../icons/logout.png" alt="">
                     <span>Log Out</span>
-
                 </a>
 
             </nav>
-
         </aside>
 
-        <!-- ================= MAIN CONTENT ================= -->
+        <!-- MAIN CONTENT -->
         <main class="main-content">
 
-            <!-- ================= PROFILE HEADER ================= -->
+            <!-- PROFILE HEADER -->
             <section class="profile-page-header">
-
                 <div class="profile-title">
 
                     <div class="profile-title-avatar">
-                        <img src="../icons/user.png"
-                             alt="Profile Picture">
+                        <img src="../icons/user.png" alt="Profile Picture">
                     </div>
 
                     <div>
@@ -108,16 +102,14 @@
                     </div>
 
                 </div>
-
             </section>
 
-            <!-- ================= PERSONAL INFORMATION ================= -->
+            <!-- PERSONAL INFORMATION -->
             <section class="profile-card" id="personalInformationCard">
 
                 <div class="profile-card-title">
 
                     <div class="card-title-left">
-
                         <div class="card-icon">
                             <img src="../icons/user.png" alt="">
                         </div>
@@ -126,26 +118,21 @@
                             <h3>Personal Information</h3>
                             <p>Your personal information</p>
                         </div>
-
                     </div>
 
                     <button type="button"
                             id="editButton"
                             class="edit-profile-button"
                             onclick="editProfile()">
-
                         ✎ Edit Profile
-
                     </button>
 
                 </div>
 
-                <!-- ================= INFORMATION GRID ================= -->
                 <div class="profile-information-grid">
 
                     <!-- Full Name -->
                     <div class="information-item">
-
                         <div class="information-icon">
                             <img src="../icons/user.png" alt="">
                         </div>
@@ -159,12 +146,10 @@
                                    class="profile-input"
                                    autocomplete="name">
                         </div>
-
                     </div>
 
-                    <!-- NRIC / IC Number -->
+                    <!-- NRIC -->
                     <div class="information-item">
-
                         <div class="information-icon">
                             <img src="../icons/identity-card.png" alt="">
                         </div>
@@ -179,12 +164,10 @@
                                    autocomplete="off"
                                    readonly>
                         </div>
-
                     </div>
 
                     <!-- Date of Birth -->
                     <div class="information-item">
-
                         <div class="information-icon">
                             <img src="../icons/calendar2.png" alt="">
                         </div>
@@ -197,12 +180,10 @@
                                    id="dobInput"
                                    class="profile-input">
                         </div>
-
                     </div>
 
-                    <!-- Phone Number -->
-                    <div class="information-item">
-
+                    <!-- Phone Number: hidden for child accounts -->
+                    <div class="information-item" id="phoneItem">
                         <div class="information-icon">
                             <span aria-hidden="true">☎</span>
                         </div>
@@ -216,12 +197,10 @@
                                    class="profile-input"
                                    autocomplete="tel">
                         </div>
-
                     </div>
 
                     <!-- Email Address -->
                     <div class="information-item">
-
                         <div class="information-icon">
                             <span aria-hidden="true">✉</span>
                         </div>
@@ -235,16 +214,14 @@
                                    class="profile-input"
                                    autocomplete="email">
                         </div>
-
                     </div>
-                                    
+
                     <!-- Address for Mother / Gender for Child -->
                     <div class="information-item" id="addressItem">
-
                         <div class="information-icon">
                             <img id="addressGenderIcon"
-                                src="../icons/location.png"
-                                alt="Address">
+                                 src="../icons/location.png"
+                                 alt="Address">
                         </div>
 
                         <div class="information-text">
@@ -253,30 +230,31 @@
                             <strong id="addressText">Not available</strong>
 
                             <textarea id="addressInput"
-                                    class="profile-input"
-                                    rows="3"
-                                    autocomplete="street-address"></textarea>
+                                      class="profile-input"
+                                      rows="3"
+                                      autocomplete="street-address"></textarea>
                         </div>
 
                     </div>
 
+                    <div class="reset-password-button-container">
                         <button type="button"
-                            id="resetPassword"
-                            class="reset-password-button"
-                            onclick="resetPassword()">
-                        Reset Password
-                    </button>
+                                id="resetPassword"
+                                class="reset-password-button"
+                                onclick="resetPassword()">
+                            Reset Password
+                        </button>
+                    </div>
 
                 </div>
             </section>
 
-            <!-- ================= EMERGENCY CONTACT ================= -->
+            <!-- EMERGENCY CONTACT -->
             <section class="profile-card" id="emergencyContactCard">
 
                 <div class="profile-card-title">
 
                     <div class="card-title-left">
-
                         <div class="card-icon">
                             <span aria-hidden="true">☎</span>
                         </div>
@@ -287,43 +265,38 @@
                                 Person to contact in case of emergency
                             </p>
                         </div>
-
                     </div>
 
                     <button type="button"
                             id="emergencyEditButton"
                             class="small-edit-button"
                             onclick="editEmergency()">
-
                         ✎ Edit
-
                     </button>
 
                 </div>
 
                 <div class="profile-information-grid">
 
-                    <!-- Emergency Contact Name -->
+                    <!-- Mother / Emergency Contact Name -->
                     <div class="information-item">
-
                         <div class="information-icon">
                             <img src="../icons/user.png" alt="">
                         </div>
 
                         <div class="information-text">
-                            <span>Name</span>
+                            <span id="emergencyNameLabel">Name</span>
                             <strong id="emergencyNameText"></strong>
 
                             <input type="text"
                                    id="emergencyNameInput"
                                    class="profile-input">
                         </div>
-
                     </div>
 
-                    <!-- Relationship -->
-                    <div class="information-item">
-
+                    <!-- Relationship: kept for mother's own profile,
+                         hidden for child accounts -->
+                    <div class="information-item" id="relationshipItem">
                         <div class="information-icon">
                             <span aria-hidden="true">♙</span>
                         </div>
@@ -336,12 +309,10 @@
                                    id="relationshipInput"
                                    class="profile-input">
                         </div>
-
                     </div>
 
-                    <!-- Emergency Contact Phone -->
+                    <!-- Mother's / Emergency Contact Phone -->
                     <div class="information-item">
-
                         <div class="information-icon">
                             <span aria-hidden="true">☎</span>
                         </div>
@@ -354,20 +325,36 @@
                                    id="emergencyPhoneInput"
                                    class="profile-input">
                         </div>
+                    </div>
 
+                    <!-- Mother's Email: shown for child accounts -->
+                    <div class="information-item"
+                         id="emergencyEmailItem"
+                         style="display: none;">
+
+                        <div class="information-icon">
+                            <span aria-hidden="true">✉</span>
+                        </div>
+
+                        <div class="information-text">
+                            <span>Email Address</span>
+                            <strong id="emergencyEmailText"></strong>
+
+                            <input type="email"
+                                   id="emergencyEmailInput"
+                                   class="profile-input"
+                                   readonly>
+                        </div>
                     </div>
 
                 </div>
-
             </section>
 
         </main>
-
     </div>
 
-    <!-- ================= SCRIPTS ================= -->
+    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="../js/header.js"></script>
     <script src="../js/logout.js"></script>
 

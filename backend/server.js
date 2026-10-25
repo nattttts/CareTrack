@@ -3774,7 +3774,6 @@ app.post(
 // =========================================
 // GET NOTIFICATIONS FOR THE LOGGED-IN USER
 // =========================================
-
 app.get(
     "/api/notifications",
     requireRole("mother", "child"),
@@ -4078,12 +4077,13 @@ app.get("/api/patient/emergency-contact", (req, res) => {
         const mother = db.prepare(`
             SELECT
                 User.full_name,
+                User.email,
                 Mother.phone_no
             FROM User
             INNER JOIN Mother
                 ON Mother.user_id = User.user_id
             WHERE LOWER(TRIM(User.full_name)) =
-                  LOWER(TRIM(?))
+                LOWER(TRIM(?))
             LIMIT 1
         `).get(child.guardian_name);
 
@@ -4102,6 +4102,7 @@ app.get("/api/patient/emergency-contact", (req, res) => {
             mother: {
                 fullName: mother.full_name,
                 phoneNo: mother.phone_no || "",
+                email: mother.email || "",
                 relationship: "Mother"
             }
         });

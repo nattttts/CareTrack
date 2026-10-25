@@ -244,6 +244,13 @@ img {
     transition: 0.2s;
 }
 
+/* Center Reset Password button on a new line */
+.reset-password-button-container {
+    grid-column: 1 / -1;
+    justify-self: center;
+    margin-top: 0;
+}
+
 .reset-password-button:hover {
     background: #e81f67;
 }
@@ -454,7 +461,6 @@ textarea.profile-input {
         overflow-wrap: anywhere;
     }
 }
-
 
 /* ========================================
    PROFILE EDIT MODE
