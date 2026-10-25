@@ -1,4 +1,28 @@
 /* ========================================
+   SHOW TOAST NOTIFICATION
+======================================== */
+function showProfileToast(message, type = "success") {
+    const toastElement = document.getElementById("profileToast");
+    const messageElement = document.getElementById("profileToastMessage");
+
+    if (!toastElement || !messageElement) {
+        console.warn("Toast element not found:", message);
+        return;
+    }
+
+    messageElement.textContent = message;
+
+    toastElement.classList.toggle("toast-error", type === "error");
+
+    const toast = bootstrap.Toast.getOrCreateInstance(toastElement, {
+        delay: 3000,
+        autohide: true
+    });
+
+    toast.show();
+}
+
+/* ========================================
    LOAD LOGGED-IN ACCOUNT
 ======================================== */
 async function loadLoggedInProfile() {
@@ -492,7 +516,7 @@ function resetPassword() {
     if (!confirmReset) {
         return;
     }
-    alert("Password Validation Successful !!!");
+    showProfileToast("Password reset successful!!!");
 }
 
 async function editProfile() {
@@ -579,11 +603,14 @@ async function editProfile() {
         card.classList.remove("editing");
         button.textContent = "✎ Edit Profile";
 
-        alert("Profile updated successfully.");
+        showProfileToast("Profile updated successfully!!");
 
     } catch (error) {
         console.error("Profile save error:", error);
-        alert(error.message || "Unable to save your profile.");
+        showProfileToast(
+            error.message || "Unable to save your profile.",
+            "error"
+        );
         button.textContent = "✓ Save Changes";
     } finally {
         button.disabled = false;
@@ -676,11 +703,14 @@ async function editEmergency() {
         card.classList.remove("editing");
         button.textContent = "✎ Edit";
 
-        alert("Emergency contact saved successfully.");
+        showProfileToast("Emergency contact saved successfully!!");
 
     } catch (error) {
         console.error("Emergency contact save error:", error);
-        alert(error.message || "Unable to save emergency contact.");
+        showProfileToast(
+            error.message || "Unable to save emergency contact.",
+            "error"
+        );
 
         button.textContent = "✓ Save Changes";
     } finally {
