@@ -6,7 +6,9 @@ const { createInvitation } = require("./invitation");
 const crypto = require("node:crypto");
 const { hashPassword, verifyPassword } = require("./password");
 const { createPasswordReset } = require("./password_reset");
-const { sendInvitationEmail, sendPasswordResetEmail } = require("./email");
+const { sendInvitationEmail, sendPasswordResetEmail, 
+    sendRescheduleApprovedEmail, 
+    sendRescheduleRejectedEmail } = require("./email");
 const session = require("express-session");
 const SqliteStore = require("better-sqlite3-session-store")(session);
 require("dotenv").config({
@@ -3302,7 +3304,7 @@ app.patch("/api/staff/appointments/:appointmentId", (req, res) => {
 
 
 // Approve a reschedule request
-app.patch("/api/staff/reschedule-requests/:requestId/approve", (req, res) => {
+app.patch("/api/staff/reschedule-requests/:requestId/approve", async (req, res) => {
     try {
         const requestId = Number(req.params.requestId);
 
@@ -3321,10 +3323,15 @@ app.patch("/api/staff/reschedule-requests/:requestId/approve", (req, res) => {
                 rr.end_time AS proposed_end_time,
                 rr.status AS request_status,
                 a.appointment_type,
-                a.status AS appointment_status
+                a.status AS appointment_status,
+                a.user_id,
+                u.full_name AS patient_name,
+                u.email AS patient_email
             FROM Reschedule_Request AS rr
             JOIN Appointment AS a
                 ON a.appointment_id = rr.appointment_id
+            JOIN User AS u
+                ON u.user_id = a.user_id
             WHERE rr.reschedule_request_id = ?
         `).get(requestId);
 
@@ -3473,9 +3480,38 @@ app.patch("/api/staff/reschedule-requests/:requestId/approve", (req, res) => {
             if (updatedAppointment.changes !== 1) {
                 throw new Error("APPOINTMENT_NOT_UPDATED");
             }
+
+            db.prepare(`
+                INSERT INTO Notification (
+                    user_id,
+                    title,
+                    message
+                )
+                VALUES (?, ?, ?)
+            `).run(
+                request.user_id,
+                request.appointment_id,
+                "Reschedule Request Approved",
+                `Your reschedule request has been approved. Your appointment is now scheduled for ${date} from ${startTime} to ${endTime}.`
+            );
         });
 
         approveTransaction();
+
+        try {
+            await sendRescheduleApprovedEmail(
+                request.patient_email,
+                request.patient_name,
+                date,
+                startTime,
+                endTime
+            );
+        } catch (emailError) {
+            console.error(
+                "Reschedule approved, but approval email failed:",
+                emailError
+            );
+        }
 
         return res.json({
             message: "Reschedule request approved successfully."
@@ -3504,7 +3540,7 @@ app.patch("/api/staff/reschedule-requests/:requestId/approve", (req, res) => {
 
 
 // Reject a reschedule request
-app.patch("/api/staff/reschedule-requests/:requestId/reject", (req, res) => {
+app.patch("/api/staff/reschedule-requests/:requestId/reject", async (req, res) => {
     try {
         const requestId = Number(req.params.requestId);
 
@@ -3524,40 +3560,90 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", (req, res) => {
                 message: "A rejection reason is required."
             });
         }
-            
+
         if (rejectReason.length > 500) {
             return res.status(400).json({
                 message: "The rejection reason cannot exceed 500 characters."
             });
         }
 
-        const updateResult = db.prepare(`
-            UPDATE Reschedule_Request
-            SET status = 'Rejected',
-                reject_reason = ?
-            WHERE reschedule_request_id = ?
-                AND status = 'Pending'
-        `).run(
-            rejectReason || null,
-            requestId
-        );
+        // Retrieve the request and patient details
+        const request = db.prepare(`
+            SELECT
+                rr.reschedule_request_id,
+                rr.appointment_id,
+                rr.appointment_date AS proposed_date,
+                rr.start_time AS proposed_start_time,
+                rr.end_time AS proposed_end_time,
+                rr.status AS request_status,
+                a.user_id,
+                u.full_name AS patient_name,
+                u.email AS patient_email
+            FROM Reschedule_Request AS rr
+            JOIN Appointment AS a
+                ON a.appointment_id = rr.appointment_id
+            JOIN User AS u
+                ON u.user_id = a.user_id
+            WHERE rr.reschedule_request_id = ?
+        `).get(requestId);
 
-        if (updateResult.changes === 0) {
-            const request = db.prepare(`
-                SELECT reschedule_request_id, status
-                FROM Reschedule_Request
-                WHERE reschedule_request_id = ?
-            `).get(requestId);
+        if (!request) {
+            return res.status(404).json({
+                message: "Reschedule request not found."
+            });
+        }
 
-            if (!request) {
-                return res.status(404).json({
-                    message: "Reschedule request not found."
-                });
-            }
-
+        if (request.request_status !== "Pending") {
             return res.status(409).json({
                 message: "This reschedule request has already been processed."
             });
+        }
+
+        // Update the request and create its notification together
+        const rejectTransaction = db.transaction(() => {
+            const updateResult = db.prepare(`
+                UPDATE Reschedule_Request
+                SET status = 'Rejected',
+                    reject_reason = ?
+                WHERE reschedule_request_id = ?
+                    AND status = 'Pending'
+            `).run(rejectReason, requestId);
+
+            if (updateResult.changes !== 1) {
+                throw new Error("REQUEST_ALREADY_PROCESSED");
+            }
+
+            db.prepare(`
+                INSERT INTO Notification (
+                    user_id,
+                    title,
+                    message
+                )
+                VALUES (?, ?, ?)
+            `).run(
+                request.user_id,
+                "Reschedule Request Rejected",
+                `Your reschedule request for ${request.proposed_date} from ${request.proposed_start_time} to ${request.proposed_end_time} has been rejected. Reason: ${rejectReason} Your original appointment remains unchanged.`
+            );
+        });
+
+        rejectTransaction();
+
+        // Send the email after the database transaction succeeds
+        try {
+            await sendRescheduleRejectedEmail(
+                request.patient_email,
+                request.patient_name,
+                request.proposed_date,
+                request.proposed_start_time,
+                request.proposed_end_time,
+                rejectReason
+            );
+        } catch (emailError) {
+            console.error(
+                "Reschedule rejected, but rejection email failed:",
+                emailError
+            );
         }
 
         return res.json({
@@ -3565,7 +3651,16 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error rejecting reschedule request:", error);
+        if (error.message === "REQUEST_ALREADY_PROCESSED") {
+            return res.status(409).json({
+                message: "This reschedule request has already been processed."
+            });
+        }
+
+        console.error(
+            "Error rejecting reschedule request:",
+            error
+        );
 
         return res.status(500).json({
             message: "An error occurred while rejecting the request."

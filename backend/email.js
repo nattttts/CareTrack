@@ -1,6 +1,30 @@
 
 const nodemailer = require("nodemailer");
 
+// Format appointment time for email
+function formatAppointmentTime(time) {
+    const [hours, minutes] = time.split(":");
+    const date = new Date();
+    date.setHours(Number(hours), Number(minutes), 0, 0);
+
+    return date.toLocaleTimeString("en-MY", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
+}
+
+// Escape user-provided text before inserting it into HTML
+function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
+
 function createEmailTransporter() {
     if (!process.env.EMAIL_USER ||
         !process.env.EMAIL_APP_PASSWORD) {
@@ -124,4 +148,111 @@ CareTrack Team`,
     return { messageId: info.messageId };
 }
 
-module.exports = { sendInvitationEmail, sendPasswordResetEmail };
+// Send reschedule approval email
+async function sendRescheduleApprovedEmail(
+    email,
+    patientName,
+    appointmentDate,
+    startTime,
+    endTime
+) {
+    const transporter = createEmailTransporter();
+
+    const formattedStartTime = formatAppointmentTime(startTime);
+    const formattedEndTime = formatAppointmentTime(endTime);
+
+    const info = await transporter.sendMail({
+        from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Your CareTrack Appointment Reschedule Is Approved",
+
+        text: `Hello ${patientName},
+
+Your appointment reschedule request has been approved.
+
+Your updated appointment details are:
+Date: ${appointmentDate}
+Time: ${formattedStartTime} - ${formattedEndTime}
+
+Please arrive on time for your appointment.
+
+Regards,
+CareTrack Team`,
+
+        html: `
+            <h2>Appointment Reschedule Approved</h2>
+            <p>Hello ${escapeHtml(patientName)},</p>
+            <p>Your appointment reschedule request has been approved.</p>
+            <p><strong>Your updated appointment details:</strong></p>
+            <ul>
+                <li>Date: ${escapeHtml(appointmentDate)}</li>
+                <li>Time: ${escapeHtml(formattedStartTime)} - ${escapeHtml(formattedEndTime)}</li>
+            </ul>
+            <p>Please arrive on time for your appointment.</p>
+            <p>Regards,<br>CareTrack Team</p>
+        `
+    });
+
+    console.log("Reschedule approval email accepted by Gmail.");
+    console.log("Message ID:", info.messageId);
+
+    return { messageId: info.messageId };
+}
+
+// Send reschedule rejection email
+async function sendRescheduleRejectedEmail(
+    email,
+    patientName,
+    appointmentDate,
+    startTime,
+    endTime,
+    rejectReason
+) {
+    const transporter = createEmailTransporter();
+
+    const info = await transporter.sendMail({
+        from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Your CareTrack Appointment Reschedule Request",
+
+        text: `Hello ${patientName},
+
+Unfortunately, your appointment reschedule request has been rejected.
+
+Requested appointment details:
+Date: ${appointmentDate}
+Time: ${formatAppointmentTime(startTime)} - ${formatAppointmentTime(endTime)}
+
+Reason:
+${rejectReason}
+
+Your original appointment remains unchanged. Please log in to CareTrack to review your appointment details.
+
+Regards,
+CareTrack Team`,
+
+        html: `
+            <h2>Appointment Reschedule Request Update</h2>
+            <p>Hello ${escapeHtml(patientName)},</p>
+            <p>Unfortunately, your appointment reschedule request has been rejected.</p>
+            <p><strong>Requested appointment details:</strong></p>
+            <ul>
+                <li>Date: ${escapeHtml(appointmentDate)}</li>
+                <li>Time: ${escapeHtml(formatAppointmentTime(startTime))} - ${escapeHtml(formatAppointmentTime(endTime))}</li>
+            </ul>
+            <p><strong>Reason:</strong></p>
+            <p>${escapeHtml(rejectReason).replace(/\r?\n/g, "<br>")}</p>
+            <p>Your original appointment remains unchanged. Please log in to CareTrack to review your appointment details.</p>
+            <p>Regards,<br>CareTrack Team</p>
+        `
+    });
+
+    console.log("Reschedule rejection email accepted by Gmail.");
+    console.log("Message ID:", info.messageId);
+
+    return { messageId: info.messageId };
+}
+
+
+module.exports = { sendInvitationEmail, sendPasswordResetEmail, 
+    sendRescheduleApprovedEmail, sendRescheduleRejectedEmail };
