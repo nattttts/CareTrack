@@ -7,6 +7,7 @@ const crypto = require("node:crypto");
 const { hashPassword, verifyPassword } = require("./password");
 const { createPasswordReset } = require("./password_reset");
 const { sendInvitationEmail, sendPasswordResetEmail, 
+    sendAppointmentScheduledEmail, sendAppointmentUpdatedEmail,
     sendRescheduleApprovedEmail, 
     sendRescheduleRejectedEmail } = require("./email");
 const session = require("express-session");
@@ -2929,7 +2930,7 @@ app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
 
 
 // Add new patient appointments
-app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
+app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
     try {
         const {
             user_id,
@@ -2958,11 +2959,11 @@ app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
 
         // Confirm that the patient exists and is active
         const patient = db.prepare(`
-            SELECT user_id, role
+            SELECT user_id, role, full_name, email
             FROM User
             WHERE user_id = ?
-              AND role IN ('mother', 'child')
-              AND account_status = 'Active'
+            AND role IN ('mother', 'child')
+            AND account_status = 'Active'
         `).get(user_id);
 
         if (!patient) {
@@ -3075,28 +3076,64 @@ app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
                     `An appointment already exists from ${overlappingAppointment.start_time} to ${overlappingAppointment.end_time}. Please choose another time.`
             });
         }
-
-        // Save the appointment
-        const result = db.prepare(`
-            INSERT INTO Appointment (
+        
+        // Save the appointment and notification together
+        const createAppointmentTransaction = db.transaction(() => {
+            const result = db.prepare(`
+                INSERT INTO Appointment (
+                    user_id,
+                    appointment_type,
+                    appointment_date,
+                    start_time,
+                    end_time
+                )
+                VALUES (?, ?, ?, ?, ?)
+            `).run(
                 user_id,
-                appointment_type,
+                appointmentType,
                 appointment_date,
                 start_time,
                 end_time
-            )
-            VALUES (?, ?, ?, ?, ?)
-        `).run(
-            user_id,
-            appointmentType,
-            appointment_date,
-            start_time,
-            end_time
-        );
+            );
 
-        res.status(201).json({
+            db.prepare(`
+                INSERT INTO Notification (
+                    user_id,
+                    title,
+                    message
+                )
+                VALUES (?, ?, ?)
+            `).run(
+                user_id,
+                "New Appointment Scheduled",
+                `A new ${appointmentType} appointment has been scheduled for ${appointment_date} from ${start_time} to ${end_time}.`
+            );
+
+            return result.lastInsertRowid;
+        });
+
+        const appointmentId = createAppointmentTransaction();
+
+        // Send the email after the transaction succeeds
+        try {
+            await sendAppointmentScheduledEmail(
+                patient.email,
+                patient.full_name,
+                appointmentType,
+                appointment_date,
+                start_time,
+                end_time
+            );
+        } catch (emailError) {
+            console.error(
+                "Appointment saved, but confirmation email failed:",
+                emailError
+            );
+        }
+
+        return res.status(201).json({
             message: "Appointment scheduled successfully.",
-            appointment_id: result.lastInsertRowid
+            appointment_id: appointmentId
         });
 
     } catch (error) {
@@ -3110,7 +3147,7 @@ app.post("/api/staff/appointments", requireRole("staff"), (req, res) => {
 
 
 // Edit an existing appointment 
-app.patch("/api/staff/appointments/:appointmentId", (req, res) => {
+app.patch("/api/staff/appointments/:appointmentId", async (req, res) => {
     try {
         const appointmentId = Number(req.params.appointmentId);
 
@@ -3200,9 +3237,19 @@ app.patch("/api/staff/appointments/:appointmentId", (req, res) => {
 
         // Find the existing appointment
         const appointment = db.prepare(`
-            SELECT appointment_id, appointment_type, status
-            FROM Appointment
-            WHERE appointment_id = ?
+            SELECT
+                a.appointment_id,
+                a.user_id,
+                a.appointment_type,
+                a.appointment_date,
+                a.start_time,
+                a.end_time,
+                a.status,
+                u.full_name AS patient_name,
+                u.email AS patient_email
+            FROM Appointment AS a
+            JOIN User AS u ON u.user_id = a.user_id
+            WHERE a.appointment_id = ?
         `).get(appointmentId);
 
         if (!appointment) {
@@ -3268,29 +3315,82 @@ app.patch("/api/staff/appointments/:appointmentId", (req, res) => {
             });
         }
 
-        // Update the existing appointment
-        const updateResult = db.prepare(`
-            UPDATE Appointment
-            SET appointment_date = ?,
-                start_time = ?,
-                end_time = ?
-            WHERE appointment_id = ?
-              AND status = 'Confirmed'
-        `).run(
-            appointment_date,
-            start_time,
-            end_time,
-            appointmentId
-        );
+        // Check whether any appointment details actually changed
+        const detailsChanged =
+            appointment.appointment_date !== appointment_date ||
+            appointment.start_time !== start_time ||
+            appointment.end_time !== end_time;
 
-        if (updateResult.changes === 0) {
-            return res.status(409).json({
-                message: "The appointment could not be updated. Please refresh and try again."
+        // If nothing changed, return success without sending notifications
+        if (!detailsChanged) {
+            return res.status(200).json({
+                message: "No changes were made to the appointment.",
+                changed: false
             });
         }
 
+        // Update the appointment and create its notification together
+        const updateAppointmentTransaction = db.transaction(() => {
+            const result = db.prepare(`
+                UPDATE Appointment
+                SET appointment_date = ?,
+                    start_time = ?,
+                    end_time = ?
+                WHERE appointment_id = ?
+                AND status = 'Confirmed'
+            `).run(
+                appointment_date,
+                start_time,
+                end_time,
+                appointmentId
+            );
+
+            if (result.changes !== 1) {
+                throw new Error("APPOINTMENT_UPDATE_FAILED");
+            }
+
+            db.prepare(`
+                INSERT INTO Notification (user_id, title, message)
+                VALUES (?, ?, ?)
+            `).run(
+                appointment.user_id,
+                "Appointment Details Updated",
+                `Your ${appointment.appointment_type} appointment has been updated. Your appointment is now scheduled for ${appointment_date} from ${start_time} to ${end_time}.`
+            );
+        });
+
+        try {
+            updateAppointmentTransaction();
+        } catch (error) {
+            if (error.message === "APPOINTMENT_UPDATE_FAILED") {
+                return res.status(409).json({
+                    message: "The appointment could not be updated. It may have changed or is no longer available for editing."
+                });
+            }
+
+            throw error;
+        }
+
+        // Send the email after the database transaction succeeds
+        try {
+            await sendAppointmentUpdatedEmail(
+                appointment.patient_email,
+                appointment.patient_name,
+                appointment.appointment_type,
+                appointment_date,
+                start_time,
+                end_time
+            );
+        } catch (emailError) {
+            console.error(
+                "Appointment updated, but update email failed:",
+                emailError
+            );
+        }
+
         return res.status(200).json({
-            message: "Appointment updated successfully."
+            message: "Appointment updated successfully.",
+            changed: true
         });
 
     } catch (error) {

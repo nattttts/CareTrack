@@ -148,6 +148,122 @@ CareTrack Team`,
     return { messageId: info.messageId };
 }
 
+
+async function sendAppointmentScheduledEmail(
+    email,
+    patientName,
+    appointmentType,
+    appointmentDate,
+    startTime,
+    endTime
+) {
+    const transporter = createEmailTransporter();
+
+    const formattedStartTime = formatAppointmentTime(startTime);
+    const formattedEndTime = formatAppointmentTime(endTime);
+    const safeName = escapeHtml(patientName);
+    const safeType = escapeHtml(appointmentType);
+    const safeDate = escapeHtml(appointmentDate);
+
+    const info = await transporter.sendMail({
+        from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Your CareTrack Appointment Is Confirmed",
+
+        text: `Hello ${patientName},
+
+A new appointment has been scheduled for you at CareTrack.
+
+Appointment details:
+Type: ${appointmentType}
+Date: ${appointmentDate}
+Time: ${formattedStartTime} - ${formattedEndTime}
+
+Please arrive on time for your appointment.
+
+Regards,
+CareTrack Team`,
+
+        html: `
+            <h2>Appointment Confirmed</h2>
+            <p>Hello ${safeName},</p>
+            <p>A new appointment has been scheduled for you at CareTrack.</p>
+            <p><strong>Appointment details:</strong></p>
+            <ul>
+                <li>Type: ${safeType}</li>
+                <li>Date: ${safeDate}</li>
+                <li>Time: ${escapeHtml(formattedStartTime)} - ${escapeHtml(formattedEndTime)}</li>
+            </ul>
+            <p>Please arrive on time for your appointment.</p>
+            <p>Regards,<br>CareTrack Team</p>
+        `
+    });
+
+    console.log("Appointment confirmation email accepted by Gmail.");
+    console.log("Message ID:", info.messageId);
+
+    return { messageId: info.messageId };
+}
+
+async function sendAppointmentUpdatedEmail(
+    email,
+    patientName,
+    appointmentType,
+    appointmentDate,
+    startTime,
+    endTime
+) {
+    const transporter = createEmailTransporter();
+
+    const formattedStartTime = formatAppointmentTime(startTime);
+    const formattedEndTime = formatAppointmentTime(endTime);
+
+    const safeName = escapeHtml(patientName);
+    const safeType = escapeHtml(appointmentType);
+    const safeDate = escapeHtml(appointmentDate);
+    const safeStartTime = escapeHtml(formattedStartTime);
+    const safeEndTime = escapeHtml(formattedEndTime);
+
+    const info = await transporter.sendMail({
+        from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Your CareTrack Appointment Has Been Updated",
+
+        text: `Hello ${patientName},
+
+The details of your CareTrack appointment have been updated.
+
+Updated appointment details:
+Type: ${appointmentType}
+Date: ${appointmentDate}
+Time: ${formattedStartTime} - ${formattedEndTime}
+
+Please refer to these updated details for your appointment.
+
+Regards,
+CareTrack Team`,
+
+        html: `
+            <h2>Appointment Details Updated</h2>
+            <p>Hello ${safeName},</p>
+            <p>The details of your CareTrack appointment have been updated.</p>
+            <p><strong>Updated appointment details:</strong></p>
+            <ul>
+                <li>Type: ${safeType}</li>
+                <li>Date: ${safeDate}</li>
+                <li>Time: ${safeStartTime} - ${safeEndTime}</li>
+            </ul>
+            <p>Please refer to these updated details for your appointment.</p>
+            <p>Regards,<br>CareTrack Team</p>
+        `
+    });
+
+    console.log("Appointment update email accepted by Gmail.");
+    console.log("Message ID:", info.messageId);
+
+    return { messageId: info.messageId };
+}
+
 // Send reschedule approval email
 async function sendRescheduleApprovedEmail(
     email,
@@ -253,6 +369,6 @@ CareTrack Team`,
     return { messageId: info.messageId };
 }
 
-
 module.exports = { sendInvitationEmail, sendPasswordResetEmail, 
+    sendAppointmentScheduledEmail, sendAppointmentUpdatedEmail, 
     sendRescheduleApprovedEmail, sendRescheduleRejectedEmail };

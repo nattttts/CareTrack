@@ -1010,7 +1010,11 @@ editAppointmentForm.addEventListener("submit", async function (event) {
 
         bootstrap.Modal.getOrCreateInstance(editAppointmentModal).hide();
 
-        showToast("Appointment successfully rescheduled.", "success");
+        if (result.changed) {
+            showToast("Appointment successfully rescheduled.", "success");
+        } else {
+            showToast("No changes were made to the appointment.", "info");
+        }
 
     } catch (error) {
         console.error("Error updating appointment:", error);

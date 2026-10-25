@@ -12,15 +12,21 @@ export function showToast(message, type = "success") {
 
     toastElement.classList.remove(
         "text-bg-success",
-        "text-bg-danger"
+        "text-bg-danger",
+        "text-bg-info"
     );
+
+    const toastClass = {
+        success: "text-bg-success",
+        error: "text-bg-danger",
+        info: "text-bg-info"
+    };
 
     toastElement.classList.add(
-        type === "success" ? "text-bg-success" : "text-bg-danger"
-    );
+        toastClass[type] || "text-bg-danger");
 
     bootstrap.Toast.getOrCreateInstance(toastElement, {
-        delay: 4000,
+        delay: 5000,
         autohide: true
     }).show();
 }
