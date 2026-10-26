@@ -71,11 +71,6 @@
                     <span>Queue Management</span>
                 </a>
 
-                <a href="followup_management.html" class="sidebar-link">
-                    <img src="../icons/follow-up.png" alt="">
-                    <span>Follow-ups</span>
-                </a>
-
                 <a href="staff_profile.html" class="sidebar-link">
                     <img src="../icons/user.png" alt="">
                     <span>My Profile</span>
@@ -123,8 +118,8 @@
 
                             <div class="overview-info">
                                 <p>Today's Appointments</p>
-                                <h2>10</h2>
-                                <span>Scheduled for today</span>
+                                <h2 id="todayAppointmentsCount">0</h2>
+                                <span>Maternal follow-ups and child vaccination</span>
                             </div>
                         </div>
 
@@ -164,7 +159,7 @@
 
                     </div>
 
-                    <!-- Missed / Overdue -->
+                    <!-- Needs Attention -->
                     <div class="col-12 col-sm-6 col-lg">
                         
                         <div class="overview-card missed">
@@ -174,8 +169,8 @@
 
                             <div class="overview-info">
                                 <p>Needs Attention</p>
-                                <h2>20</h2>
-                                <span>Missed or overdue items</span>
+                                <h2 id="needsAttentionCount">0</h2>
+                                <span>Missed appointments and pending reschedule requests</span>
                             </div>
                         </div>
                     
@@ -210,60 +205,10 @@
 
                             </div>
 
-                            <div class="appointment-list">
-
-                                <div class="appointment-item">
-                                    <div class="appointment-info">
-                                        <strong class="appointment-time">09:00 AM</strong>
-
-                                        <div class="appointment-details">
-                                            <h6 class="patient-name">Sarah Lee</h6>
-                                            <p>Child Vaccination</p>
-                                        </div>
-                                    </div>
-
-                                    <span class="status-badge status-confirmed">Confirmed</span>
+                            <div class="appointment-list" id="todayAppointmentsList">
+                                <div class="text-center text-muted py-4">
+                                    Today's appointments will appear here.
                                 </div>
-
-                                <div class="appointment-item">
-                                    <div class="appointment-info">
-                                        <strong class="appointment-time">09:30 AM</strong>
-
-                                        <div class="appointment-details">
-                                            <h6 class="patient-name">Aisyah Rahman</h6>
-                                            <p>Maternal Follow-up</p>
-                                        </div>
-                                    </div>
-
-                                    <span class="status-badge status-pending">Pending Reschedule</span>
-                                </div>
-
-                                <div class="appointment-item">
-                                    <div class="appointment-info">
-                                        <strong class="appointment-time">10:00 AM</strong>
-                                        
-                                        <div class="appointment-details">
-                                            <h6 class="patient-name">Nur Izzati</h6>
-                                            <p>Child Vaccination</p>
-                                        </div>
-                                    </div>
-
-                                    <span class="status-badge status-confirmed">Confirmed</span>
-                                </div>
-
-                                <div class="appointment-item">
-                                    <div class="appointment-info">
-                                        <strong class="appointment-time">10:30 AM</strong>
-
-                                        <div class="appointment-details">
-                                            <h6 class="patient-name">Jane Tan</h6>
-                                            <p>Maternal Follow-up</p>
-                                        </div>
-                                    </div>
-
-                                    <span class="status-badge status-confirmed">Confirmed</span>
-                                </div>
-
                             </div>
 
                         </div>
@@ -354,66 +299,6 @@
 
                 </section>
 
-                <!-- ================= FOLLOW UP ================= -->
-                <section class="followup-panel" id="followup-section">
-                    <div class="panel-header">
-
-                        <div class="panel-heading">
-                            <div class="card-icon">
-                                <img src="../icons/follow-up.png" alt="Follow Up">
-                            </div>
-
-                            <div>
-                                <h2>Follow-up Overview</h2>
-                                <p>Review missed appointments and overdue child vaccination</p>
-                            </div>
-                        </div>
-
-                        <a href="followup_management.html" class="view-all-link">
-                            View All
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-
-                    </div>
-
-                    <div class="followup-summary row g-3">
-
-                        <div class="col-12 col-md-6">
-                            <div class="followup-card">
-
-                                <div class="followup-card-icon missed-icon">
-                                    <img src="../icons/appointment.png" alt="">
-                                </div>
-
-                                <div class="followup-card-content">
-                                    <p>Missed Appointments</p>
-                                    <h3>8</h3>
-                                    <span>Appointments requiring follow-up</span> 
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-md-6">
-                            <div class="followup-card">
-
-                                <div class="followup-card-icon overdue-icon">
-                                    <img src="../icons/orange_syringe.png" alt="">
-                                </div>
-
-                                <div class="followup-card-content">
-                                    <p>Overdue Vaccinations</p>
-                                    <h3>12</h3>
-                                    <span>Children requiring vaccination review</span> 
-                                </div>
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                </section>
-
             </section>
 
         </main> 
@@ -422,6 +307,8 @@
 
     <!-- Header JavaScript -->
     <script src="../js/header.js"></script>
+    
+    <script src="../js/staff_dashboard.js"></script>
     
     <!-- Logout JavaScript -->
     <script src="../js/logout.js"></script>

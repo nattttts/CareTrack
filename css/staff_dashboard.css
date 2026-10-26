@@ -277,6 +277,11 @@ a {
 }
 
 /* ================= TODAY's APPOINTMENTS ================= */
+.appointment-list {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
 /* Status Badges */
 .status-badge {
     padding: 6px 9px;
@@ -310,72 +315,6 @@ a {
 .status-in-progress {
     color: #2271b1;
     background: #edf6ff;
-}
-
-/* ================= FOLLOW UP ================= */
-.followup-panel {
-    margin: 0 auto;
-    padding: 20px 24px 8px;
-    border-radius: 14px;
-    background: var(--white);
-    border: 1px solid #f0dfe6;
-    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
-}
-
-.followup-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-
-    margin: 0 auto 18px;
-    padding: 20px 24px;
-    border-radius: 14px;
-
-    background: var(--white);
-    border: 1px solid #f0dfe6;
-    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
-}
-
-.followup-card-icon {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 21px;
-}
-
-.followup-card-icon.missed-icon {
-    background: var(--caretrack-pink-light);
-}
-
-.followup-card-icon.overdue-icon {
-    background: #fff2d6;
-}
-
-.followup-card-icon img {
-    width: 30px;
-    height: 30px;
-    object-fit: contain;
-}
-
-.followup-card-content p {
-    margin: 1px 0 9px;
-    font-size: 13px;
-}
-
-.followup-card-content h3 {
-    margin: 0 0 6px;
-    color: var(--text-dark);
-    font-size: 29px;
-    font-weight: 600;
-}
-
-.followup-card-content span {
-    color: var(--text-medium);
-    font-size: 11px;
 }
 
 /* ================= RESPONSIVE ================= */
