@@ -2838,7 +2838,7 @@ app.get("/api/patient/appointments", requireRole("mother", "child"), (req, res) 
 
 
 // Get pending reschedule requests 
-app.get("/api/staff/reschedule-requests", (req, res) => {
+app.get("/api/staff/reschedule-requests", requireRole("staff"), (req, res) => {
     try {
         const requests = db.prepare(`
             SELECT
@@ -3147,7 +3147,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
 
 
 // Edit an existing appointment 
-app.patch("/api/staff/appointments/:appointmentId", async (req, res) => {
+app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async (req, res) => {
     try {
         const appointmentId = Number(req.params.appointmentId);
 
@@ -3404,7 +3404,7 @@ app.patch("/api/staff/appointments/:appointmentId", async (req, res) => {
 
 
 // Approve a reschedule request
-app.patch("/api/staff/reschedule-requests/:requestId/approve", async (req, res) => {
+app.patch("/api/staff/reschedule-requests/:requestId/approve", requireRole("staff"), async (req, res) => {
     try {
         const requestId = Number(req.params.requestId);
 
@@ -3640,7 +3640,7 @@ app.patch("/api/staff/reschedule-requests/:requestId/approve", async (req, res) 
 
 
 // Reject a reschedule request
-app.patch("/api/staff/reschedule-requests/:requestId/reject", async (req, res) => {
+app.patch("/api/staff/reschedule-requests/:requestId/reject", requireRole("staff"), async (req, res) => {
     try {
         const requestId = Number(req.params.requestId);
 
