@@ -114,7 +114,7 @@
             <section class="queue-container">
 
                 <!-- ================= TODAY'S APPOINTMENT ================= -->
-                <section class="appointment-card">
+                <section id="appointmentCard" class="appointment-card">
 
                     <div class="appointment-info">
 
@@ -124,8 +124,8 @@
 
                         <div>
                             <h3>Today's Appointment</h3>
-                            <h4>Child Vaccination</h4>
-                            <p>Child: Emma S.</p>
+                            <h4 id="appointmentType"></h4>
+                            <p id="patientName"></p>
                         </div>
 
                     </div>
@@ -133,18 +133,24 @@
                     <div class="appointment-details">
                         <p>
                             <img src="../icons/appointment.png" alt="">
-                            Thu, 26 Jun 2025
+                            <span id="appointmentDate"></span>
                         </p>
 
                         <p>
                             <img src="../icons/clock.png" alt="">
-                            10:00 AM
+                            <span id="appointmentTime"></span>
                         </p>
 
                         <span class="appointment-status">
                             <img src="../icons/check.png" alt="">
-                            Confirmed
+                            <span id="appointmentStatusText"></span>
                         </span>
+                    </div>
+
+                    <div class="expected-check-in">
+                        <h6>Expected Check-in Time</h6>
+                        <span id="expectedCheckInTime"></span>
+                        <p>Please arrive by your expected check-in time.</p>
                     </div>
 
                 </section>
@@ -169,11 +175,11 @@
 
                 <!-- ================= CHECK-IN MESSAGE ================= -->
                 <div id="checkInMessage" class="checkin-message" hidden>
-                    <img src="../icons/check.png" alt="">
+                    <img id="checkInMessageIcon" src="../icons/check.png" alt="">
 
                     <div>
-                        <h6>Check-in successful!</h6>
-                        <p>You have successfully joined the clinic queue.</p>
+                        <h6 id="checkInMessageTitle"></h6>
+                        <p id="checkInMessageText"></p>
                     </div>
                 </div>
 
@@ -186,13 +192,13 @@
                             <h3>Your Queue Status</h3>
                         </div>
 
-                        <span id="queueStatusBadge" class="queue-status waiting">Waiting</span>
+                        <span id="queueStatusBadge" class="queue-status waiting"></span>
                     </div>
 
                     <!-- Queue Number -->
                     <div class="queue-number-section">
                         <h6>Your Queue Number</h6>
-                        <p id="queueNumber">1058</p>
+                        <p id="queueNumber"></p>
                     </div>
 
                     <!-- Queue Details -->
@@ -203,7 +209,7 @@
                                 <img src="../icons/queue.png" alt="">
                                 <div>
                                     <h6>Queue Position</h6>
-                                    <strong id="queuePosition">4th</strong>
+                                    <strong id="queuePosition"></strong>
                                 </div>
                             </div>
                         </div>
@@ -213,7 +219,7 @@
                                 <img src="../icons/clock.png" alt="">
                                 <div>
                                     <h6>Estimated Waiting Time</h6>
-                                    <strong id="waitingTime">~20 min</strong>
+                                    <strong id="waitingTime">Not available</strong>
                                 </div>
                             </div>
                         </div>
@@ -223,7 +229,7 @@
                                 <img src="../icons/appointment.png" alt="">
                                 <div>
                                     <h6>Appointment Time</h6>
-                                    <strong>10:00 AM</strong>
+                                    <strong id="queueAppointmentTime"></strong>
                                 </div>
                             </div>
                         </div>
@@ -234,7 +240,6 @@
 
                 <!-- ================= LIVE QUEUE ================= -->
                 <section id="liveQueue" class="live-queue-card" hidden>
-
                     <!-- Section Header -->
                     <div class="section-title-row">
                         <div>
@@ -248,34 +253,11 @@
                     <!-- Currently Serving -->
                     <div class="currently-serving">
                         <h6>Currently Serving</h6>
-                        <strong>1055</strong>
+                        <strong id="currentlyServing"></strong>
                     </div>
 
                     <!-- Queue List -->
-                    <div class="queue-list">
-
-                        <div class="queue-item in-progress">
-                            <span class="queue-number">1055</span>
-                            <span class="queue-item-status">In Progress</span>
-                        </div>
-
-                        <div class="queue-item waiting">
-                            <span class="queue-number">1056</span>
-                            <span class="queue-item-status">Waiting</span>
-                        </div>
-
-                        <div class="queue-item waiting">
-                            <span class="queue-number">1057</span>
-                            <span class="queue-item-status">Waiting</span>
-                        </div>
-
-                        <div class="queue-item your-queue">
-                            <span class="queue-number">1058</span>
-                            <span class="queue-item-status">Your Queue</span>
-                        </div>
-
-                    </div>
-
+                    <div id="queueList" class="queue-list"></div>
                 </section>
 
                 <!-- ================= QUEUE INFORMATION ================= -->

@@ -190,6 +190,37 @@ img {
     object-fit: contain;
 }
 
+/* ================= EXPECTED CHECK-IN TIME ================= */
+.expected-check-in {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: #fee6ef;
+    min-width: 180px;
+}
+
+.expected-check-in h6 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #50698a;
+}
+
+.expected-check-in span {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e81f67;
+}
+
+.expected-check-in p {
+    margin: 0;
+    font-size: 12px;
+    color: #50698a;
+}
+
 /* ================= CHECK-IN CARD ================= */
 .checkin-card {
     background: #FFFFFF;

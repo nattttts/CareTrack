@@ -4359,6 +4359,297 @@ app.put("/api/mother/emergency-contact", (req, res) => {
     }
 });
 
+// Get today's date in Malaysia (YYYY-MM-DD)
+function getMalaysiaDate() {
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kuala_Lumpur",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(new Date());
+}
+
+// Patient queue: Get Today's Appointments
+app.get(
+    "/api/patient/queue",
+    requireRole("mother", "child"),
+    (req, res) => {
+        try {
+            const userId = req.session.user.userId;
+            const today = getMalaysiaDate();
+
+            const appointments = db.prepare(`
+                SELECT
+                    a.appointment_id,
+                    a.appointment_type,
+                    a.appointment_date,
+                    a.start_time,
+                    a.end_time,
+                    a.status AS appointment_status,
+
+                    q.queue_entry_id,
+                    q.queue_number,
+                    q.check_in_time,
+                    q.status AS queue_status,
+
+                    CASE
+                        WHEN q.queue_entry_id IS NULL THEN NULL
+                        WHEN q.status IN ('Completed', 'Skipped') THEN NULL
+                        ELSE (
+                            SELECT COUNT(*)
+                            FROM Queue_Entry AS q2
+                            WHERE date(q2.check_in_time, '+8 hours') = ?
+                              AND q2.queue_number <= q.queue_number
+                              AND q2.status IN (
+                                  'Waiting',
+                                  'Called',
+                                  'In Progress'
+                              )
+                        )
+                    END AS queue_position
+
+                FROM Appointment AS a
+
+                LEFT JOIN Queue_Entry AS q
+                    ON q.appointment_id = a.appointment_id
+
+                WHERE a.user_id = ?
+                  AND a.appointment_date = ?
+                  AND a.status = 'Confirmed'
+
+                ORDER BY a.start_time ASC, a.appointment_id ASC
+            `).all(today, userId, today);
+
+            return res.json(appointments);
+
+        } catch (error) {
+            console.error("Error loading patient queue:", error);
+
+            return res.status(500).json({
+                message: "Failed to load today's appointments."
+            });
+        }
+    }
+);
+
+// Patient queue: Check in
+app.post(
+    "/api/patient/queue/:appointmentId/check-in", requireRole("mother", "child"),
+    (req, res) => {
+        const appointmentId = Number(req.params.appointmentId);
+        const userId = req.session.user.userId;
+        const role = req.session.user.role;
+        const today = getMalaysiaDate();
+
+        if (!Number.isSafeInteger(appointmentId) || appointmentId <= 0) {
+            return res.status(400).json({
+                message: "Invalid appointment ID."
+            });
+        }
+
+        try {
+            const checkInTransaction = db.transaction(() => {
+                // Confirm the appointment belongs to this patient.
+                const appointment = db.prepare(`
+                    SELECT
+                        a.appointment_id,
+                        a.user_id,
+                        a.appointment_type,
+                        a.appointment_date,
+                        a.start_time,
+                        a.status,
+                        u.role AS patient_role,
+                        u.account_status
+                    FROM Appointment AS a
+                    INNER JOIN User AS u
+                        ON u.user_id = a.user_id
+                    WHERE a.appointment_id = ?
+                      AND a.user_id = ?
+                `).get(appointmentId, userId);
+
+                if (!appointment) {
+                    throw new Error("APPOINTMENT_NOT_FOUND");
+                }
+
+                if (
+                    appointment.account_status !== "Active" ||
+                    appointment.patient_role !== role
+                ) {
+                    throw new Error("ACCOUNT_INACTIVE");
+                }
+
+                // Ensure the appointment type matches the account role.
+                const correctType =
+                    (role === "mother" &&
+                        appointment.appointment_type === "Maternal Follow-up") ||
+                    (role === "child" &&
+                        appointment.appointment_type === "Child Vaccination");
+
+                if (!correctType) {
+                    throw new Error("INVALID_APPOINTMENT_TYPE");
+                }
+
+                if (appointment.appointment_date !== today) {
+                    throw new Error("NOT_TODAY");
+                }
+
+                if (appointment.status !== "Confirmed") {
+                    throw new Error("APPOINTMENT_NOT_CONFIRMED");
+                }
+
+                // If already checked in, return the existing queue entry.
+                const existingEntry = db.prepare(`
+                    SELECT
+                        queue_entry_id,
+                        appointment_id,
+                        queue_number,
+                        check_in_time,
+                        status
+                    FROM Queue_Entry
+                    WHERE appointment_id = ?
+                `).get(appointmentId);
+
+                if (existingEntry) {
+                    return {
+                        alreadyCheckedIn: true,
+                        queueEntry: existingEntry
+                    };
+                }
+
+                // Check whether the appointment is within the allowed check-in period.
+                const appointmentStartTime = Date.parse(
+                    `${appointment.appointment_date}T${appointment.start_time}+08:00`
+                );
+
+                if (Number.isNaN(appointmentStartTime)) {
+                    throw new Error("INVALID_APPOINTMENT_TIME");
+                }
+
+                const now = Date.now();
+
+                // Check-in opens 15 minutes before the appointment.
+                const checkInOpensAt =
+                    appointmentStartTime - 15 * 60 * 1000;
+
+                // Check-in closes 5 minutes after the appointment starts.
+                const checkInClosesAt =
+                    appointmentStartTime + 5 * 60 * 1000;
+
+                if (now < checkInOpensAt) {
+                    throw new Error("CHECK_IN_NOT_OPEN");
+                }
+
+                if (now >= checkInClosesAt) {
+                    throw new Error("APPOINTMENT_MISSED");
+                }
+
+                // Find the largest queue number issued today.
+                // Both services share the same numbering sequence.
+                const latestEntry = db.prepare(`
+                    SELECT MAX(queue_number) AS last_number
+                    FROM Queue_Entry
+                    WHERE date(check_in_time, '+8 hours') = ?
+                `).get(today);
+
+                const queueNumber =
+                    latestEntry.last_number == null
+                        ? 1001
+                        : latestEntry.last_number + 1;
+
+                // Create the queue entry only after successful check-in.
+                const result = db.prepare(`
+                    INSERT INTO Queue_Entry (
+                        appointment_id,
+                        queue_number,
+                        status
+                    )
+                    VALUES (?, ?, 'Waiting')
+                `).run(appointmentId, queueNumber);
+
+                const queueEntry = db.prepare(`
+                    SELECT
+                        queue_entry_id,
+                        appointment_id,
+                        queue_number,
+                        check_in_time,
+                        status
+                    FROM Queue_Entry
+                    WHERE queue_entry_id = ?
+                `).get(result.lastInsertRowid);
+
+                return {
+                    alreadyCheckedIn: false,
+                    queueEntry
+                };
+            });
+
+            const result = checkInTransaction();
+
+            return res.status(result.alreadyCheckedIn ? 200 : 201).json({
+                message: result.alreadyCheckedIn
+                    ? "You have already checked in."
+                    : "Check-in successful.",
+                ...result.queueEntry,
+                alreadyCheckedIn: result.alreadyCheckedIn
+            });
+
+        } catch (error) {
+            if (error.message === "APPOINTMENT_NOT_FOUND") {
+                return res.status(404).json({
+                    message: "Appointment not found."
+                });
+            }
+
+            if (error.message === "ACCOUNT_INACTIVE") {
+                return res.status(403).json({
+                    message: "Your account is inactive."
+                });
+            }
+
+            if (error.message === "INVALID_APPOINTMENT_TYPE") {
+                return res.status(403).json({
+                    message: "This appointment type is not available for your account."
+                });
+            }
+
+            if (error.message === "NOT_TODAY") {
+                return res.status(400).json({
+                    message: "You can only check in for today's appointment."
+                });
+            }
+
+            if (error.message === "APPOINTMENT_NOT_CONFIRMED") {
+                return res.status(400).json({
+                    message: "Only confirmed appointments can check in."
+                });
+            }
+
+            if (error.message === "CHECK_IN_NOT_OPEN") {
+                return res.status(400).json({
+                    message: "Check-in opens 15 minutes before your appointment."
+                });
+            }
+
+            if (error.message === "APPOINTMENT_MISSED") {
+                return res.status(400).json({
+                    message: "You Missed Your Appointment. Check-in is now closed."
+                });
+            }
+
+            if (error.message === "INVALID_APPOINTMENT_TIME") {
+                return res.status(500).json({
+                    message: "Unable to verify the appointment time."
+                });
+            }
+
+            console.error("Patient check-in error:", error);
+
+            return res.status(500).json({
+                message: "Check-in failed. Please try again."
+            });
+        }
+    }
+);
 
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
