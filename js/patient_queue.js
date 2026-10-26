@@ -33,6 +33,7 @@ const queueList = document.getElementById("queueList");
 let currentAppointmentId = null;
 let currentAppointment = null;
 let checkInTimer = null;
+let waitingTimeTimer = null;
 
 // ================= CHECK-IN TIME VALIDATION =================
 function getCheckInTimeStatus(appointment) {
@@ -327,9 +328,61 @@ function displayQueueStatus(appointment) {
         queuePosition.textContent = "—";
     }
 
-    // Waiting-time calculation is not implemented yet.
-    waitingTime.textContent = "Not available";
+    // Update the estimated waiting time.
+    updateWaitingTime(appointment);
+
+    // Automatically update the waiting time every 30 seconds.
+    if (waitingTimeTimer) {
+        clearInterval(waitingTimeTimer);
+    }
+
+    waitingTimeTimer = setInterval(() => {
+        if (currentAppointment) {
+            updateWaitingTime(currentAppointment);
+        }
+    }, 30000);
+
     checkInButton.disabled = true;
+}
+
+
+ // ================= UPDATE ESTIMATED WAITING TIME =================
+function updateWaitingTime(appointment) {
+    if (!appointment.appointment_date || !appointment.start_time) {
+        waitingTime.textContent = "Not available";
+        return;
+    }
+
+    // Interpret the appointment start time as Malaysia time (UTC+8).
+    const startTime = appointment.start_time.slice(0, 5);
+
+    const appointmentStart = Date.parse(
+        `${appointment.appointment_date}T${startTime}:00+08:00`
+    );
+
+    if (Number.isNaN(appointmentStart)) {
+        waitingTime.textContent = "Not available";
+        return;
+    }
+
+    // Calculate the time remaining until the appointment starts.
+    const remainingTime = appointmentStart - Date.now();
+
+    if (remainingTime <= 0) {
+        waitingTime.textContent = "Appointment time has arrived";
+        return;
+    }
+
+    // Round up so that a partial minute is not displayed as zero.
+    const remainingMinutes = Math.ceil(
+        remainingTime / (60 * 1000)
+    );
+
+    if (remainingMinutes === 1) {
+        waitingTime.textContent = "1 minute";
+    } else {
+        waitingTime.textContent = `${remainingMinutes} minutes`;
+    }
 }
 
 // ================= GET QUEUE STATUS CLASS =================
@@ -360,6 +413,11 @@ function showNoAppointment() {
     if (checkInTimer) {
         clearInterval(checkInTimer);
         checkInTimer = null;
+    }
+
+    if (waitingTimeTimer) {
+        clearInterval(waitingTimeTimer);
+        waitingTimeTimer = null;
     }
 
     currentAppointment = null;
