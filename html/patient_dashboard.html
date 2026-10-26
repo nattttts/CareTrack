@@ -120,15 +120,14 @@
                 <!-- Left Column -->
                 <div class="col-12 col-lg-6">
                     <div class="dashboard-column">
-
+                        
                         <!-- ================= UPCOMING APPOINTMENT ================= -->
                         <section class="dashboard-card appointment-card">
 
                             <div class="dashboard-card-header">
-
                                 <div class="card-heading">
                                     <div class="card-icon">
-                                        <img src="../icons/appointment.png" alt="Pregnant">
+                                        <img src="../icons/appointment.png" alt="Appointment">
                                     </div>
 
                                     <div class="card-title">
@@ -141,46 +140,19 @@
                                     View All
                                     <i class="bi bi-arrow-right"></i>
                                 </a>
-
                             </div>
 
-                            <div class="card-content">
-
-                                <div class="appointment-name">
-                                    <h4>Maternal Follow-Up</h4>
-                                    <p class="mother-name">Mother: Natalie S.</p>
+                            <div class="card-content" id="upcomingAppointmentContent">
+                                <div class="text-center text-muted py-4">
+                                    Loading your next appointment...
                                 </div>
+                            </div>
 
-                                <div class="appointment-detail row g-3">
-
-                                    <div class="col-12 col-md-6">
-                                        <div class="detail-item">
-
-                                            <img src="../icons/appointment.png" alt="Appointment">
-
-                                            <div class="detail-item-info">
-                                                <span class="detail-label">Date</span>
-                                                <strong>11 Oct 2026</strong>
-                                            </div>
-
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <div class="detail-item">
-                                            
-                                            <img src="../icons/clock.png" alt="Clock">
-
-                                            <div class="detail-item-info">
-                                                <span class="detail-label">Time</span>
-                                                <strong>10:30 AM</strong>
-                                            </div>
-
-                                        </div>
-                                    </div>
-
+                            <div class="card-content d-none" id="noUpcomingAppointment">
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-calendar-check fs-3"></i>
+                                    <p class="mt-2 mb-0">You have no upcoming appointments.</p>
                                 </div>
-
                             </div>
 
                         </section>
@@ -394,6 +366,8 @@
 
     <!-- Header JavaScript -->
     <script src="../js/header.js"></script>
+
+    <script src="../js/patient_dashboard.js"></script>
 
     <!-- Logout JavaScript -->
     <script src="../js/logout.js"></script>
