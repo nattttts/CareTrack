@@ -369,6 +369,78 @@ CareTrack Team`,
     return { messageId: info.messageId };
 }
 
-module.exports = { sendInvitationEmail, sendPasswordResetEmail, 
-    sendAppointmentScheduledEmail, sendAppointmentUpdatedEmail, 
-    sendRescheduleApprovedEmail, sendRescheduleRejectedEmail };
+async function sendVaccinationNotificationEmail(
+    email,
+    recipientName,
+    childName,
+    vaccineName,
+    dose,
+    status,
+    dueDate,
+    action
+) {
+    const transporter = createEmailTransporter();
+
+    const safeRecipient = escapeHtml(recipientName);
+    const safeChild = escapeHtml(childName);
+    const safeVaccine = escapeHtml(vaccineName);
+    const safeDose = escapeHtml(dose);
+    const safeStatus = escapeHtml(status);
+    const safeDueDate = escapeHtml(dueDate);
+
+    const isUpdate = action === "updated";
+    const subject = isUpdate
+        ? "CareTrack Vaccination Record Updated"
+        : "CareTrack Vaccination Record Added";
+
+    const info = await transporter.sendMail({
+        from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject,
+
+        text: `Hello ${recipientName},
+
+The vaccination record for ${childName} has been ${action}.
+
+Vaccine: ${vaccineName}
+Dose: ${dose}
+Status: ${status}
+Due date: ${dueDate}
+
+Please log in to CareTrack to view the vaccination details.
+
+Regards,
+CareTrack Team`,
+
+        html: `
+            <h2>${subject}</h2>
+            <p>Hello ${safeRecipient},</p>
+            <p>
+                The vaccination record for
+                <strong>${safeChild}</strong> has been ${action}.
+            </p>
+            <ul>
+                <li><strong>Vaccine:</strong> ${safeVaccine}</li>
+                <li><strong>Dose:</strong> ${safeDose}</li>
+                <li><strong>Status:</strong> ${safeStatus}</li>
+                <li><strong>Due date:</strong> ${safeDueDate}</li>
+            </ul>
+            <p>Please log in to CareTrack to view the vaccination details.</p>
+            <p>Regards,<br>CareTrack Team</p>
+        `
+    });
+
+    console.log("Vaccination email accepted by Gmail:", info.messageId);
+
+    return { messageId: info.messageId };
+}
+
+module.exports = {
+    sendInvitationEmail,
+    sendPasswordResetEmail,
+    sendAppointmentScheduledEmail,
+    sendAppointmentUpdatedEmail,
+    sendRescheduleApprovedEmail,
+    sendRescheduleRejectedEmail,
+    sendVaccinationNotificationEmail
+};

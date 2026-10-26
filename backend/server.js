@@ -6,10 +6,15 @@ const { createInvitation } = require("./invitation");
 const crypto = require("node:crypto");
 const { hashPassword, verifyPassword } = require("./password");
 const { createPasswordReset } = require("./password_reset");
-const { sendInvitationEmail, sendPasswordResetEmail, 
-    sendAppointmentScheduledEmail, sendAppointmentUpdatedEmail,
-    sendRescheduleApprovedEmail, 
-    sendRescheduleRejectedEmail } = require("./email");
+const {
+    sendInvitationEmail,
+    sendPasswordResetEmail,
+    sendAppointmentScheduledEmail,
+    sendAppointmentUpdatedEmail,
+    sendRescheduleApprovedEmail,
+    sendRescheduleRejectedEmail,
+    sendVaccinationNotificationEmail
+} = require("./email");
 const session = require("express-session");
 const SqliteStore = require("better-sqlite3-session-store")(session);
 require("dotenv").config({
@@ -2538,8 +2543,9 @@ app.patch(
 
 // PATCH: Update an existing vaccination record.
 app.patch(
-    "/api/vaccination-management/records/:recordId", requireRole("staff"),
-    (req, res) => {
+    "/api/vaccination-management/records/:recordId",
+    requireRole("staff"),
+    async (req, res) => {
         const recordId = Number(req.params.recordId);
 
         const {
@@ -2562,6 +2568,19 @@ app.patch(
         }
 
         try {
+            // Get the existing record to identify the child.
+            const existingRecord = db.prepare(`
+                SELECT user_id
+                FROM Child_Vaccination
+                WHERE child_vaccination_id = ?
+            `).get(recordId);
+
+            if (!existingRecord) {
+                return res.status(404).json({
+                    message: "Vaccination record not found."
+                });
+            }
+
             const vaccine = db.prepare(`
                 SELECT vaccination_id
                 FROM Vaccination
@@ -2574,7 +2593,7 @@ app.patch(
                 });
             }
 
-            const result = db.prepare(`
+            db.prepare(`
                 UPDATE Child_Vaccination
                 SET vaccination_id = ?,
                     dose = ?,
@@ -2587,10 +2606,19 @@ app.patch(
                 recordId
             );
 
-            if (result.changes === 0) {
-                return res.status(404).json({
-                    message: "Vaccination record not found."
-                });
+            // Trigger notification and email after a successful update.
+            // Define this helper using your actual database schema.
+            try {
+                await notifyVaccinationChange(
+                    existingRecord.user_id,
+                    "updated",
+                    recordId
+                );
+            } catch (notificationError) {
+                console.error(
+                    "Vaccination updated, but notification failed:",
+                    notificationError
+                );
             }
 
             return res.json({
@@ -2607,11 +2635,11 @@ app.patch(
     }
 );
 
-
 // POST: Add a vaccination record for a child.
 app.post(
-    "/api/vaccination-management/children/:userId/records", requireRole("staff"),
-    (req, res) => {
+    "/api/vaccination-management/children/:userId/records",
+    requireRole("staff"),
+    async (req, res) => {
         const userId = String(req.params.userId || "").trim();
 
         const {
@@ -2624,6 +2652,7 @@ app.post(
         if (
             !userId ||
             !Number.isInteger(Number(vaccination_id)) ||
+            !dose ||
             typeof dose !== "string" ||
             !dose.trim() ||
             !["Upcoming", "Completed"].includes(status) ||
@@ -2672,7 +2701,6 @@ app.post(
                 });
             }
 
-            // appointment_id is no longer required.
             const result = db.prepare(`
                 INSERT INTO Child_Vaccination (
                     user_id,
@@ -2690,6 +2718,20 @@ app.post(
                 status
             );
 
+            // Create notifications and send emails after insertion.
+            try {
+                await notifyVaccinationChange(
+                    userId,
+                    "added",
+                    Number(result.lastInsertRowid)
+                );
+            } catch (notificationError) {
+                console.error(
+                    "Vaccination added, but notification failed:",
+                    notificationError
+                );
+            }
+
             return res.status(201).json({
                 message: "Vaccination record added successfully.",
                 record_id: result.lastInsertRowid
@@ -2704,7 +2746,6 @@ app.post(
         }
     }
 );
-
 
 // DELETE: Delete a vaccination record.
 app.delete(
@@ -5265,6 +5306,289 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
         }
     }
 );
+
+/* =========================================
+   CHANGE PASSWORD FOR LOGGED-IN STAFF
+========================================= */
+app.patch(
+    "/api/me/change-password",
+    requireRole("staff"),
+    async (req, res) => {
+        try {
+            const { currentPassword, newPassword, confirmPassword } = req.body;
+            const userId = req.session.user.userId;
+
+            if (
+                typeof currentPassword !== "string" ||
+                typeof newPassword !== "string" ||
+                typeof confirmPassword !== "string"
+            ) {
+                return res.status(400).json({
+                    message: "Please complete all password fields."
+                });
+            }
+
+            if (!currentPassword.trim()) {
+                return res.status(400).json({
+                    message: "Please enter your current password."
+                });
+            }
+
+            if (newPassword.length < 8 || newPassword.length > 128) {
+                return res.status(400).json({
+                    message: "Your new password must contain 8–128 characters."
+                });
+            }
+
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({
+                    message: "The new passwords do not match."
+                });
+            }
+
+            if (currentPassword === newPassword) {
+                return res.status(400).json({
+                    message: "Your new password must differ from your current password."
+                });
+            }
+
+            const user = db.prepare(`
+                SELECT password_hash, password_set, account_status
+                FROM User
+                WHERE user_id = ?
+                  AND role = 'staff'
+            `).get(userId);
+
+            if (!user) {
+                return res.status(404).json({
+                    message: "Staff account not found."
+                });
+            }
+
+            if (
+                user.account_status !== "Active" ||
+                Number(user.password_set) !== 1
+            ) {
+                return res.status(403).json({
+                    message: "This account cannot change its password."
+                });
+            }
+
+            const isValid = await verifyPassword(
+                user.password_hash,
+                currentPassword
+            );
+
+            if (!isValid) {
+                return res.status(400).json({
+                    message: "Your current password is incorrect."
+                });
+            }
+
+            const newPasswordHash = await hashPassword(newPassword);
+
+            const update = db.prepare(`
+                UPDATE User
+                SET password_hash = ?
+                WHERE user_id = ?
+                  AND role = 'staff'
+                  AND account_status = 'Active'
+                  AND password_set = 1
+            `).run(newPasswordHash, userId);
+
+            if (update.changes !== 1) {
+                return res.status(409).json({
+                    message: "Unable to update your password. Please try again."
+                });
+            }
+
+            return res.json({
+                message: "Your password has been changed successfully!"
+            });
+
+        } catch (error) {
+            console.error("Staff password change error:", error);
+
+            return res.status(500).json({
+                message: "Unable to change your password. Please try again."
+            });
+        }
+    }
+);
+
+/* =========================================
+   ENSURE NOTIFICATION TABLE HAS REQUIRED COLUMNS
+========================================= */
+try {
+    const tableExists = db.prepare(`
+        SELECT name
+        FROM sqlite_master
+        WHERE type = 'table'
+          AND name = 'Notification'
+    `).get();
+
+    if (!tableExists) {
+        console.error(
+            "Notification table does not exist in the connected database."
+        );
+    } else {
+        const columns = db
+            .prepare("PRAGMA table_info(Notification)")
+            .all();
+
+        const existingColumns = new Set(
+            columns.map(column => column.name)
+        );
+
+        const missingColumns = [
+            {
+                name: "type",
+                sql: "ALTER TABLE Notification ADD COLUMN type TEXT NOT NULL DEFAULT 'general'"
+            },
+            {
+                name: "appointment_date",
+                sql: "ALTER TABLE Notification ADD COLUMN appointment_date TEXT"
+            },
+            {
+                name: "appointment_time",
+                sql: "ALTER TABLE Notification ADD COLUMN appointment_time TEXT"
+            },
+            {
+                name: "note",
+                sql: "ALTER TABLE Notification ADD COLUMN note TEXT"
+            }
+        ];
+
+        for (const column of missingColumns) {
+            if (!existingColumns.has(column.name)) {
+                db.exec(column.sql);
+                console.log(
+                    `Added missing Notification column: ${column.name}`
+                );
+            }
+        }
+
+        console.log("Notification table schema check completed.");
+    }
+} catch (error) {
+    console.error(
+        "Notification schema migration failed:",
+        error.message
+    );
+}
+
+async function notifyVaccinationChange(childUserId, action, recordId) {
+    // Find the child, vaccine and matching mother account.
+    const child = db.prepare(`
+        SELECT
+            childUser.user_id AS child_user_id,
+            childUser.full_name AS child_name,
+            childUser.email AS child_email,
+            Child.guardian_name,
+            cv.dose,
+            cv.status,
+            cv.due_date,
+            Vaccination.vaccine_name,
+            motherUser.user_id AS mother_user_id,
+            motherUser.full_name AS mother_name,
+            motherUser.email AS mother_email
+        FROM Child
+        INNER JOIN User AS childUser
+            ON childUser.user_id = Child.user_id
+        INNER JOIN Child_Vaccination AS cv
+            ON cv.user_id = Child.user_id
+        INNER JOIN Vaccination
+            ON Vaccination.vaccination_id = cv.vaccination_id
+        LEFT JOIN User AS motherUser
+            ON LOWER(TRIM(motherUser.full_name)) =
+               LOWER(TRIM(Child.guardian_name))
+           AND motherUser.role = 'mother'
+        WHERE Child.user_id = ?
+        AND cv.child_vaccination_id = ?
+        LIMIT 1
+    `).get(childUserId, recordId);
+
+    if (!child) {
+        console.warn("Vaccination notification skipped: child not found.");
+        return;
+    }
+
+    const title = action === "updated"
+        ? "Vaccination Record Updated"
+        : "New Vaccination Record";
+
+    const message =
+        `The vaccination record for ${child.child_name} has been ${action}. ` +
+        `Vaccine: ${child.vaccine_name}. ` +
+        `Dose: ${child.dose}. Status: ${child.status}. ` +
+        `Due date: ${child.due_date || "Not specified"}.`;
+
+    const recipients = [
+        {
+            userId: child.child_user_id,
+            name: child.child_name,
+            email: child.child_email
+        }
+    ];
+
+    // Only include a matching mother account if one exists.
+    if (child.mother_user_id) {
+        recipients.push({
+            userId: child.mother_user_id,
+            name: child.mother_name,
+            email: child.mother_email
+        });
+    }
+
+    // Save in-app notifications for each recipient.
+    const insertNotification = db.prepare(`
+        INSERT INTO Notification (
+            user_id,
+            title,
+            type,
+            message,
+            is_read,
+            note
+        )
+        VALUES (?, ?, ?, ?, 0, ?)
+    `);
+
+    for (const recipient of recipients) {
+        insertNotification.run(
+            recipient.userId,
+            title,
+            "vaccination",
+            message,
+            `Vaccination record ${action}`
+        );
+    }
+
+    // Email failures should not undo the saved vaccination record
+    // or prevent in-app notifications from being created.
+    for (const recipient of recipients) {
+        if (!recipient.email || !recipient.email.trim()) {
+            continue;
+        }
+
+        try {
+            await sendVaccinationNotificationEmail(
+                recipient.email,
+                recipient.name,
+                child.child_name,
+                child.vaccine_name,
+                child.dose,
+                child.status,
+                child.due_date || "Not specified",
+                action
+            );
+        } catch (error) {
+            console.error(
+                `Vaccination email failed for ${recipient.email}:`,
+                error.message
+            );
+        }
+    }
+}
 
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
