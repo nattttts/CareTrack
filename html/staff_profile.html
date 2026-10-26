@@ -443,31 +443,36 @@
 
                     </div>
 
-                    <div class="account-row">
-
-                        <div class="account-left">
-
-                            <div class="account-icon">
-                                ◷
-                            </div>
-
-                            <span>
-                                Last Updated
-                            </span>
-
-                        </div>
-
-
-                        <strong>
-                            24 September 2026
-                        </strong>
-
                     </div>
-
 
                 </div>
 
             </section>
+            
+            <!-- Toast Notification: Top Centre -->
+            <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+                style="z-index: 1100;">
+
+                <div id="profileToast"
+                    class="toast align-items-center border-0 text-bg-success"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true">
+
+                    <div class="d-flex">
+                        <div id="profileToastMessage" class="toast-body">
+                            Notification message
+                        </div>
+
+                        <button type="button"
+                                class="btn-close btn-close-white me-2 m-auto"
+                                data-bs-dismiss="toast"
+                                aria-label="Close">
+                        </button>
+                    </div>
+
+                </div>
+            </div>
 
         </main>
 
@@ -478,6 +483,8 @@
 
     <!-- Logout JavaScript -->
     <script src="../js/logout.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

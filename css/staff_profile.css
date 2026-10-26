@@ -624,3 +624,30 @@ a {
     }
 
 }
+
+/* Toast notifications - top centre, all green */
+#profileToast {
+    background-color: #198754;
+    color: #ffffff;
+    border: none !important;
+    border-radius: 10px;
+    min-width: 300px;
+    max-width: 90vw;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+#profileToast .toast-body {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 14px 16px;
+}
+
+#profileToast.toast-error {
+    background-color: #198754;
+    border: none !important;
+}
+
+#profileToast .btn-close {
+    filter: brightness(0) invert(1);
+}
