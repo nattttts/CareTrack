@@ -15,8 +15,10 @@ const appointmentType = document.getElementById("appointmentType");
 const patientName = document.getElementById("patientName");
 const appointmentDate = document.getElementById("appointmentDate");
 const appointmentTime = document.getElementById("appointmentTime");
+const appointmentStatus = document.getElementById("appointmentStatus");
 const appointmentStatusText = document.getElementById("appointmentStatusText");
 const expectedCheckInTime = document.getElementById("expectedCheckInTime");
+const expectedCheckInSection = document.querySelector(".expected-check-in");
 
 // Queue details
 const queueStatusBadge = document.getElementById("queueStatusBadge");
@@ -114,7 +116,6 @@ function updateCheckInAvailability(appointment) {
     if (result.status === "missed") {
         checkInButton.disabled = true;
         notCheckedIn.hidden = true;
-        appointmentStatusText.textContent = "Missed";
 
         showMessage(
             "You Missed Your Appointment",
@@ -192,7 +193,6 @@ function displayAppointment(appointment) {
     appointmentCard.hidden = false;
 
     // The API does not currently return the patient's full name separately.
-    // Load it from /api/me if needed in a future improvement.
     if (patientName) {
         patientName.textContent = "";
     }
@@ -202,8 +202,29 @@ function displayAppointment(appointment) {
     appointmentTime.textContent =
         `${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`;
 
-    // Calculate expected check-in time (15 minutes before appointment).
-    if (expectedCheckInTime && appointment.start_time) {
+    // Check whether the appointment has been missed.
+    const isMissed =
+        getCheckInTimeStatus(appointment).status === "missed" && !appointment.queue_entry_id;
+
+    // Display appointment status.
+    if (appointmentStatusText) {
+        appointmentStatusText.textContent = isMissed
+            ? "Missed"
+            : appointment.appointment_status;
+    }
+
+    // Change the status badge colour.
+    if (appointmentStatus) {
+        appointmentStatus.classList.toggle("missed", isMissed);
+    }
+
+    // Hide expected check-in time when the appointment is missed.
+    if (expectedCheckInSection) {
+        expectedCheckInSection.hidden = isMissed;
+    }
+
+    // Calculate expected check-in time.
+    if (!isMissed && expectedCheckInTime && appointment.start_time) {
         const [hours, minutes] = appointment.start_time
             .split(":")
             .map(Number);
@@ -212,19 +233,15 @@ function displayAppointment(appointment) {
         const checkInMinutes = appointmentMinutes - 15;
 
         // Handle appointments shortly after midnight.
-        const adjustedMinutes =
-            ((checkInMinutes % 1440) + 1440) % 1440;
+        const adjustedMinutes = ((checkInMinutes % 1440) + 1440) % 1440;
 
         const checkInHours = Math.floor(adjustedMinutes / 60);
         const checkInMinute = adjustedMinutes % 60;
 
-        const checkInTime = 
-            `${String(checkInHours).padStart(2, "0")}:${String(checkInMinute).padStart(2, "0")}`;
+        const checkInTime = `${String(checkInHours).padStart(2, "0")}:${String(checkInMinute).padStart(2, "0")}`;
 
         expectedCheckInTime.textContent = formatTime(checkInTime);
     }
-
-    appointmentStatusText.textContent = appointment.appointment_status;
 }
 
 // ================= SHOW CHECK-IN SECTION =================
@@ -537,9 +554,24 @@ function showMessage(title, message, isSuccess = false) {
     }
 
     if (checkInMessage) {
+        // Set the message style based on its type.
+        checkInMessage.className = "checkin-message";
+
+        if (isSuccess) {
+            checkInMessage.classList.add("success");
+        } else if (
+            title === "You Missed Your Appointment" ||
+            title === "Check-in failed"
+        ) {
+            checkInMessage.classList.add("warning");
+        } else {
+            checkInMessage.classList.add("info");
+        }
+
         checkInMessage.hidden = false;
     }
 }
+
 
 // ================= FORMAT DATE =================
 function formatDate(dateString) {
