@@ -4588,18 +4588,27 @@ app.get(
                     q.status AS queue_status,
 
                     CASE
+                        -- No queue entry means the patient has not checked in
                         WHEN q.queue_entry_id IS NULL THEN NULL
+
+                        -- Completed or skipped patients have no active queue position
                         WHEN q.status IN ('Completed', 'Skipped') THEN NULL
+                        
+                        -- Count active queue entries in the same service
                         ELSE (
                             SELECT COUNT(*)
                             FROM Queue_Entry AS q2
                             WHERE date(q2.check_in_time, '+8 hours') = ?
-                              AND q2.queue_number <= q.queue_number
-                              AND q2.status IN (
-                                  'Waiting',
-                                  'Called',
-                                  'In Progress'
-                              )
+                            AND q2.queue_number <= q.queue_number
+                            AND q2.status IN ('Waiting', 'Called', 'In Progress')
+
+                            -- Only count entries for the same appointment type
+                            AND EXISTS (
+                                SELECT 1
+                                FROM Appointment AS a2
+                                WHERE a2.appointment_id = q2.appointment_id
+                                    AND a2.appointment_type = a.appointment_type
+                            )
                         )
                     END AS queue_position
 
@@ -4841,6 +4850,41 @@ app.post(
 
             return res.status(500).json({
                 message: "Check-in failed. Please try again."
+            });
+        }
+    }
+);
+
+ // ================= PATIENT LIVE QUEUE =================
+app.get("/api/patient/live-queue", requireRole("mother", "child"),
+    (req, res) => {
+        try {
+            const today = getMalaysiaDate();
+
+            const queueEntries = db.prepare(`
+                SELECT
+                    q.queue_number,
+                    a.appointment_type,
+                    q.status AS queue_status
+                FROM Queue_Entry AS q
+
+                INNER JOIN Appointment AS a
+                    ON q.appointment_id = a.appointment_id
+
+                WHERE a.appointment_date = ?
+                  AND date(q.check_in_time, '+8 hours') = ?
+                  AND q.status IN ('Waiting', 'Called', 'In Progress')
+
+                ORDER BY q.queue_number ASC
+            `).all(today, today);
+
+            return res.json(queueEntries);
+
+        } catch (error) {
+            console.error("Error loading patient live queue:", error);
+
+            return res.status(500).json({
+                message: "Failed to load the live queue."
             });
         }
     }

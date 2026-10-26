@@ -26,8 +26,10 @@ const waitingTime = document.getElementById("waitingTime");
 const queueAppointmentTime = document.getElementById("queueAppointmentTime");
 
 // Live queue
-const currentlyServing = document.getElementById("currentlyServing");
 const queueList = document.getElementById("queueList");
+
+// Store the live queue refresh timer
+let liveQueueTimer = null;
 
 // Store the current appointment ID
 let currentAppointmentId = null;
@@ -233,6 +235,11 @@ function showCheckInSection() {
     queueInfo.hidden = true;
     liveQueue.hidden = true;
 
+    if (liveQueueTimer) {
+        clearInterval(liveQueueTimer);
+        liveQueueTimer = null;
+    }
+
     // Update the button based on the appointment time.
     if (currentAppointment) {
         updateCheckInAvailability(currentAppointment);
@@ -305,12 +312,10 @@ if (checkInButton) {
 
 // ================= DISPLAY QUEUE STATUS =================
 function displayQueueStatus(appointment) {
-    notCheckedIn.hidden = true;  
+    notCheckedIn.hidden = true;
     queueStatus.hidden = false;
     queueInfo.hidden = false;
-
-    // Keep the live queue hidden until its API is implemented.
-    liveQueue.hidden = true;
+    liveQueue.hidden = false;
 
     queueNumber.textContent = appointment.queue_number ?? "—";
 
@@ -320,18 +325,13 @@ function displayQueueStatus(appointment) {
     const status = appointment.queue_status || "Waiting";
 
     queueStatusBadge.textContent = status;
-    queueStatusBadge.className = `queue-status ${getQueueStatusClass(status)}`;
+    queueStatusBadge.className =
+        `queue-status ${getQueueStatusClass(status)}`;
+    
+    queuePosition.textContent = appointment.queue_position;
 
-    if (appointment.queue_position != null) {
-        queuePosition.textContent = appointment.queue_position;
-    } else {
-        queuePosition.textContent = "—";
-    }
-
-    // Update the estimated waiting time.
     updateWaitingTime(appointment);
 
-    // Automatically update the waiting time every 30 seconds.
     if (waitingTimeTimer) {
         clearInterval(waitingTimeTimer);
     }
@@ -343,8 +343,93 @@ function displayQueueStatus(appointment) {
     }, 30000);
 
     checkInButton.disabled = true;
+
+    // Load all active queues and refresh periodically.
+    loadLiveQueue();
+
+    if (liveQueueTimer) {
+        clearInterval(liveQueueTimer);
+    }
+
+    liveQueueTimer = setInterval(() => {
+        loadLiveQueue();
+    }, 10000);
 }
 
+ // ================= LOAD LIVE QUEUE =================
+async function loadLiveQueue() {
+    try {
+        const response = await fetch("/api/patient/live-queue");
+
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to load live queue.");
+        }
+
+        const queueEntries = await response.json();
+
+        if (!Array.isArray(queueEntries)) {
+            throw new Error("Invalid live queue data.");
+        }
+
+        // Clear the previous queue list.
+        queueList.replaceChildren();
+
+        if (queueEntries.length === 0) {
+            const emptyMessage = document.createElement("p");
+            emptyMessage.className = "queue-empty";
+            emptyMessage.textContent = "No active queues at the moment.";
+
+            queueList.appendChild(emptyMessage);
+            return;
+        }
+
+        // Sort by queue number in ascending order.
+        queueEntries.sort(
+            (a, b) => a.queue_number - b.queue_number
+        );
+
+        queueEntries.forEach((entry) => {
+
+            // Check whether this is the current patient's queue.
+            const isOwnQueue =
+                currentAppointment &&
+                Number(entry.queue_number) === Number(currentAppointment.queue_number);
+
+            // Create the queue item.
+            const item = document.createElement("div");
+            item.className = isOwnQueue
+                ? "queue-item your-queue"
+                : "queue-item";
+
+            // Create the queue item's HTML.
+            item.innerHTML = `
+                <span class="queue-number"></span>
+                <span class="queue-service"></span>
+                <span class="queue-item-status"></span>
+            `;
+
+            // Display queue information.
+            item.querySelector(".queue-number").textContent = `${entry.queue_number}`;
+
+            item.querySelector(".queue-service").textContent = entry.appointment_type;
+
+            const status = item.querySelector(".queue-item-status");
+            status.classList.add(getQueueStatusClass(entry.queue_status));
+            status.textContent = entry.queue_status;
+
+            // Add the queue item to the queue list.
+            queueList.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error("Error loading live queue:", error);
+    }
+}
 
  // ================= UPDATE ESTIMATED WAITING TIME =================
 function updateWaitingTime(appointment) {
@@ -428,6 +513,11 @@ function showNoAppointment() {
     queueStatus.hidden = true;
     queueInfo.hidden = true;
     liveQueue.hidden = true;
+
+    if (liveQueueTimer) {
+        clearInterval(liveQueueTimer);
+        liveQueueTimer = null;
+    }
 
     showMessage("No appointment today", "No appointment scheduled for today.");
 }
