@@ -4605,10 +4605,48 @@ function getMalaysiaDate() {
     }).format(new Date());
 }
 
+// ================= AUTO-UPDATE MISSED APPOINTMENTS =================
+function updateMissedAppointments() {
+    try {
+        const today = getMalaysiaDate();
+
+        const currentTime = new Date().toLocaleTimeString("en-GB", {
+            timeZone: "Asia/Kuala_Lumpur",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        });
+
+        const result = db.prepare(`
+            UPDATE Appointment
+            SET status = 'Missed'
+            WHERE status = 'Confirmed'
+            AND ( appointment_date < ?
+                OR (
+                    appointment_date = ?
+                    AND time(start_time, '+5 minutes') <= ?
+                )
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM Queue_Entry
+                WHERE Queue_Entry.appointment_id = Appointment.appointment_id
+            )
+        `).run(today, today, currentTime);
+
+        if (result.changes > 0) {
+            console.log(
+                `Updated ${result.changes} appointment(s) to Missed.`
+            );
+        }
+    } catch (error) {
+        console.error("Error updating missed appointments:", error);
+    }
+}
+
 // Patient queue: Get Today's Appointments
-app.get(
-    "/api/patient/queue",
-    requireRole("mother", "child"),
+app.get("/api/patient/queue", requireRole("mother", "child"),
     (req, res) => {
         try {
             const userId = req.session.user.userId;
@@ -4648,7 +4686,7 @@ app.get(
                                 SELECT 1
                                 FROM Appointment AS a2
                                 WHERE a2.appointment_id = q2.appointment_id
-                                    AND a2.appointment_type = a.appointment_type
+                                AND a2.appointment_type = a.appointment_type
                             )
                         )
                     END AS queue_position
@@ -4659,8 +4697,8 @@ app.get(
                     ON q.appointment_id = a.appointment_id
 
                 WHERE a.user_id = ?
-                  AND a.appointment_date = ?
-                  AND a.status = 'Confirmed'
+                AND a.appointment_date = ?
+                AND a.status IN ('Confirmed', 'Missed')
 
                 ORDER BY a.start_time ASC, a.appointment_id ASC
             `).all(today, userId, today);
@@ -4709,7 +4747,7 @@ app.post(
                     INNER JOIN User AS u
                         ON u.user_id = a.user_id
                     WHERE a.appointment_id = ?
-                      AND a.user_id = ?
+                    AND a.user_id = ?
                 `).get(appointmentId, userId);
 
                 if (!appointment) {
@@ -4736,6 +4774,11 @@ app.post(
 
                 if (appointment.appointment_date !== today) {
                     throw new Error("NOT_TODAY");
+                }
+
+                // Check whether the appointment has already been missed.
+                if (appointment.status === "Missed") {
+                    throw new Error("APPOINTMENT_MISSED");
                 }
 
                 if (appointment.status !== "Confirmed") {
@@ -4876,6 +4919,20 @@ app.post(
             }
 
             if (error.message === "APPOINTMENT_MISSED") {
+                // Update the appointment status in the database.
+                db.prepare(`
+                    UPDATE Appointment
+                    SET status = 'Missed'
+                    WHERE appointment_id = ?
+                    AND user_id = ?
+                    AND status = 'Confirmed'
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM Queue_Entry
+                        WHERE Queue_Entry.appointment_id = Appointment.appointment_id
+                    )
+                `).run(appointmentId, userId);
+
                 return res.status(400).json({
                     message: "You Missed Your Appointment. Check-in is now closed."
                 });
@@ -5018,12 +5075,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
         }
 
         // Only these status transitions are supported.
-        const allowedStatuses = [
-            "Called",
-            "In Progress",
-            "Completed",
-            "Skipped"
-        ];
+        const allowedStatuses = ["Called", "In Progress", "Completed", "Skipped"];
 
         if (!allowedStatuses.includes(newStatus)) {
             return res.status(400).json({
@@ -5589,6 +5641,13 @@ async function notifyVaccinationChange(childUserId, action, recordId) {
         }
     }
 }
+
+// ================= AUTO-UPDATE MISSED APPOINTMENTS =================
+// Check when the server starts
+updateMissedAppointments();
+
+// Check every 30 seconds
+setInterval(updateMissedAppointments, 30 * 1000);
 
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
