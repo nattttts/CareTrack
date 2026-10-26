@@ -4846,6 +4846,382 @@ app.post(
     }
 );
 
+// ================= STAFF QUEUE: GET TODAY'S QUEUE =================
+app.get("/api/staff/queue", requireRole("staff"),
+    (req, res) => {
+        try {
+            const today = getMalaysiaDate();
+
+            const queueEntries = db.prepare(`
+                SELECT
+                    q.queue_entry_id,
+                    q.appointment_id,
+                    q.queue_number,
+                    q.check_in_time,
+                    q.status AS queue_status,
+                    q.called_at,
+                    q.visit_at,
+                    q.completed_at,
+                    q.skipped_at,
+
+                    a.appointment_type,
+                    a.appointment_date,
+                    a.start_time,
+                    a.end_time,
+                    a.status AS appointment_status,
+
+                    u.user_id,
+                    u.full_name AS patient_name,
+                    u.role AS patient_role,
+
+                    c.guardian_name
+
+                FROM Queue_Entry AS q
+
+                INNER JOIN Appointment AS a
+                    ON q.appointment_id = a.appointment_id
+
+                INNER JOIN User AS u
+                    ON a.user_id = u.user_id
+
+                LEFT JOIN Child AS c
+                    ON c.user_id = u.user_id
+
+                WHERE a.appointment_date = ?
+                  AND date(q.check_in_time, '+8 hours') = ?
+
+                ORDER BY
+                    CASE q.status
+                        WHEN 'In Progress' THEN 1
+                        WHEN 'Called' THEN 2
+                        WHEN 'Waiting' THEN 3
+                        WHEN 'Completed' THEN 4
+                        WHEN 'Skipped' THEN 5
+                        ELSE 6
+                    END,
+                    q.queue_number ASC
+            `).all(today, today);
+
+            return res.json(queueEntries);
+
+        } catch (error) {
+            console.error("Error loading staff queue:", error);
+
+            return res.status(500).json({
+                message: "Failed to load today's queue."
+            });
+        }
+    }
+);
+
+// ================= STAFF QUEUE: UPDATE QUEUE STATUS =================
+app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
+    (req, res) => {
+        const queueEntryId = Number(req.params.queueEntryId);
+        const { status: newStatus } = req.body;
+
+        const today = getMalaysiaDate();
+
+        // Validate queue entry ID.
+        if (
+            !Number.isSafeInteger(queueEntryId) ||
+            queueEntryId <= 0
+        ) {
+            return res.status(400).json({
+                message: "Invalid queue entry ID."
+            });
+        }
+
+        // Only these status transitions are supported.
+        const allowedStatuses = [
+            "Called",
+            "In Progress",
+            "Completed",
+            "Skipped"
+        ];
+
+        if (!allowedStatuses.includes(newStatus)) {
+            return res.status(400).json({
+                message: "Invalid queue status."
+            });
+        }
+
+        try {
+            const updateQueueTransaction = db.transaction(() => {
+
+                // Get the queue entry and its appointment.
+                const entry = db.prepare(`
+                    SELECT
+                        q.queue_entry_id,
+                        q.appointment_id,
+                        q.queue_number,
+                        q.status AS queue_status,
+
+                        a.appointment_type,
+                        a.appointment_date,
+                        a.start_time,
+                        a.status AS appointment_status
+
+                    FROM Queue_Entry AS q
+
+                    INNER JOIN Appointment AS a
+                        ON q.appointment_id = a.appointment_id
+
+                    WHERE q.queue_entry_id = ?
+                      AND a.appointment_date = ?
+                      AND date(q.check_in_time, '+8 hours') = ?
+                `).get(queueEntryId, today, today);
+
+                if (!entry) {
+                    throw new Error("QUEUE_ENTRY_NOT_FOUND");
+                }
+
+                // Ensure the appointment is confirmed before calling or completing the visit
+                const currentStatus = entry.queue_status;
+
+                // ================= CALL PATIENT =================
+                if (newStatus === "Called") {
+
+                    if (currentStatus !== "Waiting") {
+                        throw new Error("INVALID_STATUS_TRANSITION");
+                    }
+
+                    if (entry.appointment_status !== "Confirmed") {
+                        throw new Error("APPOINTMENT_NOT_CONFIRMED");
+                    }
+
+                    // Prevent calling a patient before their appointment start time.
+                    const currentTime = new Date().toLocaleTimeString("en-GB", {
+                        timeZone: "Asia/Kuala_Lumpur",
+                        hour12: false,
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit"
+                    });
+
+                    if (currentTime < entry.start_time) {
+                        throw new Error("APPOINTMENT_NOT_STARTED");
+                    }
+
+                    // Prevent calling another patient when the same service already has a Called or In Progress entry.
+                    const occupiedEntry = db.prepare(`
+                        SELECT q.queue_entry_id
+                        FROM Queue_Entry AS q
+
+                        INNER JOIN Appointment AS a
+                            ON q.appointment_id = a.appointment_id
+
+                        WHERE a.appointment_type = ?
+                          AND a.appointment_date = ?
+                          AND date(q.check_in_time, '+8 hours') = ?
+                          AND q.queue_entry_id != ?
+                          AND q.status IN ('Called', 'In Progress')
+
+                        LIMIT 1
+                    `).get(
+                        entry.appointment_type,
+                        today,
+                        today,
+                        queueEntryId
+                    );
+
+                    if (occupiedEntry) {
+                        throw new Error("SERVICE_OCCUPIED");
+                    }
+
+                    const queueUpdate = db.prepare(`
+                        UPDATE Queue_Entry
+                        SET status = 'Called',
+                            called_at = CURRENT_TIMESTAMP
+                        WHERE queue_entry_id = ?
+                        AND status = 'Waiting'
+                    `).run(queueEntryId);
+
+                    if (queueUpdate.changes !== 1) {
+                        throw new Error("QUEUE_UPDATE_FAILED");
+                    }
+                }
+
+                // ================= START VISIT =================
+                else if (newStatus === "In Progress") {
+
+                    if (currentStatus !== "Called") {
+                        throw new Error("INVALID_STATUS_TRANSITION");
+                    }
+
+                    // Do not allow two patients to be in progress for the same service at the same time.
+                    const activeVisit = db.prepare(`
+                        SELECT q.queue_entry_id
+                        FROM Queue_Entry AS q
+
+                        INNER JOIN Appointment AS a
+                            ON q.appointment_id = a.appointment_id
+
+                        WHERE a.appointment_type = ?
+                          AND a.appointment_date = ?
+                          AND date(q.check_in_time, '+8 hours') = ?
+                          AND q.queue_entry_id != ?
+                          AND q.status IN ('Called', 'In Progress')
+
+                        LIMIT 1
+                    `).get(
+                        entry.appointment_type,
+                        today,
+                        today,
+                        queueEntryId
+                    );
+
+                    if (activeVisit) {
+                        throw new Error("SERVICE_OCCUPIED");
+                    }
+
+                    const queueUpdate = db.prepare(`
+                        UPDATE Queue_Entry
+                        SET status = 'In Progress',
+                            visit_at = CURRENT_TIMESTAMP
+                        WHERE queue_entry_id = ?
+                        AND status = 'Called'
+                    `).run(queueEntryId);
+
+                    if (queueUpdate.changes !== 1) {
+                        throw new Error("QUEUE_UPDATE_FAILED");
+                    }
+                }
+
+                // ================= COMPLETE VISIT =================
+                else if (newStatus === "Completed") {
+
+                    if (currentStatus !== "In Progress") {
+                        throw new Error("INVALID_STATUS_TRANSITION");
+                    }
+
+                    if (entry.appointment_status !== "Confirmed") {
+                        throw new Error("APPOINTMENT_NOT_CONFIRMED");
+                    }
+
+                    // Update the queue status first.
+                    const queueUpdate = db.prepare(`
+                        UPDATE Queue_Entry
+                        SET status = 'Completed',
+                            completed_at = CURRENT_TIMESTAMP
+                        WHERE queue_entry_id = ?
+                          AND status = 'In Progress'
+                    `).run(queueEntryId);
+
+                    if (queueUpdate.changes !== 1) {
+                        throw new Error("QUEUE_UPDATE_FAILED");
+                    }
+
+                    // Update the associated appointment as well.
+                    const appointmentUpdate = db.prepare(`
+                        UPDATE Appointment
+                        SET status = 'Completed'
+                        WHERE appointment_id = ?
+                          AND status = 'Confirmed'
+                    `).run(entry.appointment_id);
+
+                    if (appointmentUpdate.changes !== 1) {
+                        throw new Error("APPOINTMENT_UPDATE_FAILED");
+                    }
+                }
+
+                // ================= SKIP PATIENT =================
+                else if (newStatus === "Skipped") {
+
+                    if (currentStatus !== "Called") {
+                        throw new Error("INVALID_STATUS_TRANSITION");
+                    }
+
+                    const queueUpdate = db.prepare(`
+                        UPDATE Queue_Entry
+                        SET status = 'Skipped',
+                            skipped_at = CURRENT_TIMESTAMP
+                        WHERE queue_entry_id = ?
+                        AND status = 'Called'
+                    `).run(queueEntryId);
+
+                    if (queueUpdate.changes !== 1) {
+                        throw new Error("QUEUE_UPDATE_FAILED");
+                    }
+                }
+
+                // Return the latest saved queue entry.
+                return db.prepare(`
+                    SELECT
+                        q.queue_entry_id,
+                        q.appointment_id,
+                        q.queue_number,
+                        q.check_in_time,
+                        q.status AS queue_status,
+                        q.called_at,
+                        q.visit_at,
+                        q.completed_at,
+                        q.skipped_at,
+                        a.status AS appointment_status
+                    FROM Queue_Entry AS q
+                    INNER JOIN Appointment AS a
+                        ON q.appointment_id = a.appointment_id
+                    WHERE q.queue_entry_id = ?
+                `).get(queueEntryId);
+            });
+
+            const updatedEntry = updateQueueTransaction();
+
+            return res.json({
+                message: "Queue status updated successfully.",
+                queueEntry: updatedEntry
+            });
+
+        } catch (error) {
+
+            if (error.message === "QUEUE_ENTRY_NOT_FOUND") {
+                return res.status(404).json({
+                    message: "Queue entry not found for today."
+                });
+            }
+
+            if (error.message === "INVALID_STATUS_TRANSITION") {
+                return res.status(409).json({
+                    message: "This queue entry cannot move to the requested status."
+                });
+            }
+
+            if (error.message === "SERVICE_OCCUPIED") {
+                return res.status(409).json({
+                    message: "Another patient is already called or being served for this service. Please wait."
+                });
+            }
+
+            if (error.message === "APPOINTMENT_NOT_CONFIRMED") {
+                return res.status(409).json({
+                    message: "The appointment is not confirmed."
+                });
+            }
+
+            if (error.message === "APPOINTMENT_NOT_STARTED") {
+                return res.status(409).json({
+                    message: "The appointment has not started yet. Please wait until the appointment start time."
+                });
+            }
+
+            if (
+                error.message === "QUEUE_UPDATE_FAILED" ||
+                error.message === "APPOINTMENT_UPDATE_FAILED"
+            ) {
+                return res.status(409).json({
+                    message: "Unable to update the queue and appointment status."
+                });
+            }
+
+            console.error("Error updating staff queue:", error);
+
+            return res.status(500).json({
+                message: "Failed to update queue status."
+            });
+        }
+    }
+);
+
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);
     console.log("SQLite database connected!");
