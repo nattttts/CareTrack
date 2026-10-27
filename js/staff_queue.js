@@ -8,9 +8,6 @@ const tableBody = document.getElementById("queueTableBody");
 const noResults = document.getElementById("noResults");
 const queueResult = document.getElementById("queueCount");
 
-const currentQueue = document.getElementById("currentQueue");
-const currentPatient = document.getElementById("currentPatient");
-
 const skipModalElement = document.getElementById("skipModal");
 const skipPatientName = document.getElementById("skipPatientName");
 const confirmSkipButton = document.getElementById("confirmSkipButton");
@@ -133,7 +130,6 @@ async function loadQueue() {
         tableBody.innerHTML = "";
 
         updateSummary();
-        updateCurrentlyServing();
 
         noResults.hidden = false;
 
@@ -243,7 +239,6 @@ function renderQueue() {
 
     updateQueueDate();
     updateSummary();
-    updateCurrentlyServing();
     applyFilters();
 }
 
@@ -277,30 +272,6 @@ function updateSummary() {
     document.getElementById("progressCount").textContent = inProgress;
     document.getElementById("completedCount").textContent = completed;
 }
-
-// ================= UPDATE CURRENTLY SERVING =================
-function updateCurrentlyServing() {
-
-    const servingEntry = queueData.find(
-        entry => entry.queue_status === "In Progress"
-    );
-
-    if (servingEntry) {
-
-        currentQueue.textContent = servingEntry.queue_number;
-
-        currentPatient.textContent =
-            `${servingEntry.patient_name} · ${servingEntry.appointment_type}`;
-
-    } else {
-
-        currentQueue.textContent = "—";
-
-        currentPatient.textContent =
-            "No patient is currently being served.";
-    }
-}
-
 
 // ================= UPDATE ACTION BUTTON =================
 function updateActionButton(row) {
