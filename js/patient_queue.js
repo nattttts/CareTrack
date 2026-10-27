@@ -171,9 +171,10 @@ async function loadTodayAppointment() {
 
             displayQueueStatus(appointment);
 
-            if (checkInMessage) {
+            if (checkInMessage && appointment.queue_status !== "Skipped") {
                 checkInMessage.hidden = true;
             }
+
         } else {
             showCheckInSection();
         }
@@ -203,8 +204,11 @@ function displayAppointment(appointment) {
         `${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`;
 
     // Check whether the appointment has been missed.
-    const isMissed =
-        getCheckInTimeStatus(appointment).status === "missed" && !appointment.queue_entry_id;
+    const isMissed = appointment.appointment_status === "Missed" ||
+    (
+        getCheckInTimeStatus(appointment).status === "missed" &&
+        !appointment.queue_entry_id
+    );
 
     // Display appointment status.
     if (appointmentStatusText) {
@@ -330,6 +334,38 @@ if (checkInButton) {
 // ================= DISPLAY QUEUE STATUS =================
 function displayQueueStatus(appointment) {
     notCheckedIn.hidden = true;
+
+    const status = appointment.queue_status || "Waiting";
+
+    // Handle skipped appointment
+    if (status === "Skipped") {
+        queueStatus.hidden = true;
+        queueInfo.hidden = true;
+        liveQueue.hidden = true;
+
+        // Stop refreshing the queue
+        if (liveQueueTimer) {
+            clearInterval(liveQueueTimer);
+            liveQueueTimer = null;
+        }
+
+        // Stop updating the estimated waiting time
+        if (waitingTimeTimer) {
+            clearInterval(waitingTimeTimer);
+            waitingTimeTimer = null;
+        }
+
+        checkInButton.disabled = true;
+
+        showMessage(
+            "You Missed Your Appointment",
+            "You were called but did not arrive. Please contact clinic staff for assistance."
+        );
+
+        return;
+    }
+
+    // Display the normal queue status
     queueStatus.hidden = false;
     queueInfo.hidden = false;
     liveQueue.hidden = false;
@@ -338,8 +374,6 @@ function displayQueueStatus(appointment) {
 
     queueAppointmentTime.textContent =
         `${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`;
-
-    const status = appointment.queue_status || "Waiting";
 
     queueStatusBadge.textContent = status;
     queueStatusBadge.className =
