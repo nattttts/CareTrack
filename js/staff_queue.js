@@ -62,18 +62,6 @@ function updateQueueDate() {
     dateElement.textContent = today;
 }
 
-// Escape HTML before inserting database values into HTML.
-function escapeHTML(value) {
-
-    return String(value ?? "").replace(/[&<>"']/g, character => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[character]);
-}
-
 // Determine which tab a queue entry belongs to.
 function getQueueTab(status) {
 
@@ -172,34 +160,41 @@ function renderQueue() {
         // Queue number.
         const queueCell = document.createElement("td");
 
-        queueCell.innerHTML = `
-            <strong class="queue-number">
-                ${escapeHTML(queueNumber)}
-            </strong>
-        `;
+        const queueNumberElement = document.createElement("strong");
+        queueNumberElement.classList.add("queue-number");
+        queueNumberElement.textContent = queueNumber;
+
+        queueCell.appendChild(queueNumberElement);
 
         // Patient name
         const patientCell = document.createElement("td");
 
-        patientCell.innerHTML = `
-            <div class="patient-cell">
-                <h6>${escapeHTML(patientName)}</h6>
-            </div>
-        `;
+        const patientCellContainer = document.createElement("div");
+        patientCellContainer.classList.add("patient-cell");
+
+        const patientNameElement = document.createElement("h6");
+        patientNameElement.textContent = patientName;
+
+        patientCellContainer.appendChild(patientNameElement);
+        patientCell.appendChild(patientCellContainer);
 
         // Service.
         const serviceCell = document.createElement("td");
 
-        serviceCell.innerHTML = `
-            <p class="service-name">${escapeHTML(service)}</p>
-        `;
+        const serviceElement = document.createElement("p");
+        serviceElement.classList.add("service-name");
+        serviceElement.textContent = service;
+
+        serviceCell.appendChild(serviceElement);
 
         // Appointment time.
         const appointmentCell = document.createElement("td");
 
-        appointmentCell.innerHTML = `
-            <p class="appointment-time">${escapeHTML(appointmentTime)}</p>
-        `;
+        const appointmentTimeElement = document.createElement("p");
+        appointmentTimeElement.classList.add("appointment-time");
+        appointmentTimeElement.textContent = appointmentTime;
+
+        appointmentCell.appendChild(appointmentTimeElement);
 
         // Status.
         const statusCell = document.createElement("td");
@@ -371,11 +366,19 @@ function updateStatusBadge(row) {
 
     const className = classNames[status] || "";
 
-    statusCell.innerHTML = `
-        <span class="status-badge ${className}">
-            ● ${escapeHTML(status)}
-        </span>
-    `;
+    // Create the status badge.
+    const statusBadge = document.createElement("span");
+    statusBadge.classList.add("status-badge");
+
+    if (className) {
+        statusBadge.classList.add(className);
+    }
+
+    // Add the status indicator.
+    statusBadge.textContent = `● ${status}`;
+
+    // Replace the existing status badge.
+    statusCell.replaceChildren(statusBadge);
 }
 
 // ================= CHECK SERVICE AVAILABILITY =================
