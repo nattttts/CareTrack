@@ -155,7 +155,6 @@ function renderQueue() {
 
         const row = document.createElement("tr");
         const patientName = entry.patient_name || "Unknown Patient";
-        const guardianName = entry.guardian_name || "";
         const service = entry.appointment_type || "";
         const status = entry.queue_status || "";
         const queueNumber = entry.queue_number;
@@ -164,8 +163,6 @@ function renderQueue() {
         row.dataset.id = entry.queue_entry_id;
         row.dataset.appointmentId = entry.appointment_id;
         row.dataset.patient = patientName;
-        row.dataset.child = guardianName;
-        row.dataset.guardian = guardianName;
         row.dataset.queue = String(queueNumber);
         row.dataset.service = service;
         row.dataset.status = status;
@@ -181,17 +178,12 @@ function renderQueue() {
             </strong>
         `;
 
-        // Patient name and, for a child, guardian name.
+        // Patient name
         const patientCell = document.createElement("td");
 
         patientCell.innerHTML = `
             <div class="patient-cell">
                 <h6>${escapeHTML(patientName)}</h6>
-                ${
-                    entry.patient_role === "child" && guardianName
-                        ? `<small>Guardian: ${escapeHTML(guardianName)}</small>`
-                        : ""
-                }
             </div>
         `;
 
@@ -584,8 +576,6 @@ function applyFilters() {
     rows.forEach(row => {
 
         const patient = (row.dataset.patient || "").toLowerCase();
-        const guardian = (row.dataset.guardian || "").toLowerCase();
-        const child = (row.dataset.child || "").toLowerCase();
         const queue = (row.dataset.queue || "").toLowerCase();
 
         const service = row.dataset.service;
@@ -594,19 +584,11 @@ function applyFilters() {
 
         const matchesTab = rowTab === currentTab;
 
-        const matchesSearch =
-            patient.includes(searchValue) ||
-            guardian.includes(searchValue) ||
-            child.includes(searchValue) ||
-            queue.includes(searchValue);
+        const matchesSearch = patient.includes(searchValue) || queue.includes(searchValue);
 
-        const matchesService =
-            selectedService === "all" ||
-            service === selectedService;
+        const matchesService = selectedService === "all" || service === selectedService;
 
-        const matchesStatus =
-            selectedStatus === "all" ||
-            status === selectedStatus;
+        const matchesStatus = selectedStatus === "all" || status === selectedStatus;
 
         const isVisible =
             matchesTab &&
