@@ -603,7 +603,7 @@ a {
     font-size: 13px;
 }
 
-/* ================= SKIP MODAL ================= */
+/* ================= MODAL ================= */
 .modal-header {
     border-bottom: 1px solid #f0e2e8;
 }
@@ -618,11 +618,17 @@ a {
     border-top: 1px solid #f0e2e8;
 }
 
+#confirmCallButton,
+#confirmStartVisitButton,
+#confirmCompleteButton,
 #confirmSkipButton {
     color: var(--white);
     background: var(--caretrack-pink);
 }
 
+#confirmCallButton:hover,
+#confirmStartVisitButton:hover,
+#confirmCompleteButton:hover,
 #confirmSkipButton:hover {
     background: var(--caretrack-pink-dark);
 }

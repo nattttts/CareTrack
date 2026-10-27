@@ -314,6 +314,123 @@
                 </p>
             </div>
 
+            <!-- ================= CALL CONFIRMATION MODAL ================= -->
+            <div
+                class="modal fade"
+                id="callModal"
+                tabindex="-1"
+                aria-labelledby="callModalLabel"
+                aria-hidden="true"
+            >
+
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="callModalLabel">Call Patient?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <p class="mb-2">
+                                Are you sure you want to call
+                                <strong id="callPatientName"></strong>?
+                            </p>
+
+                            <p class="mb-0 text-muted">
+                                Queue Number:
+                                <strong id="callQueueNumber"></strong>
+                            </p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn" id="confirmCallButton">Confirm Call</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= START VISIT CONFIRMATION MODAL ================= -->
+            <div
+                class="modal fade"
+                id="startVisitModal"
+                tabindex="-1"
+                aria-labelledby="startVisitModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="startVisitModalLabel">
+                                Start Visit?
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <p class="mb-2">
+                                Are you sure you want to start the visit for
+                                <strong id="startVisitPatientName"></strong>?
+                            </p>
+
+                            <p class="mb-0 text-muted">
+                                Queue Number:
+                                <strong id="startVisitQueueNumber"></strong>
+                            </p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn" id="confirmStartVisitButton">Confirm Start Visit</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= COMPLETE MODAL ================= -->
+            <div 
+                class="modal fade" 
+                id="completeModal" 
+                tabindex="-1"
+                aria-labelledby="completeModalLabel" 
+                aria-hidden="true"
+            >
+
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="completeModalLabel">Complete Visit</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <p>Are you sure you want to mark this visit as completed?</p>
+
+                            <div class="complete-patient-info">
+                                <p>
+                                    <strong>Patient:</strong>
+                                    <span id="completePatientName"></span>
+                                </p>
+
+                                <p>
+                                    <strong>Queue Number:</strong>
+                                    <span id="completeQueueNumber"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn" id="confirmCompleteButton">Confirm Complete</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
             <!-- ================= SKIP CONFIRMATION MODAL ================= -->
             <div
                 class="modal fade"
@@ -325,7 +442,6 @@
 
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-
                         <div class="modal-header">
                             <h5 class="modal-title" id="skipModalLabel">Skip Patient?</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -340,19 +456,12 @@
                             <p class="mb-0 text-muted">
                                 The patient will be moved to the skipped queue and will not be called again.
                             </p>
-
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancel
-                            </button>
-
-                            <button type="button" class="btn" id="confirmSkipButton">
-                                Skip Patient
-                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn" id="confirmSkipButton">Skip Patient</button>
                         </div>
-
                     </div>
                 </div>
 

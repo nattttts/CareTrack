@@ -8,13 +8,32 @@ const tableBody = document.getElementById("queueTableBody");
 const noResults = document.getElementById("noResults");
 const queueResult = document.getElementById("queueCount");
 
+const callModalElement = document.getElementById("callModal");
+const callPatientName = document.getElementById("callPatientName");
+const callQueueNumber = document.getElementById("callQueueNumber");
+const confirmCallButton = document.getElementById("confirmCallButton");
+
+// Start Visit Modal
+const startVisitModalElement = document.getElementById("startVisitModal");
+const startVisitPatientName = document.getElementById("startVisitPatientName");
+const startVisitQueueNumber = document.getElementById("startVisitQueueNumber");
+const confirmStartVisitButton = document.getElementById("confirmStartVisitButton");
+
+// Complete Modal
+const completeModalElement = document.getElementById("completeModal");
+const completePatientName = document.getElementById("completePatientName");
+const completeQueueNumber = document.getElementById("completeQueueNumber");
+const confirmCompleteButton = document.getElementById("confirmCompleteButton");
+
 const skipModalElement = document.getElementById("skipModal");
 const skipPatientName = document.getElementById("skipPatientName");
 const confirmSkipButton = document.getElementById("confirmSkipButton");
 
-const selectedSkipState = {
-    row: null
-};
+
+const selectedCallState = { row: null };
+const selectedStartVisitState = { row: null };
+const selectedCompleteState = { row: null };
+const selectedSkipState = { row: null };
 
 let currentTab = "queue";
 let queueData = [];
@@ -77,7 +96,6 @@ function getQueueTab(status) {
 }
 
 // ================= LOAD QUEUE FROM DATABASE =================
-
 async function loadQueue() {
 
     if (isLoading) {
@@ -154,6 +172,7 @@ function renderQueue() {
         row.dataset.queue = String(queueNumber);
         row.dataset.service = service;
         row.dataset.status = status;
+        row.dataset.startTime = entry.start_time;
         row.dataset.tab = getQueueTab(status);
         row.dataset.role = entry.patient_role || "";
 
@@ -462,6 +481,26 @@ async function updateQueueStatus(row, newStatus) {
     }
 }
 
+// ================= CHECK APPOINTMENT START TIME =================
+function hasAppointmentStarted(row) {
+    const appointmentStartTime = row.dataset.startTime;
+
+    if (!appointmentStartTime) {
+        return false;
+    }
+
+    const currentTime = new Date().toLocaleTimeString("en-GB", {
+        timeZone: "Asia/Kuala_Lumpur",
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+
+    // Compare the current time with the appointment start time.
+    return currentTime >= appointmentStartTime;
+}
+
 // ================= HANDLE ACTION =================
 function handleAction(button) {
 
@@ -475,39 +514,91 @@ function handleAction(button) {
     const currentStatus = row.dataset.status;
 
     if (action === "skip") {
-
         openSkipModal(row);
         return;
     }
 
     if (action === "call" && currentStatus === "Waiting") {
+        // Check appointment start time first.
+        if (!hasAppointmentStarted(row)) {
+            alert(
+                "The appointment has not started yet. " +
+                "Please wait until the appointment start time."
+            );
+            return;
+        }
 
+        // Check whether the same service is occupied.
         const occupiedRow = isServiceOccupied(row);
 
         if (occupiedRow) {
-
             alert(
                 `${row.dataset.service} is currently occupied.\n\n` +
                 `${occupiedRow.dataset.patient} is currently ` +
                 `${occupiedRow.dataset.status.toLowerCase()}.\n\n` +
                 "Please wait until the current visit is completed."
             );
-
             return;
         }
 
-        updateQueueStatus(row, "Called");
+        // Open the confirmation modal only when calling is allowed.
+        openCallModal(row);
         return;
     }
 
     if (action === "start" && currentStatus === "Called") {
-        updateQueueStatus(row, "In Progress");
+        openStartVisitModal(row);
         return;
     }
 
     if (action === "complete" && currentStatus === "In Progress") {
-        updateQueueStatus(row, "Completed");
+        openCompleteModal(row);
+        return;
     }
+}
+
+// ================= OPEN CALL MODAL =================
+function openCallModal(row) {
+
+    selectedCallState.row = row;
+
+    callPatientName.textContent = row.dataset.patient;
+    callQueueNumber.textContent = row.dataset.queue;
+
+    const callModal = bootstrap.Modal.getOrCreateInstance(
+        callModalElement
+    );
+
+    callModal.show();
+}
+
+// ================= OPEN START VISIT MODAL =================
+function openStartVisitModal(row) {
+
+    selectedStartVisitState.row = row;
+
+    startVisitPatientName.textContent = row.dataset.patient;
+    startVisitQueueNumber.textContent = row.dataset.queue;
+
+    const startVisitModal = bootstrap.Modal.getOrCreateInstance(
+        startVisitModalElement
+    );
+
+    startVisitModal.show();
+}
+
+// ================= OPEN COMPLETE MODAL =================
+function openCompleteModal(row) {
+    selectedCompleteState.row = row;
+
+    completePatientName.textContent = row.dataset.patient;
+    completeQueueNumber.textContent = row.dataset.queue;
+
+    const completeModal = bootstrap.Modal.getOrCreateInstance(
+        completeModalElement
+    );
+
+    completeModal.show();
 }
 
 // ================= OPEN SKIP MODAL =================
@@ -523,6 +614,114 @@ function openSkipModal(row) {
     skipModal.show();
 }
 
+// ================= CONFIRM CALL =================
+if (confirmCallButton) {
+
+    confirmCallButton.addEventListener("click", async function () {
+
+        const row = selectedCallState.row;
+
+        if (!row) {
+            return;
+        }
+
+        confirmCallButton.disabled = true;
+
+        try {
+
+            const success = await updateQueueStatus(row, "Called");
+
+            if (!success) {
+                return;
+            }
+
+            const callModal = bootstrap.Modal.getInstance(
+                callModalElement
+            );
+
+            if (callModal) {
+                callModal.hide();
+            }
+
+            selectedCallState.row = null;
+
+        } finally {
+            confirmCallButton.disabled = false;
+        }
+    });
+}
+
+// ================= CONFIRM START VISIT =================
+if (confirmStartVisitButton) {
+
+    confirmStartVisitButton.addEventListener("click", async function () {
+
+        const row = selectedStartVisitState.row;
+
+        if (!row) {
+            return;
+        }
+
+        confirmStartVisitButton.disabled = true;
+
+        try {
+
+            const success = await updateQueueStatus(row, "In Progress");
+
+            if (!success) {
+                return;
+            }
+
+            const startVisitModal = bootstrap.Modal.getInstance(
+                startVisitModalElement
+            );
+
+            if (startVisitModal) {
+                startVisitModal.hide();
+            }
+
+            selectedStartVisitState.row = null;
+
+        } finally {
+            confirmStartVisitButton.disabled = false;
+        }
+    });
+}
+
+// ================= CONFIRM COMPLETE =================
+if (confirmCompleteButton) {
+    confirmCompleteButton.addEventListener("click", async function () {
+        const row = selectedCompleteState.row;
+
+        if (!row) {
+            return;
+        }
+
+        confirmCompleteButton.disabled = true;
+
+        try {
+            
+            const success = await updateQueueStatus(row, "Completed");
+
+            if (!success) {
+                return;
+            }
+
+            const completeModal = bootstrap.Modal.getInstance(
+                completeModalElement
+            );
+
+            if (completeModal) {
+                completeModal.hide();
+            }
+
+            selectedCompleteState.row = null;
+
+        } finally {
+            confirmCompleteButton.disabled = false;
+        }
+    });
+}
 
 // ================= CONFIRM SKIP =================
 if (confirmSkipButton) {
