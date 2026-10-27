@@ -5242,7 +5242,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         SET status = 'Completed',
                             completed_at = CURRENT_TIMESTAMP
                         WHERE queue_entry_id = ?
-                          AND status = 'In Progress'
+                        AND status = 'In Progress'
                     `).run(queueEntryId);
 
                     if (queueUpdate.changes !== 1) {
@@ -5254,7 +5254,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         UPDATE Appointment
                         SET status = 'Completed'
                         WHERE appointment_id = ?
-                          AND status = 'Confirmed'
+                        AND status = 'Confirmed'
                     `).run(entry.appointment_id);
 
                     if (appointmentUpdate.changes !== 1) {
@@ -5269,6 +5269,11 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         throw new Error("INVALID_STATUS_TRANSITION");
                     }
 
+                    if (entry.appointment_status !== "Confirmed") {
+                        throw new Error("APPOINTMENT_NOT_CONFIRMED");
+                    }
+
+                    // Update the queue status first.
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
                         SET status = 'Skipped',
@@ -5279,6 +5284,18 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
 
                     if (queueUpdate.changes !== 1) {
                         throw new Error("QUEUE_UPDATE_FAILED");
+                    }
+
+                    // Update the associated appointment as missed.
+                    const appointmentUpdate = db.prepare(`
+                        UPDATE Appointment
+                        SET status = 'Missed'
+                        WHERE appointment_id = ?
+                        AND status = 'Confirmed'
+                    `).run(entry.appointment_id);
+
+                    if (appointmentUpdate.changes !== 1) {
+                        throw new Error("APPOINTMENT_UPDATE_FAILED");
                     }
                 }
 
@@ -5341,10 +5358,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                 });
             }
 
-            if (
-                error.message === "QUEUE_UPDATE_FAILED" ||
-                error.message === "APPOINTMENT_UPDATE_FAILED"
-            ) {
+            if (error.message === "QUEUE_UPDATE_FAILED" || error.message === "APPOINTMENT_UPDATE_FAILED") {
                 return res.status(409).json({
                     message: "Unable to update the queue and appointment status."
                 });
