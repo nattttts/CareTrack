@@ -244,9 +244,6 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
                 'Skipped'
             )
         ),
-    called_at TEXT,
-    completed_at TEXT,
-    skipped_at TEXT,
 
     FOREIGN KEY (appointment_id)
         REFERENCES Appointment(appointment_id),
