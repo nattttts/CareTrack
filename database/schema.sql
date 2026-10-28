@@ -257,3 +257,14 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
 
     CHECK (queue_number > 0)
 );
+
+-- =========================================
+-- 14. DAILY CHECK-IN CODE
+-- Stores the daily check-in code
+-- =========================================
+CREATE TABLE IF NOT EXISTS Daily_Checkin_Code (
+    code_id INTEGER PRIMARY KEY,
+    code_date TEXT NOT NULL UNIQUE,
+    code TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
