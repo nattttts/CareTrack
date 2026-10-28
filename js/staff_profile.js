@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
    LOAD STAFF PROFILE
 ========================= */
 async function loadStaffProfile() {
+
     try {
         const response = await fetch(`${API_BASE}/me`, {
             method: "GET",
@@ -48,6 +49,8 @@ async function loadStaffProfile() {
         }
 
         const user = await response.json();
+
+        console.log("Logged-in staff profile:", user);
 
         if (!response.ok) {
             throw new Error(user.message || "Unable to load staff profile.");
@@ -66,15 +69,20 @@ async function loadStaffProfile() {
         // Professional information
         setText("nameText", user.fullName);
         setText("roleText", "Healthcare Staff");
-        setText("staffIdText", user.staffId);
+
+        // Display the logged-in staff member's IC number
+        const staffIC = user.user_id ?? user.userId ?? user.staffId;
+
+        setText("staffIdText", staffIC || "Not available");
+        setValue("staffIdInput", staffIC || "");
+
         setText("positionText", user.position);
         setText("phoneText", user.phoneNo);
         setText("emailText", user.email);
 
-        // Populate inputs for a future edit/save function
+        // Populate inputs
         setValue("nameInput", user.fullName);
         setValue("roleInput", "Healthcare Staff");
-        setValue("staffIdInput", user.staffId);
         setValue("departmentInput", user.position);
         setValue("phoneInput", user.phoneNo);
         setValue("emailInput", user.email);

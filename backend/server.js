@@ -2359,6 +2359,7 @@ app.get("/api/vaccination-management/children", requireRole("staff"), (req, res)
             WHERE cv.user_id = ?
             ORDER BY cv.due_date, cv.child_vaccination_id
         `);
+        
 
         const result = children.map(child => ({
             ...child,
@@ -2633,7 +2634,9 @@ app.patch(
     }
 );
 
-// POST: Add a vaccination record for a child.
+/* =========================================
+   POST: ADD VACCINATION RECORD + APPOINTMENT
+========================================= */
 app.post(
     "/api/vaccination-management/children/:userId/records",
     requireRole("staff"),
@@ -2644,25 +2647,34 @@ app.post(
             vaccination_id,
             dose,
             status,
-            due_date
+            due_date,
+            start_time,
+            end_time
         } = req.body;
 
+        // Validate required fields.
         if (
             !userId ||
+            vaccination_id === undefined ||
+            vaccination_id === null ||
+            String(vaccination_id).trim() === "" ||
             !Number.isInteger(Number(vaccination_id)) ||
-            !dose ||
+            Number(vaccination_id) <= 0 ||
             typeof dose !== "string" ||
             !dose.trim() ||
             !["Upcoming", "Completed"].includes(status) ||
-            typeof due_date !== "string"
+            typeof due_date !== "string" ||
+            typeof start_time !== "string" ||
+            typeof end_time !== "string"
         ) {
             return res.status(400).json({
-                message: "Please provide a vaccine, dose, status and due date."
+                message:
+                    "Please provide a valid vaccine, dose, status, appointment date and appointment time."
             });
         }
 
-        // Validate the date, including invalid calendar dates.
-        const date = new Date(due_date);
+        // Validate the appointment date.
+        const date = new Date(`${due_date}T00:00:00`);
 
         if (
             !/^\d{4}-\d{2}-\d{2}$/.test(due_date) ||
@@ -2670,11 +2682,30 @@ app.post(
             date.toISOString().slice(0, 10) !== due_date
         ) {
             return res.status(400).json({
-                message: "Please provide a valid due date."
+                message: "Please provide a valid appointment date."
+            });
+        }
+
+        // Validate the time format.
+        const validTime = time =>
+            /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
+
+        if (!validTime(start_time) || !validTime(end_time)) {
+            return res.status(400).json({
+                message: "Please provide valid appointment times."
+            });
+        }
+
+        // Ensure the end time is later than the start time.
+        if (end_time <= start_time) {
+            return res.status(400).json({
+                message:
+                    "The appointment end time must be later than the start time."
             });
         }
 
         try {
+            // Check that the child exists.
             const child = db.prepare(`
                 SELECT user_id
                 FROM Child
@@ -2687,8 +2718,9 @@ app.post(
                 });
             }
 
+            // Check that the vaccine exists.
             const vaccine = db.prepare(`
-                SELECT vaccination_id
+                SELECT vaccination_id, vaccine_name
                 FROM Vaccination
                 WHERE vaccination_id = ?
             `).get(Number(vaccination_id));
@@ -2699,47 +2731,87 @@ app.post(
                 });
             }
 
-            const result = db.prepare(`
-                INSERT INTO Child_Vaccination (
-                    user_id,
-                    vaccination_id,
+            /*
+             * Save the vaccination record and appointment together.
+             * If either INSERT fails, both changes are rolled back.
+             */
+            const createVaccinationAndAppointment = db.transaction(() => {
+                const vaccinationResult = db.prepare(`
+                    INSERT INTO Child_Vaccination (
+                        user_id,
+                        vaccination_id,
+                        due_date,
+                        dose,
+                        status
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                `).run(
+                    userId,
+                    Number(vaccination_id),
                     due_date,
-                    dose,
+                    dose.trim(),
                     status
-                )
-                VALUES (?, ?, ?, ?, ?)
-            `).run(
-                userId,
-                Number(vaccination_id),
-                due_date,
-                dose.trim(),
-                status
-            );
+                );
 
-            // Create notifications and send emails after insertion.
+                const appointmentResult = db.prepare(`
+                    INSERT INTO Appointment (
+                        user_id,
+                        appointment_type,
+                        appointment_date,
+                        start_time,
+                        end_time
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                `).run(
+                    userId,
+                    "Child Vaccination",
+                    due_date,
+                    start_time,
+                    end_time
+                );
+
+                return {
+                    recordId: Number(
+                        vaccinationResult.lastInsertRowid
+                    ),
+                    appointmentId: Number(
+                        appointmentResult.lastInsertRowid
+                    )
+                };
+            });
+
+            const created = createVaccinationAndAppointment();
+
+            // Notify the relevant accounts after both records are saved.
             try {
                 await notifyVaccinationChange(
                     userId,
                     "added",
-                    Number(result.lastInsertRowid)
+                    created.recordId
                 );
             } catch (notificationError) {
                 console.error(
-                    "Vaccination added, but notification failed:",
+                    "Records saved, but vaccination notification failed:",
                     notificationError
                 );
             }
 
             return res.status(201).json({
-                message: "Vaccination record added successfully.",
-                record_id: result.lastInsertRowid
+                message:
+                    "Vaccination record and appointment added successfully.",
+                record_id: created.recordId,
+                appointment_id: created.appointmentId
             });
 
         } catch (error) {
-            console.error("Error adding vaccination record:", error);
+            console.error(
+                "Error adding vaccination record and appointment:",
+                error
+            );
 
             return res.status(500).json({
-                message: "Failed to add vaccination record."
+                message:
+                    "Failed to add vaccination record and appointment."
             });
         }
     }
