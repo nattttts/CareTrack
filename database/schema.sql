@@ -146,7 +146,6 @@ CREATE TABLE IF NOT EXISTS Appointment (
         ),
     appointment_date TEXT NOT NULL,
     start_time TEXT NOT NULL,
-    end_time TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'Confirmed'
         CHECK (
             status IN (
@@ -170,7 +169,6 @@ CREATE TABLE IF NOT EXISTS Reschedule_Request (
     appointment_id INTEGER NOT NULL,
     appointment_date TEXT NOT NULL,
     start_time TEXT NOT NULL,
-    end_time TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'Pending'
         CHECK (
             status IN ('Pending', 'Approved', 'Rejected')

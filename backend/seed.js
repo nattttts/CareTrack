@@ -55,8 +55,8 @@ const insert = {
 
     appointment: db.prepare(`
         INSERT INTO Appointment
-            (appointment_id, user_id, appointment_type, appointment_date, start_time, end_time, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (appointment_id, user_id, appointment_type, appointment_date, start_time, status)
+        VALUES (?, ?, ?, ?, ?, ?)
     `),
 
     childVaccination: db.prepare(`
@@ -161,15 +161,15 @@ async function main() {
         // 7. APPOINTMENTS
         // =========================================
         const appointments = [
-            [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "11:30", "Completed"],
-            [2, "980108-07-0012", "Maternal Follow-up", "2026-08-20", "10:30", "11:00", "Completed"],
-            [3, "260801-07-0007", "Child Vaccination", "2026-10-01", "10:00", "10:30", "Completed"],
-            [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "09:30", "Completed"],
-            [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "09:30", "Confirmed"],
-            [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "10:30", "Missed"],
-            [7, "960106-07-0008", "Maternal Follow-up", "2026-11-02", "10:00", "10:30", "Confirmed"],
-            [8, "260801-07-0007", "Child Vaccination", "2026-11-02", "10:00", "10:30", "Confirmed"],
-            [9, "260902-07-0003", "Child Vaccination", "2026-11-02", "09:00", "09:30", "Confirmed"]
+            [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "Completed"],
+            [2, "980108-07-0012", "Maternal Follow-up", "2026-08-20", "10:30", "Completed"],
+            [3, "260801-07-0007", "Child Vaccination", "2026-10-01", "10:00", "Completed"],
+            [4, "950105-07-0006", "Maternal Follow-up", "2026-10-13", "09:00", "Completed"],
+            [5, "950105-07-0006", "Maternal Follow-up", "2026-11-13", "09:00", "Confirmed"],
+            [6, "960106-07-0008", "Maternal Follow-up", "2026-10-13", "10:00", "Missed"],
+            [7, "960106-07-0008", "Maternal Follow-up", "2026-11-02", "10:00", "Confirmed"],
+            [8, "260801-07-0007", "Child Vaccination", "2026-11-02", "10:00", "Confirmed"],
+            [9, "260902-07-0003", "Child Vaccination", "2026-11-02", "09:00", "Confirmed"]
         ];
 
         appointments.forEach(row => insert.appointment.run(...row));
