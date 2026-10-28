@@ -4718,7 +4718,6 @@ app.post(
     "/api/patient/queue/:appointmentId/check-in", requireRole("mother", "child"),
     (req, res) => {
         const appointmentId = Number(req.params.appointmentId);
-        const { code } = req.body;
         const userId = req.session.user.userId;
         const role = req.session.user.role;
         const today = getMalaysiaDate();
@@ -4803,21 +4802,6 @@ app.post(
                     };
                 }
 
-                // ================= VERIFY DAILY CHECK-IN CODE =================
-                if (typeof code !== "string" || !/^\d{6}$/.test(code)) {
-                    throw new Error("INVALID_CHECKIN_CODE");
-                }
-
-                const dailyCode = db.prepare(`
-                    SELECT code
-                    FROM Daily_Checkin_Code
-                    WHERE code_date = ?
-                `).get(today);
-
-                if (!dailyCode || dailyCode.code !== code) {
-                    throw new Error("INVALID_CHECKIN_CODE");
-                }
-
                 // Check whether the appointment is within the allowed check-in period.
                 const appointmentStartTime = Date.parse(
                     `${appointment.appointment_date}T${appointment.start_time}+08:00`
@@ -4896,12 +4880,6 @@ app.post(
             });
 
         } catch (error) {
-            if (error.message === "INVALID_CHECKIN_CODE") {
-                return res.status(400).json({
-                    message: "Invalid check-in code. Please ask the clinic staff for today's code."
-                });
-            }
-
             if (error.message === "APPOINTMENT_NOT_FOUND") {
                 return res.status(404).json({
                     message: "Appointment not found."
