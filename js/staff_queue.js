@@ -1,6 +1,4 @@
 // ================= ELEMENTS =================
-const dailyCodeDate = document.getElementById("dailyCodeDate");
-const dailyCheckinCode = document.getElementById("dailyCheckinCode");
 const searchInput = document.getElementById("searchInput");
 const serviceFilter = document.getElementById("serviceFilter");
 const statusFilter = document.getElementById("statusFilter");
@@ -81,47 +79,6 @@ function updateQueueDate() {
     }).format(new Date());
 
     dateElement.textContent = today;
-}
-
- // ================= LOAD DAILY CHECK-IN CODE =================
-async function loadDailyCheckinCode() {
-
-    try {
-        const response = await fetch("/api/staff/daily-checkin-code", {
-            method: "GET",
-            credentials: "same-origin"
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                data.message || "Failed to load today's check-in code."
-            );
-        }
-
-        // Display today's six-digit code.
-        dailyCheckinCode.textContent = data.code;
-
-        // Display the date associated with the code.
-        const formattedDate = new Date(
-            `${data.codeDate}T00:00:00+08:00`
-        ).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            timeZone: "Asia/Kuala_Lumpur"
-        });
-
-        dailyCodeDate.textContent = `Code for ${formattedDate}`;
-
-    } catch (error) {
-
-        console.error("Error loading daily check-in code:", error);
-
-        dailyCheckinCode.textContent = "Unavailable";
-        dailyCodeDate.textContent = "Unable to load today's code";
-    }
 }
 
 // Determine which tab a queue entry belongs to.
@@ -929,4 +886,3 @@ if (tableBody) {
 // ================= INITIALIZE =================
 updateQueueDate();
 loadQueue();
-loadDailyCheckinCode();

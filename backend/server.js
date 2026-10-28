@@ -4986,58 +4986,6 @@ app.get("/api/patient/live-queue", requireRole("mother", "child"),
     }
 );
 
-// ================= STAFF: GET DAILY CHECK-IN CODE =================
-app.get(
-    "/api/staff/daily-checkin-code",
-    requireRole("staff"),
-    (req, res) => {
-        try {
-            const today = getMalaysiaDate();
-
-            // Check whether today's code already exists.
-            let dailyCode = db.prepare(`
-                SELECT code_date, code
-                FROM Daily_Checkin_Code
-                WHERE code_date = ?
-            `).get(today);
-
-            // Generate a new six-digit code if today's code does not exist.
-            if (!dailyCode) {
-                const { randomInt } = require("crypto");
-                const newCode = String(randomInt(100000, 1000000));
-
-                // Insert the code only if today's record does not exist.
-                db.prepare(`
-                    INSERT OR IGNORE INTO Daily_Checkin_Code (
-                        code_date,
-                        code
-                    )
-                    VALUES (?, ?)
-                `).run(today, newCode);
-
-                // Retrieve the saved code.
-                dailyCode = db.prepare(`
-                    SELECT code_date, code
-                    FROM Daily_Checkin_Code
-                    WHERE code_date = ?
-                `).get(today);
-            }
-
-            return res.json({
-                codeDate: dailyCode.code_date,
-                code: dailyCode.code
-            });
-
-        } catch (error) {
-            console.error("Error loading daily check-in code:", error);
-
-            return res.status(500).json({
-                message: "Failed to load today's check-in code."
-            });
-        }
-    }
-);
-
 // ================= STAFF QUEUE: GET TODAY'S QUEUE =================
 app.get("/api/staff/queue", requireRole("staff"),
     (req, res) => {

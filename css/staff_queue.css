@@ -199,44 +199,6 @@ a {
     color: #16804e;
 }
 
-/* ================= DAILY CHECK-IN CODE ================= */
-.daily-code-card {
-    max-width: 500px;
-    margin: 0 auto 18px;
-    padding: 20px;
-    text-align: center;
-
-    background: var(--white);
-    border: 1px solid #f0dfe6;
-    border-radius: 11px;
-    box-shadow: 0 3px 14px rgba(120, 50, 80, 0.04);
-}
-
-.daily-code-header h5 {
-    color: var(--text-dark);
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.daily-code-header p {
-    color: var(--text-medium);
-    font-size: 14px;
-    text-align: center;
-}
-
-.daily-code-value {
-    color: var(--caretrack-pink-dark);
-    font-size: 30px;
-    font-weight: 600; 
-    margin-bottom: 10px;
-}
-
-.daily-code-description {
-    margin: 0;
-    color: var(--text-medium);
-    font-size: 14px;
-}
-
 /* ================= QUEUE TABS ================= */
 .queue-tabs {
     width: 330px;
@@ -262,7 +224,6 @@ a {
     font-size: 12px;
     font-weight: 500;
     transition: 0.2s;
-
 }
 
 .queue-tab + .queue-tab {
