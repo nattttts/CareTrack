@@ -240,13 +240,11 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
             status IN (
                 'Waiting',
                 'Called',
-                'In Progress',
                 'Completed',
                 'Skipped'
             )
         ),
     called_at TEXT,
-    visit_at TEXT,
     completed_at TEXT,
     skipped_at TEXT,
 
