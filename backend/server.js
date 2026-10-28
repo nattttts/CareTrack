@@ -5200,9 +5200,6 @@ app.get("/api/staff/queue", requireRole("staff"),
                     q.queue_number,
                     q.check_in_time,
                     q.status AS queue_status,
-                    q.called_at,
-                    q.completed_at,
-                    q.skipped_at,
 
                     a.appointment_type,
                     a.appointment_date,
@@ -5364,8 +5361,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
 
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
-                        SET status = 'Called',
-                            called_at = CURRENT_TIMESTAMP
+                        SET status = 'Called'
                         WHERE queue_entry_id = ?
                         AND status = 'Waiting'
                     `).run(queueEntryId);
@@ -5389,8 +5385,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                     // Update the queue status first.
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
-                        SET status = 'Completed',
-                            completed_at = CURRENT_TIMESTAMP
+                        SET status = 'Completed'
                         WHERE queue_entry_id = ?
                         AND status = 'Called'
                     `).run(queueEntryId);
@@ -5426,8 +5421,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                     // Update the queue status first.
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
-                        SET status = 'Skipped',
-                            skipped_at = CURRENT_TIMESTAMP
+                        SET status = 'Skipped'
                         WHERE queue_entry_id = ?
                         AND status = 'Called'
                     `).run(queueEntryId);
@@ -5457,9 +5451,6 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         q.queue_number,
                         q.check_in_time,
                         q.status AS queue_status,
-                        q.called_at,
-                        q.completed_at,
-                        q.skipped_at,
                         a.status AS appointment_status
                     FROM Queue_Entry AS q
                     INNER JOIN Appointment AS a
