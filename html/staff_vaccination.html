@@ -108,14 +108,12 @@
                         autocomplete="off">
                 </div>
             </section>
-
-            <!-- Children List -->
-            <section class="children-list-card">
-
-                <div class="section-title">
-                    <h2>All Children</h2>
-                    <p>Select a child to view their vaccination information.</p>
-                </div>
+            
+            <!-- Search Results: Hidden until staff searches -->
+            <section
+                class="children-list-card"
+                id="childrenListCard"
+                style="display: none;">
 
                 <div id="childrenList"></div>
 
@@ -242,7 +240,7 @@
 
                             <div class="add-title">
                                 <div class="add-icon">+</div>
-                                <h2>Add New Vaccination Record</h2>
+                                <h2>Book New Vaccination</h2>
                             </div>
 
                             <button
@@ -271,11 +269,13 @@
                                     </div>
 
                                     <div>
-                                        <label for="newDueDate">Due Date</label>
-                                        <input
-                                            type="date"
-                                            id="newDueDate"
-                                            required>
+                                        <label for="newDueDate">Appointment Date</label>
+                                        <input type="date" id="newDueDate" required>
+                                    </div>
+
+                                    <div>
+                                        <label for="newStartTime">Appointment Start Time</label>
+                                        <input type="time" id="newStartTime" required>
                                     </div>
 
                                     <div>
@@ -294,7 +294,7 @@
                                         type="button"
                                         class="confirm-add-button"
                                         onclick="confirmAddRecord()">
-                                        Add Record
+                                        Book Appointment
                                     </button>
 
                                     <button

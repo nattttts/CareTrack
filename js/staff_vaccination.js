@@ -149,33 +149,64 @@ function fillVaccineSelects() {
 }
 
 // Search by child's name or IC number
+
 function searchChild() {
+    selectedChildId = null;
+    selectedRecordId = null;
+
+    $("childDetails").style.display = "none";
+    $("addRecordForm").style.display = "none";
+    $("showAddRecordButton").style.display = "inline-block";
+
+    clearRecordForm();
+    clearRecordSelection();
+
     displayChildren();
 }
 
-// Display the list of children
 function displayChildren() {
     const list = $("childrenList");
+    const listCard = $("childrenListCard");
+    const noChildrenMessage = $("noChildrenMessage");
 
-    if (!list) return;
+    if (!list || !listCard) return;
 
-    const query = ($("searchChild")?.value || "")
+    const query = ($("searchChild").value || "")
         .trim()
         .toLowerCase();
 
-    const filteredChildren = children.filter(child => {
+    // Hide results when the search box is empty.
+    if (!query) {
+        listCard.style.display = "none";
+        list.innerHTML = "";
+
+        if (noChildrenMessage) {
+            noChildrenMessage.style.display = "none";
+        }
+
+        return;
+    }
+
+    const matches = children.filter(child => {
         const name = String(child.full_name || "").toLowerCase();
         const ic = String(child.user_id || "").toLowerCase();
 
         return name.includes(query) || ic.includes(query);
     });
 
-    list.innerHTML = filteredChildren.map(child => `
-        <div class="child-list-item ${
-            String(child.user_id) === String(selectedChildId)
-                ? "active"
-                : ""
-        }">
+    listCard.style.display = "block";
+
+    if (noChildrenMessage) {
+        noChildrenMessage.style.display =
+            matches.length === 0 ? "block" : "none";
+    }
+
+    list.innerHTML = matches.map(child => `
+        <div
+            class="child-list-item"
+            data-child-id="${escapeHTML(child.user_id)}"
+            style="cursor: pointer;">
+
             <div class="child-list-left">
                 <div class="child-list-avatar">
                     <img src="../icons/user.png" alt="">
@@ -183,30 +214,19 @@ function displayChildren() {
 
                 <div class="child-list-information">
                     <h3>${escapeHTML(child.full_name)}</h3>
-                    <p>${escapeHTML(child.gender)}</p>
+                    <p>${escapeHTML(child.gender || "-")}</p>
                     <span>IC No: ${escapeHTML(child.user_id)}</span>
                 </div>
             </div>
-
-            <button
-                type="button"
-                class="view-child-button"
-                data-child-id="${escapeHTML(child.user_id)}">
-                View Child
-            </button>
         </div>
     `).join("");
 
-    list.querySelectorAll("[data-child-id]").forEach(button => {
-        button.addEventListener("click", () => {
-            selectChild(button.dataset.childId);
+    // Click a child's result to open the existing management section.
+    list.querySelectorAll("[data-child-id]").forEach(item => {
+        item.addEventListener("click", () => {
+            selectChild(item.dataset.childId);
         });
     });
-
-    if ($("noChildrenMessage")) {
-        $("noChildrenMessage").style.display =
-            filteredChildren.length ? "none" : "block";
-    }
 }
 
 // Select a child
@@ -217,18 +237,20 @@ function selectChild(userId) {
     const child = getSelectedChild();
 
     if (!child) {
-        console.error("Child not found:", userId, children);
+        showToast("Child not found.", "error");
         return;
     }
 
+    // Display the selected child's details only after clicking View Child.
     $("childDetails").style.display = "block";
+
     $("addRecordForm").style.display = "none";
     $("showAddRecordButton").style.display = "inline-block";
 
     clearRecordForm();
-    renderChildDetails(child);
     clearRecordSelection();
-    displayChildren();
+
+    renderChildDetails(child);
 
     $("childDetails").scrollIntoView({
         behavior: "smooth",
@@ -479,10 +501,19 @@ function clearRecordForm() {
         $("newDueDate").value = "";
     }
 
+    if ($("newStartTime")) {
+    $("newStartTime").value = "";
+    }
+
+    if ($("newEndTime")) {
+        $("newEndTime").value = "";
+    }
+
     updateDoseOptions("new");
 }
 
-// Add a vaccination record
+
+ // Add a vaccination record
 async function confirmAddRecord() {
     if (!selectedChildId) {
         showToast("Please select a child first.", "error");
@@ -494,8 +525,14 @@ async function confirmAddRecord() {
         return;
     }
 
-    if (!$("newDueDate").value) {
-        showToast("Please select a due date.", "error");
+    const dueDate = $("newDueDate").value;
+    const startTime = $("newStartTime").value;
+
+    if (!dueDate || !startTime) {
+        showToast(
+            "Please select the appointment date and start time.",
+            "error"
+        );
         return;
     }
 
@@ -503,7 +540,8 @@ async function confirmAddRecord() {
         vaccination_id: Number($("newVaccine").value),
         dose: $("newDose").value,
         status: $("newStatus").value,
-        due_date: $("newDueDate").value
+        due_date: $("newDueDate").value,
+        start_time: $("newStartTime").value
     };
 
     try {
@@ -516,7 +554,8 @@ async function confirmAddRecord() {
         );
 
         showToast(
-            result.message || "Vaccination record added successfully!",
+            result.message ||
+                "Vaccination record and appointment added successfully!",
             "success"
         );
 
@@ -527,10 +566,14 @@ async function confirmAddRecord() {
 
         await loadData(selectedChildId);
     } catch (error) {
-        console.error("Error adding vaccination record:", error);
+        console.error(
+            "Error adding vaccination record and appointment:",
+            error
+        );
 
         showToast(
-            error.message || "Failed to add vaccination record.",
+            error.message ||
+                "Failed to add vaccination record and appointment.",
             "error"
         );
     }
@@ -633,12 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const newVaccineSelect = $("newVaccine");
 
     if (!searchInput || !vaccineSelect || !newVaccineSelect) {
-        console.error("Missing required HTML elements.", {
-            searchChild: !!searchInput,
-            vaccine: !!vaccineSelect,
-            newVaccine: !!newVaccineSelect
-        });
-
+        console.error("Missing required HTML elements.");
         return;
     }
 
@@ -653,12 +691,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     $("childDetails").style.display = "none";
+    $("childrenListCard").style.display = "none";
     $("addRecordForm").style.display = "none";
 
     loadData();
 });
 
-// Make functions available to inline onclick handlers in the HTML
 window.saveRecord = saveRecord;
 window.clearRecordSelection = clearRecordSelection;
 window.addRecord = addRecord;

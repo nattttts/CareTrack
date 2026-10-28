@@ -2648,64 +2648,109 @@ app.post(
             dose,
             status,
             due_date,
-            start_time,
-            end_time
+            start_time
         } = req.body;
 
-        // Validate required fields.
+        const validTime = value =>
+            typeof value === "string" &&
+            /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+
         if (
             !userId ||
-            vaccination_id === undefined ||
-            vaccination_id === null ||
-            String(vaccination_id).trim() === "" ||
             !Number.isInteger(Number(vaccination_id)) ||
             Number(vaccination_id) <= 0 ||
             typeof dose !== "string" ||
             !dose.trim() ||
             !["Upcoming", "Completed"].includes(status) ||
-            typeof due_date !== "string" ||
-            typeof start_time !== "string" ||
-            typeof end_time !== "string"
+            typeof due_date !== "string"
         ) {
             return res.status(400).json({
-                message:
-                    "Please provide a valid vaccine, dose, status, appointment date and appointment time."
+                message: "Please provide a valid vaccine, dose, status and due date."
             });
         }
 
-        // Validate the appointment date.
-        const date = new Date(`${due_date}T00:00:00`);
+        // Validate the calendar date.
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(due_date);
+
+        if (!match) {
+            return res.status(400).json({
+                message: "Please provide a valid date."
+            });
+        }
+
+        const [, y, m, d] = match;
+        const selectedDate = new Date(
+            Date.UTC(Number(y), Number(m) - 1, Number(d))
+        );
 
         if (
-            !/^\d{4}-\d{2}-\d{2}$/.test(due_date) ||
-            Number.isNaN(date.getTime()) ||
-            date.toISOString().slice(0, 10) !== due_date
+            selectedDate.getUTCFullYear() !== Number(y) ||
+            selectedDate.getUTCMonth() !== Number(m) - 1 ||
+            selectedDate.getUTCDate() !== Number(d)
         ) {
             return res.status(400).json({
-                message: "Please provide a valid appointment date."
+                message: "Please provide a valid calendar date."
             });
         }
 
-        // Validate the time format.
-        const validTime = time =>
-            /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
+        // Only Upcoming vaccinations require an appointment time.
+        if (status === "Upcoming") {
+            if (!validTime(start_time)) {
+                return res.status(400).json({
+                    message: "Please provide a valid appointment start time."
+                });
+            }
 
-        if (!validTime(start_time) || !validTime(end_time)) {
-            return res.status(400).json({
-                message: "Please provide valid appointment times."
-            });
-        }
+            const today = new Intl.DateTimeFormat("en-CA", {
+                timeZone: "Asia/Kuala_Lumpur",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }).format(new Date());
 
-        // Ensure the end time is later than the start time.
-        if (end_time <= start_time) {
-            return res.status(400).json({
-                message:
-                    "The appointment end time must be later than the start time."
-            });
+            if (due_date < today) {
+                return res.status(400).json({
+                    message: "The appointment date cannot be in the past."
+                });
+            }
+
+            const dayOfWeek = selectedDate.getUTCDay();
+
+            if (dayOfWeek === 0) {
+                return res.status(400).json({
+                    message: "The clinic is closed on Sundays."
+                });
+            }
+
+            const openingTime = dayOfWeek === 6 ? "09:00" : "08:30";
+            const closingTime = dayOfWeek === 6 ? "13:00" : "17:00";
+
+            if (
+                start_time < openingTime ||
+                start_time >= closingTime
+            ) {
+                return res.status(400).json({
+                    message: `Appointment start time must be within clinic hours (${openingTime}–${closingTime}).`
+                });
+            }
+
+            if (due_date === today) {
+                const currentTime = new Intl.DateTimeFormat("en-GB", {
+                    timeZone: "Asia/Kuala_Lumpur",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hourCycle: "h23"
+                }).format(new Date());
+
+                if (start_time <= currentTime) {
+                    return res.status(400).json({
+                        message: "The start time must be later than the current time."
+                    });
+                }
+            }
         }
 
         try {
-            // Check that the child exists.
             const child = db.prepare(`
                 SELECT user_id
                 FROM Child
@@ -2718,9 +2763,8 @@ app.post(
                 });
             }
 
-            // Check that the vaccine exists.
             const vaccine = db.prepare(`
-                SELECT vaccination_id, vaccine_name
+                SELECT vaccination_id
                 FROM Vaccination
                 WHERE vaccination_id = ?
             `).get(Number(vaccination_id));
@@ -2731,11 +2775,7 @@ app.post(
                 });
             }
 
-            /*
-             * Save the vaccination record and appointment together.
-             * If either INSERT fails, both changes are rolled back.
-             */
-            const createVaccinationAndAppointment = db.transaction(() => {
+            const createRecords = db.transaction(() => {
                 const vaccinationResult = db.prepare(`
                     INSERT INTO Child_Vaccination (
                         user_id,
@@ -2753,6 +2793,29 @@ app.post(
                     status
                 );
 
+                let appointmentId = null;
+
+                if (status === "Upcoming") {
+                    /*
+                     * This requires Appointment.end_time to allow NULL.
+                     * The existing appointments UI and other routes must
+                     * also be updated to support appointments without it.
+                     */
+                    
+                const [startHour, startMinute] = start_time.split(":").map(Number);
+
+                const totalMinutes = startHour * 60 + startMinute + 30;
+
+                const endHour = Math.floor(totalMinutes / 60);
+                const endMinute = totalMinutes % 60;
+
+                const calculatedEndTime =
+                    `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+
+                if (totalMinutes >= 24 * 60) {
+                    throw new Error("The appointment end time is invalid.");
+                }
+
                 const appointmentResult = db.prepare(`
                     INSERT INTO Appointment (
                         user_id,
@@ -2767,22 +2830,33 @@ app.post(
                     "Child Vaccination",
                     due_date,
                     start_time,
-                    end_time
+                    calculatedEndTime
                 );
 
+                const appointmentId = Number(appointmentResult.lastInsertRowid);
+
+                    db.prepare(`
+                        INSERT INTO Notification (
+                            user_id,
+                            title,
+                            message
+                        )
+                        VALUES (?, ?, ?)
+                    `).run(
+                        userId,
+                        "New Appointment Scheduled",
+                        `Your Child Vaccination appointment is scheduled for ${due_date} at ${start_time}.`
+                    );
+                }
+
                 return {
-                    recordId: Number(
-                        vaccinationResult.lastInsertRowid
-                    ),
-                    appointmentId: Number(
-                        appointmentResult.lastInsertRowid
-                    )
+                    recordId: Number(vaccinationResult.lastInsertRowid),
+                    appointmentId
                 };
             });
 
-            const created = createVaccinationAndAppointment();
+            const created = createRecords();
 
-            // Notify the relevant accounts after both records are saved.
             try {
                 await notifyVaccinationChange(
                     userId,
@@ -2791,27 +2865,24 @@ app.post(
                 );
             } catch (notificationError) {
                 console.error(
-                    "Records saved, but vaccination notification failed:",
+                    "Vaccination saved, but notification failed:",
                     notificationError
                 );
             }
 
             return res.status(201).json({
-                message:
-                    "Vaccination record and appointment added successfully.",
+                message: created.appointmentId
+                    ? "Upcoming vaccination and appointment added successfully."
+                    : "Completed vaccination record added successfully.",
                 record_id: created.recordId,
                 appointment_id: created.appointmentId
             });
 
         } catch (error) {
-            console.error(
-                "Error adding vaccination record and appointment:",
-                error
-            );
+            console.error("Error adding vaccination record:", error);
 
             return res.status(500).json({
-                message:
-                    "Failed to add vaccination record and appointment."
+                message: "Failed to add vaccination record."
             });
         }
     }
