@@ -5,6 +5,7 @@ const checkInMessageIcon = document.getElementById("checkInMessageIcon");
 const checkInMessageTitle = document.getElementById("checkInMessageTitle");
 const checkInMessageText = document.getElementById("checkInMessageText");
 const checkInButton = document.getElementById("checkInButton");
+const checkInCode = document.getElementById("checkInCode");
 const queueStatus = document.getElementById("queueStatus");
 const liveQueue = document.getElementById("liveQueue");
 const queueInfo = document.getElementById("queueInfo");
@@ -291,6 +292,17 @@ if (checkInButton) {
             return;
         }
 
+        const code = checkInCode.value.trim();
+
+        if (!/^\d{6}$/.test(code)) {
+            showMessage(
+                "Invalid check-in code",
+                "Please enter the 6-digit code provided by the clinic staff."
+            );
+            checkInCode.focus();
+            return;
+        }
+
         checkInButton.disabled = true;
         checkInButton.textContent = "Checking in...";
 
@@ -301,7 +313,8 @@ if (checkInButton) {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
-                    }
+                    },
+                    body: JSON.stringify({ code })
                 }
             );
 

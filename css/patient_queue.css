@@ -241,6 +241,8 @@ img {
     display: flex;
     align-items: center;
     gap: 15px;
+    flex: 1;
+    min-width: 0;
 }
 
 .checkin-card h3 {
@@ -255,6 +257,45 @@ img {
     color: #777777;
 }
 
+/* ================= CHECK-IN ACTIONS ================= */
+.checkin-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.checkin-code {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 220px;
+}
+
+.checkin-code label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.checkin-code-input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #dfe7f0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.checkin-code-input:focus {
+    border-color: #f9528e;
+    box-shadow: 0 0 0 3px rgba(249, 82, 142, 0.12);
+}
+
+.checkin-code-input:disabled {
+    background: #f5f5f5;
+}
+
 .checkin-button {
     min-width: 120px;
     padding: 11px 22px;
@@ -266,8 +307,6 @@ img {
 
     font-size: 14px;
     font-weight: 600;
-
-    cursor: pointer;
 }
 
 .checkin-button:hover {
@@ -561,11 +600,7 @@ img {
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 900px) {
-
-    .main-content {
-        padding: 30px;
-    }
+@media (max-width: 1000px) {
 
     .appointment-card {
         flex-direction: column;
@@ -576,6 +611,29 @@ img {
         width: 100%;
         justify-content: flex-start;
     }
+    
+    .checkin-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 22px;
+    }
+
+    .checkin-actions {
+        width: 100%;
+    }
+
+    .checkin-code {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+    }
+
+}
+@media (max-width: 900px) {
+
+    .main-content {
+        padding: 30px;
+    }
 }
 
 @media (max-width: 700px) {
@@ -585,8 +643,16 @@ img {
     }
 
     .checkin-card {
+        padding: 22px;
+    }
+
+    .checkin-actions {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+    }
+
+    .checkin-code {
+        width: 100%;
     }
 
     .checkin-button {
