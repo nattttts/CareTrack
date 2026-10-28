@@ -374,35 +374,22 @@
                         </div>
 
                         <div class="mb-3">
-                            <label
-                                for="rescheduleStartTime"
-                                class="form-label fw-semibold"
-                            >
-                                New Start Time
+                            <label for="rescheduleStartTime" class="form-label fw-semibold">
+                                New Appointment Time Slot
                             </label>
 
-                            <input
-                                type="time"
-                                class="form-control"
+                            <select
+                                class="form-select"
                                 id="rescheduleStartTime"
                                 required
+                                disabled
                             >
-                        </div>
+                                <option value="">Select a date first</option>
+                            </select>
 
-                        <div class="mb-3">
-                            <label
-                                for="rescheduleEndTime"
-                                class="form-label fw-semibold"
-                            >
-                                New End Time
-                            </label>
-
-                            <input
-                                type="time"
-                                class="form-control"
-                                id="rescheduleEndTime"
-                                required
-                            >
+                            <div id="rescheduleTimeMessage" class="form-text">
+                                Available slots will appear after you select a date.
+                            </div>
                         </div>
 
                         <p

@@ -128,7 +128,6 @@ function createAppointmentCard(appointment) {
             <p>
                 <img src="../icons/clock.png" alt="">
                 ${formatTime(appointment.start_time)}
-                - ${formatTime(appointment.end_time)}
             </p>
         </div>
 
@@ -375,7 +374,7 @@ document.addEventListener("click", function (event) {
         formattedDate;
 
     document.getElementById("modalAppointmentTime").textContent =
-        `${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`;
+        `${formatTime(appointment.start_time)}`;
     
 
     // Update status badge and its styling
@@ -439,8 +438,7 @@ document.addEventListener("click", function (event) {
         );
 
         proposedTime.textContent =
-            `${formatTime(appointment.proposed_start_time)} - ` +
-            `${formatTime(appointment.proposed_end_time)}`;
+            `${formatTime(appointment.proposed_start_time)}`;
 
         if (
             appointment.reschedule_status === "Rejected" &&
@@ -465,7 +463,101 @@ document.addEventListener("click", function (event) {
 });
 
 
-// Open request reschedule modal
+
+const rescheduleModal = document.getElementById("requestRescheduleModal");
+const rescheduleForm = document.getElementById("rescheduleRequestForm");
+const rescheduleAppointmentId = document.getElementById("rescheduleAppointmentId");
+const rescheduleDate = document.getElementById("rescheduleDate");
+const rescheduleStartTime = document.getElementById("rescheduleStartTime");
+const rescheduleTimeMessage = document.getElementById("rescheduleTimeMessage");
+const rescheduleError = document.getElementById("rescheduleError");
+const submitRescheduleRequest = document.getElementById("submitRescheduleRequest");
+
+function showRescheduleError(message) {
+    rescheduleError.textContent = message;
+    rescheduleError.hidden = false;
+}
+
+function clearRescheduleError() {
+    rescheduleError.textContent = "";
+    rescheduleError.hidden = true;
+}
+
+function resetRescheduleSlots(message = "Available slots will appear after you select a date.") {
+    rescheduleStartTime.innerHTML = '<option value="">Select a date first</option>';
+    rescheduleStartTime.disabled = true;
+    rescheduleTimeMessage.textContent = message;
+}
+
+// Load available slots when the patient selects a date.
+async function loadRescheduleSlots() {
+    clearRescheduleError();
+
+    const appointmentId = rescheduleAppointmentId.value;
+    const date = rescheduleDate.value;
+
+    if (!appointmentId || !date) {
+        resetRescheduleSlots();
+        return;
+    }
+
+    rescheduleStartTime.disabled = true;
+    rescheduleStartTime.innerHTML = '<option value="">Loading slots...</option>';
+    rescheduleTimeMessage.textContent = "Checking available slots...";
+
+    try {
+        const response = await fetch(
+            `/api/patient/appointments/${appointmentId}/available-reschedule-slots?date=${encodeURIComponent(date)}`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Unable to load available slots."
+            );
+        }
+
+        rescheduleStartTime.innerHTML = "";
+
+        if (result.slots.length === 0) {
+            rescheduleStartTime.innerHTML =
+                '<option value="">No slots available</option>';
+
+            rescheduleTimeMessage.textContent =
+                "No available slots for this date. Please choose another date.";
+
+            return;
+        }
+
+        rescheduleStartTime.add(new Option("Select a time slot", ""));
+
+        result.slots.forEach(slot => {
+            const [hour, minute] = slot.split(":").map(Number);
+            const period = hour >= 12 ? "PM" : "AM";
+            const displayHour = hour % 12 || 12;
+
+            rescheduleStartTime.add(
+                new Option(
+                    `${displayHour}:${String(minute).padStart(2, "0")} ${period}`,
+                    slot
+                )
+            );
+        });
+
+        rescheduleStartTime.disabled = false;
+        rescheduleTimeMessage.textContent =
+            "Select one of the available time slots.";
+
+    } catch (error) {
+        resetRescheduleSlots("Unable to load available slots.");
+
+        showRescheduleError(error.message);
+    }
+}
+
+
+// Open the request reschedule modal
 document.addEventListener("click", function (event) {
     const button = event.target.closest(".reschedule-button");
 
@@ -482,106 +574,103 @@ document.addEventListener("click", function (event) {
         return;
     }
 
-    // Reset the form
-    document.getElementById("rescheduleRequestForm").reset();
+    rescheduleForm.reset();
+    clearRescheduleError();
+    resetRescheduleSlots();
 
-    document.getElementById("rescheduleAppointmentId").value =
-        appointment.appointment_id;
+    rescheduleAppointmentId.value = appointment.appointment_id;
 
-    // Prevent selecting a date before today
-    const today = new Date();
-    const localToday = [
-        today.getFullYear(),
-        String(today.getMonth() + 1).padStart(2, "0"),
-        String(today.getDate()).padStart(2, "0")
-    ].join("-");
+    // Use Malaysia's local date to set the earliest selectable date
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kuala_Lumpur",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(new Date());
 
-    document.getElementById("rescheduleDate").min = localToday;
+    const dateParts = Object.fromEntries(
+        parts.map(part => [part.type, part.value])
+    );
 
-    // Clear any previous error
-    document.getElementById("rescheduleError").hidden = true;
-    document.getElementById("rescheduleError").textContent = "";
+    const today =
+        `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
 
-    bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("requestRescheduleModal")
-    ).show();
+    rescheduleDate.min = today;
+
+    bootstrap.Modal.getOrCreateInstance(rescheduleModal).show();
 });
 
+// Load slots whenever the date changes
+rescheduleDate.addEventListener("change", loadRescheduleSlots);
+
 // Submit a reschedule request
-document.getElementById("rescheduleRequestForm")
-    .addEventListener("submit", async function (event) {
-        event.preventDefault();
+rescheduleForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-        const appointmentId =
-            document.getElementById("rescheduleAppointmentId").value;
+    clearRescheduleError();
 
-        const appointmentDate =
-            document.getElementById("rescheduleDate").value;
+    const appointmentId = rescheduleAppointmentId.value;
+    const appointmentDate = rescheduleDate.value;
+    const startTime = rescheduleStartTime.value;
 
-        const startTime =
-            document.getElementById("rescheduleStartTime").value;
+    const originalAppointment = appointmentsData.find(
+        item => item.appointment_id === Number(appointmentId)
+    );
 
-        const endTime =
-            document.getElementById("rescheduleEndTime").value;
-
-        const errorMessage = document.getElementById("rescheduleError");
-        const submitButton = document.getElementById("submitRescheduleRequest");
-
-        errorMessage.hidden = true;
-        errorMessage.textContent = "";
-
-        // Basic client-side time validation
-        if (endTime <= startTime) {
-            errorMessage.textContent =
-                "The end time must be later than the start time.";
-            errorMessage.hidden = false;
-            return;
-        }
-
-        submitButton.disabled = true;
-
-        try {
-            const response = await fetch(
-                `/api/patient/appointments/${appointmentId}/reschedule-requests`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        appointment_date: appointmentDate,
-                        start_time: startTime,
-                        end_time: endTime
-                    })
-                }
-            );
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    result.message || "Failed to submit reschedule request."
-                );
-            }
-
-            // Close the modal
-            bootstrap.Modal.getOrCreateInstance(
-                document.getElementById("requestRescheduleModal")
-            ).hide();
-
-            // Refresh the appointment cards and pending-request button
-            await loadAppointments();
-
-            showToast(result.message, "success");
-
-        } catch (error) {
-            errorMessage.textContent = error.message;
-            errorMessage.hidden = false;
-        } finally {
-            submitButton.disabled = false;
-        }
+    if (
+        originalAppointment &&
+        originalAppointment.appointment_date === appointmentDate &&
+        originalAppointment.start_time === startTime
+    ) {
+        showRescheduleError(
+            "The selected date and time are the same as your current appointment. Please choose a different slot."
+        );
+        return;
     }
-);
+
+    if (!appointmentDate || !startTime) {
+        showRescheduleError("Please select an appointment date and time slot.");
+        return;
+    }
+
+    submitRescheduleRequest.disabled = true;
+
+    try {
+        const response = await fetch(
+            `/api/patient/appointments/${appointmentId}/reschedule-requests`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    appointment_date: appointmentDate,
+                    start_time: startTime
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to submit reschedule request."
+            );
+        }
+
+        bootstrap.Modal.getOrCreateInstance(rescheduleModal).hide();
+
+        await loadAppointments();
+
+        showToast(result.message, "success");
+
+    } catch (error) {
+        showRescheduleError(error.message);
+    } finally {
+        submitRescheduleRequest.disabled = false;
+    }
+});
+
 
 // Load the logged-in patient's appointments
 async function loadAppointments() {

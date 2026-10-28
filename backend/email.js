@@ -154,13 +154,11 @@ async function sendAppointmentScheduledEmail(
     patientName,
     appointmentType,
     appointmentDate,
-    startTime,
-    endTime
+    startTime
 ) {
     const transporter = createEmailTransporter();
 
     const formattedStartTime = formatAppointmentTime(startTime);
-    const formattedEndTime = formatAppointmentTime(endTime);
     const safeName = escapeHtml(patientName);
     const safeType = escapeHtml(appointmentType);
     const safeDate = escapeHtml(appointmentDate);
@@ -177,7 +175,7 @@ A new appointment has been scheduled for you at CareTrack.
 Appointment details:
 Type: ${appointmentType}
 Date: ${appointmentDate}
-Time: ${formattedStartTime} - ${formattedEndTime}
+Time: ${formattedStartTime}
 
 Please arrive on time for your appointment.
 
@@ -192,7 +190,7 @@ CareTrack Team`,
             <ul>
                 <li>Type: ${safeType}</li>
                 <li>Date: ${safeDate}</li>
-                <li>Time: ${escapeHtml(formattedStartTime)} - ${escapeHtml(formattedEndTime)}</li>
+                <li>Time: ${escapeHtml(formattedStartTime)}</li>
             </ul>
             <p>Please arrive on time for your appointment.</p>
             <p>Regards,<br>CareTrack Team</p>
@@ -210,19 +208,16 @@ async function sendAppointmentUpdatedEmail(
     patientName,
     appointmentType,
     appointmentDate,
-    startTime,
-    endTime
+    startTime
 ) {
     const transporter = createEmailTransporter();
 
     const formattedStartTime = formatAppointmentTime(startTime);
-    const formattedEndTime = formatAppointmentTime(endTime);
 
     const safeName = escapeHtml(patientName);
     const safeType = escapeHtml(appointmentType);
     const safeDate = escapeHtml(appointmentDate);
     const safeStartTime = escapeHtml(formattedStartTime);
-    const safeEndTime = escapeHtml(formattedEndTime);
 
     const info = await transporter.sendMail({
         from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
@@ -236,7 +231,7 @@ The details of your CareTrack appointment have been updated.
 Updated appointment details:
 Type: ${appointmentType}
 Date: ${appointmentDate}
-Time: ${formattedStartTime} - ${formattedEndTime}
+Time: ${formattedStartTime}
 
 Please refer to these updated details for your appointment.
 
@@ -251,7 +246,7 @@ CareTrack Team`,
             <ul>
                 <li>Type: ${safeType}</li>
                 <li>Date: ${safeDate}</li>
-                <li>Time: ${safeStartTime} - ${safeEndTime}</li>
+                <li>Time: ${safeStartTime}</li>
             </ul>
             <p>Please refer to these updated details for your appointment.</p>
             <p>Regards,<br>CareTrack Team</p>
@@ -269,13 +264,11 @@ async function sendRescheduleApprovedEmail(
     email,
     patientName,
     appointmentDate,
-    startTime,
-    endTime
+    startTime
 ) {
     const transporter = createEmailTransporter();
 
     const formattedStartTime = formatAppointmentTime(startTime);
-    const formattedEndTime = formatAppointmentTime(endTime);
 
     const info = await transporter.sendMail({
         from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
@@ -288,7 +281,7 @@ Your appointment reschedule request has been approved.
 
 Your updated appointment details are:
 Date: ${appointmentDate}
-Time: ${formattedStartTime} - ${formattedEndTime}
+Time: ${formattedStartTime}
 
 Please arrive on time for your appointment.
 
@@ -302,7 +295,7 @@ CareTrack Team`,
             <p><strong>Your updated appointment details:</strong></p>
             <ul>
                 <li>Date: ${escapeHtml(appointmentDate)}</li>
-                <li>Time: ${escapeHtml(formattedStartTime)} - ${escapeHtml(formattedEndTime)}</li>
+                <li>Time: ${escapeHtml(formattedStartTime)}</li>
             </ul>
             <p>Please arrive on time for your appointment.</p>
             <p>Regards,<br>CareTrack Team</p>
@@ -321,7 +314,6 @@ async function sendRescheduleRejectedEmail(
     patientName,
     appointmentDate,
     startTime,
-    endTime,
     rejectReason
 ) {
     const transporter = createEmailTransporter();
@@ -337,7 +329,7 @@ Unfortunately, your appointment reschedule request has been rejected.
 
 Requested appointment details:
 Date: ${appointmentDate}
-Time: ${formatAppointmentTime(startTime)} - ${formatAppointmentTime(endTime)}
+Time: ${formatAppointmentTime(startTime)}
 
 Reason:
 ${rejectReason}
@@ -354,7 +346,7 @@ CareTrack Team`,
             <p><strong>Requested appointment details:</strong></p>
             <ul>
                 <li>Date: ${escapeHtml(appointmentDate)}</li>
-                <li>Time: ${escapeHtml(formatAppointmentTime(startTime))} - ${escapeHtml(formatAppointmentTime(endTime))}</li>
+                <li>Time: ${escapeHtml(formatAppointmentTime(startTime))}</li>
             </ul>
             <p><strong>Reason:</strong></p>
             <p>${escapeHtml(rejectReason).replace(/\r?\n/g, "<br>")}</p>

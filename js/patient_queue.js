@@ -201,7 +201,7 @@ function displayAppointment(appointment) {
     appointmentDate.textContent = formatDate(appointment.appointment_date);
 
     appointmentTime.textContent =
-        `${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`;
+        `${formatTime(appointment.start_time)}`;
 
     // Check whether the appointment has been missed.
     const isMissed = appointment.appointment_status === "Missed" ||
@@ -373,7 +373,7 @@ function displayQueueStatus(appointment) {
     queueNumber.textContent = appointment.queue_number ?? "—";
 
     queueAppointmentTime.textContent =
-        `${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`;
+        `${formatTime(appointment.start_time)}`;
 
     queueStatusBadge.textContent = status;
     queueStatusBadge.className =

@@ -80,6 +80,8 @@ const pageRoles = {
     "patient_profile.html": ["mother", "child"]
 };
 
+const APPOINTMENT_CAPACITY = 4;
+
 app.use((req, res, next) => {
     // Only check HTML page requests
     if (path.extname(req.path).toLowerCase() !== ".html") {
@@ -2939,7 +2941,6 @@ app.get("/api/staff/appointments", requireRole("staff"), (req, res) => {
                 a.appointment_type,
                 a.appointment_date,
                 a.start_time,
-                a.end_time,
                 a.status,
                 EXISTS (
                     SELECT 1
@@ -2980,13 +2981,11 @@ app.get("/api/patient/appointments", requireRole("mother", "child"), (req, res) 
                 a.appointment_type,
                 a.appointment_date,
                 a.start_time,
-                a.end_time,
                 a.status,
 
                 rr.reschedule_request_id,
                 rr.appointment_date AS proposed_date,
                 rr.start_time AS proposed_start_time,
-                rr.end_time AS proposed_end_time,
                 rr.status AS reschedule_status,
                 rr.reject_reason AS reschedule_reject_reason
 
@@ -3028,7 +3027,6 @@ app.get("/api/staff/reschedule-requests", requireRole("staff"), (req, res) => {
                 rr.appointment_id,
                 rr.appointment_date AS proposed_date,
                 rr.start_time AS proposed_start_time,
-                rr.end_time AS proposed_end_time,
                 rr.status AS request_status,
                 rr.reject_reason,
                 rr.created_at,
@@ -3041,7 +3039,6 @@ app.get("/api/staff/reschedule-requests", requireRole("staff"), (req, res) => {
                 a.appointment_type,
                 a.appointment_date AS original_date,
                 a.start_time AS original_start_time,
-                a.end_time AS original_end_time,
                 a.status AS appointment_status
 
             FROM Reschedule_Request AS rr
@@ -3111,41 +3108,73 @@ app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
 });
 
 
-// Add new patient appointments
-app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
+function getAllowedTimeSlots(appointmentDate) {
+    const [year, month, day] = appointmentDate.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    // Reject invalid calendar dates
+    if (
+        date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day
+    ) {
+        return null;
+    }
+
+    const dayOfWeek = date.getUTCDay();
+
+    if (dayOfWeek === 0) {
+        return [];
+    }
+
+    if (dayOfWeek === 6) {
+        return ["09:00", "10:00", "11:00", "12:00"];
+    }
+
+    return [
+        "08:00", "09:00", "10:00", "11:00",
+        "13:00", "14:00", "15:00", "16:00"
+    ];
+}
+
+function getMalaysiaDateTime() {
+    const now = new Date();
+
+    return {
+        date: new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Kuala_Lumpur",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        }).format(now),
+
+        time: new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Asia/Kuala_Lumpur",
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23"
+        }).format(now)
+    };
+}
+
+
+// Retreive available time slots for appointments for staff
+app.get("/api/staff/available-slots", requireRole("staff"), (req, res) => {
     try {
-        const {
-            user_id,
-            appointment_date,
-            start_time,
-            end_time
-        } = req.body;
+        const { user_id, date, appointment_id } = req.query;
 
-        // Check required fields
-        if (!user_id || !appointment_date || !start_time || !end_time) {
+        if (!user_id || !date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
             return res.status(400).json({
-                message: "Please provide the patient, date, start time and end time."
+                message: "Please provide a valid patient and appointment date."
             });
         }
 
-        // Validate date and time formats
-        if (
-            !/^\d{4}-\d{2}-\d{2}$/.test(appointment_date) ||
-            !/^([01]\d|2[0-3]):[0-5]\d$/.test(start_time) ||
-            !/^([01]\d|2[0-3]):[0-5]\d$/.test(end_time)
-        ) {
-            return res.status(400).json({
-                message: "Invalid appointment date or time format."
-            });
-        }
-
-        // Confirm that the patient exists and is active
         const patient = db.prepare(`
-            SELECT user_id, role, full_name, email
+            SELECT user_id, role
             FROM User
             WHERE user_id = ?
-            AND role IN ('mother', 'child')
-            AND account_status = 'Active'
+                AND role IN ('mother', 'child')
+                AND account_status = 'Active'
         `).get(user_id);
 
         if (!patient) {
@@ -3154,128 +3183,291 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
             });
         }
 
-        // Determine the appointment type from the patient's role
-        const appointmentType =
-            patient.role === "child"
-                ? "Child Vaccination"
-                : "Maternal Follow-up";
+        const allowedSlots = getAllowedTimeSlots(date);
 
-        // Validate the calendar date
-        const [year, month, day] = appointment_date.split("-").map(Number);
-
-        const selectedDate = new Date(Date.UTC(year, month - 1, day));
-
-        if (
-            selectedDate.getUTCFullYear() !== year ||
-            selectedDate.getUTCMonth() !== month - 1 ||
-            selectedDate.getUTCDate() !== day
-        ) {
+        if (allowedSlots === null) {
             return res.status(400).json({
                 message: "Please provide a valid appointment date."
             });
         }
 
-        // Check clinic operating days and hours
-        const dayOfWeek = selectedDate.getUTCDay();
+        const { date: today, time: currentTime } =
+            getMalaysiaDateTime();
 
-        let openingTime;
-        let closingTime;
+        if (date < today) {
+            return res.json({ slots: [] });
+        }
 
-        if (dayOfWeek === 0) {
-            return res.status(400).json({
-                message: "The clinic is closed on Sundays."
+        const appointmentType =
+            patient.role === "child"
+                ? "Child Vaccination"
+                : "Maternal Follow-up";
+
+        const getAppointmentCount = db.prepare(`
+            SELECT COUNT(*) AS total
+            FROM Appointment
+            WHERE appointment_date = ?
+                AND start_time = ?
+                AND appointment_type = ?
+                AND appointment_id != ?
+        `);
+
+        const availableSlots = allowedSlots.filter(slot => {
+            if (date === today && slot <= currentTime) {
+                return false;
+            }
+
+            const result = getAppointmentCount.get(
+                date,
+                slot,
+                appointmentType,
+                appointment_id
+            );
+
+            return result.total < APPOINTMENT_CAPACITY;
+        });
+
+        return res.json({ slots: availableSlots });
+    } catch (error) {
+        console.error("Failed to retrieve available slots:", error);
+
+        return res.status(500).json({
+            message: "Failed to retrieve available time slots."
+        });
+    }
+});
+
+
+// Get available reschedule slots for a patient's appointment
+app.get("/api/patient/appointments/:appointmentId/available-reschedule-slots",
+    requireRole("mother", "child"), (req, res) => {
+        try {
+            const appointmentId = Number(req.params.appointmentId);
+            const userId = req.session.user.userId;
+            const date = req.query.date;
+
+            if (
+                !Number.isSafeInteger(appointmentId) ||
+                appointmentId <= 0
+            ) {
+                return res.status(400).json({
+                    message: "Invalid appointment ID."
+                });
+            }
+
+            if (
+                typeof date !== "string" ||
+                !/^\d{4}-\d{2}-\d{2}$/.test(date)
+            ) {
+                return res.status(400).json({
+                    message: "Please select a valid appointment date."
+                });
+            }
+
+            const appointment = db.prepare(`
+                SELECT appointment_id, appointment_type, status
+                FROM Appointment
+                WHERE appointment_id = ?
+                  AND user_id = ?
+            `).get(appointmentId, userId);
+
+            if (!appointment) {
+                return res.status(404).json({
+                    message: "Appointment not found."
+                });
+            }
+
+            if (appointment.status !== "Confirmed") {
+                return res.status(409).json({
+                    message: "Only confirmed appointments can be rescheduled."
+                });
+            }
+
+            // Only one pending request is allowed per appointment.
+            const pendingRequest = db.prepare(`
+                SELECT reschedule_request_id
+                FROM Reschedule_Request
+                WHERE appointment_id = ?
+                  AND status = 'Pending'
+            `).get(appointmentId);
+
+            if (pendingRequest) {
+                return res.status(409).json({
+                    message: "You already have a pending reschedule request for this appointment."
+                });
+            }
+
+            const allowedSlots = getAllowedTimeSlots(date);
+
+            if (allowedSlots === null) {
+                return res.status(400).json({
+                    message: "Please select a valid calendar date."
+                });
+            }
+
+            if (allowedSlots.length === 0) {
+                return res.json({ slots: [] });
+            }
+
+            const { date: today, time: currentTime } =
+                getMalaysiaDateTime();
+
+            if (date < today) {
+                return res.json({ slots: [] });
+            }
+
+            const getAppointmentCount = db.prepare(`
+                SELECT COUNT(*) AS total
+                FROM Appointment
+                WHERE appointment_date = ?
+                  AND start_time = ?
+                  AND appointment_type = ?
+                  AND appointment_id != ?
+            `);
+
+            const slots = allowedSlots.filter(slot => {
+                if (date === today && slot <= currentTime) {
+                    return false;
+                }
+
+                const result = getAppointmentCount.get(
+                    date,
+                    slot,
+                    appointment.appointment_type,
+                    appointmentId
+                );
+
+                return result.total < APPOINTMENT_CAPACITY;
             });
-        } else if (dayOfWeek === 6) {
-            openingTime = "09:00";
-            closingTime = "13:00";
-        } else {
-            openingTime = "08:30";
-            closingTime = "17:00";
+
+            return res.json({ slots });
+
+        } catch (error) {
+            console.error(
+                "Failed to retrieve reschedule slots:",
+                error
+            );
+
+            return res.status(500).json({
+                message: "Unable to load available appointment slots."
+            });
+        }
+    }
+);
+
+
+// Add new patient appointments
+app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
+    try {
+        const { user_id, appointment_date, start_time } = req.body;
+
+        if (!user_id || !appointment_date || !start_time) {
+            return res.status(400).json({
+                message: "Please provide the patient, date and time slot."
+            });
         }
 
         if (
-            start_time < openingTime ||
-            start_time >= closingTime ||
-            end_time <= start_time ||
-            end_time > closingTime
+            !/^\d{4}-\d{2}-\d{2}$/.test(appointment_date) ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(start_time)
         ) {
             return res.status(400).json({
-                message: `Appointment time must be within clinic hours (${openingTime}–${closingTime}), and the end time must be after the start time.`
+                message: "Invalid appointment date or time format."
             });
         }
 
-        // Get today's date in Malaysia (YYYY-MM-DD)
-        const today = new Intl.DateTimeFormat("en-CA", {
-            timeZone: "Asia/Kuala_Lumpur",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit"
-        }).format(new Date());
+        const patient = db.prepare(`
+            SELECT user_id, role, full_name, email
+            FROM User
+            WHERE user_id = ?
+                AND role IN ('mother', 'child')
+                AND account_status = 'Active'
+        `).get(user_id);
 
-        // Prevent appointments in the past
+        if (!patient) {
+            return res.status(400).json({
+                message: "The selected patient does not exist or is inactive."
+            });
+        }
+
+        const allowedSlots = getAllowedTimeSlots(appointment_date);
+
+        if (allowedSlots === null) {
+            return res.status(400).json({
+                message: "Please provide a valid appointment date."
+            });
+        }
+
+        if (allowedSlots.length === 0) {
+            return res.status(400).json({
+                message: "The clinic is closed on Sundays."
+            });
+        }
+
+        if (!allowedSlots.includes(start_time)) {
+            return res.status(400).json({
+                message: "Please select a valid clinic appointment time slot."
+            });
+        }
+
+        const { date: today, time: currentTime } =
+            getMalaysiaDateTime();
+
         if (appointment_date < today) {
             return res.status(400).json({
                 message: "The appointment date cannot be in the past."
             });
         }
 
-        // Prevent a start time in the past today
-        if (appointment_date === today) {
-            const currentTime = new Intl.DateTimeFormat("en-GB", {
-                timeZone: "Asia/Kuala_Lumpur",
-                hour: "2-digit",
-                minute: "2-digit",
-                hourCycle: "h23"
-            }).format(new Date());
-
-            if (start_time <= currentTime) {
-                return res.status(400).json({
-                    message: "The start time must be later than the current time."
-                });
-            }
-        }
-        
-        // Prevent overlapping appointments across the entire clinic
-        const overlappingAppointment = db.prepare(`
-            SELECT appointment_id, start_time, end_time
-            FROM Appointment
-            WHERE appointment_date = ?
-                AND appointment_type = ?
-                AND status = 'Confirmed'
-                AND start_time < ?
-                AND end_time > ?
-            LIMIT 1
-        `).get(
-            appointment_date,
-            appointmentType,
-            end_time,
-            start_time
-        );
-
-        if (overlappingAppointment) {
-            return res.status(409).json({
-                message:
-                    `An appointment already exists from ${overlappingAppointment.start_time} to ${overlappingAppointment.end_time}. Please choose another time.`
+        if (
+            appointment_date === today &&
+            start_time <= currentTime
+        ) {
+            return res.status(400).json({
+                message: "Please select a time slot that has not started yet."
             });
         }
-        
-        // Save the appointment and notification together
+
+        const appointmentType =
+            patient.role === "child"
+                ? "Child Vaccination"
+                : "Maternal Follow-up";
+
         const createAppointmentTransaction = db.transaction(() => {
+            // Recheck capacity immediately before inserting
+            const existingAppointments = db.prepare(`
+                SELECT COUNT(*) AS total
+                FROM Appointment
+                WHERE appointment_date = ?
+                    AND start_time = ?
+                    AND appointment_type = ?
+            `).get(
+                appointment_date,
+                start_time,
+                appointmentType
+            );
+
+            if (existingAppointments.total >= APPOINTMENT_CAPACITY) {
+                const error = new Error(
+                    "This time slot is full. Please select another available slot."
+                );
+                error.statusCode = 409;
+                throw error;
+            }
+
             const result = db.prepare(`
                 INSERT INTO Appointment (
                     user_id,
                     appointment_type,
                     appointment_date,
-                    start_time,
-                    end_time
+                    start_time
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?)
             `).run(
                 user_id,
                 appointmentType,
                 appointment_date,
-                start_time,
-                end_time
+                start_time
             );
 
             db.prepare(`
@@ -3288,7 +3480,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
             `).run(
                 user_id,
                 "New Appointment Scheduled",
-                `A new ${appointmentType} appointment has been scheduled for ${appointment_date} from ${start_time} to ${end_time}.`
+                `A new ${appointmentType} appointment has been scheduled for ${appointment_date} at ${start_time}.`
             );
 
             return result.lastInsertRowid;
@@ -3296,15 +3488,13 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
 
         const appointmentId = createAppointmentTransaction();
 
-        // Send the email after the transaction succeeds
         try {
             await sendAppointmentScheduledEmail(
                 patient.email,
                 patient.full_name,
                 appointmentType,
                 appointment_date,
-                start_time,
-                end_time
+                start_time
             );
         } catch (emailError) {
             console.error(
@@ -3319,9 +3509,15 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
         });
 
     } catch (error) {
+        if (error.statusCode === 409) {
+            return res.status(409).json({
+                message: error.message
+            });
+        }
+
         console.error("Failed to create appointment:", error);
 
-        res.status(500).json({
+        return res.status(500).json({
             message: "Failed to schedule the appointment. Please try again."
         });
     }
@@ -3332,12 +3528,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
 app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async (req, res) => {
     try {
         const appointmentId = Number(req.params.appointmentId);
-
-        const {
-            appointment_date,
-            start_time,
-            end_time
-        } = req.body;
+        const { appointment_date, start_time } = req.body;
 
         // Validate appointment ID
         if (!Number.isSafeInteger(appointmentId) || appointmentId <= 0) {
@@ -3347,73 +3538,19 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
         }
 
         // Validate required fields
-        if (!appointment_date || !start_time || !end_time) {
+        if (!appointment_date || !start_time) {
             return res.status(400).json({
-                message: "Please provide the appointment date, start time and end time."
+                message: "Please provide the appointment date and time slot."
             });
         }
 
-        // Validate date and time formats
+        // Validate formats
         if (
             !/^\d{4}-\d{2}-\d{2}$/.test(appointment_date) ||
-            !/^\d{2}:\d{2}$/.test(start_time) ||
-            !/^\d{2}:\d{2}$/.test(end_time)
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(start_time)
         ) {
             return res.status(400).json({
-                message: "Invalid date or time format."
-            });
-        }
-
-        // Confirm that the date is a real calendar date
-        const [year, month, day] = appointment_date.split("-").map(Number);
-
-        const selectedDate = new Date(
-            Date.UTC(year, month - 1, day)
-        );
-
-        if (
-            selectedDate.getUTCFullYear() !== year ||
-            selectedDate.getUTCMonth() !== month - 1 ||
-            selectedDate.getUTCDate() !== day
-        ) {
-            return res.status(400).json({
-                message: "Please select a valid appointment date."
-            });
-        }
-
-        // Validate actual time values
-        const [startHour, startMinute] = start_time.split(":").map(Number);
-        const [endHour, endMinute] = end_time.split(":").map(Number);
-
-        if (
-            startHour > 23 ||
-            startMinute > 59 ||
-            endHour > 23 ||
-            endMinute > 59
-        ) {
-            return res.status(400).json({
-                message: "Please enter valid appointment times."
-            });
-        }
-
-        if (end_time <= start_time) {
-            return res.status(400).json({
-                message: "The end time must be later than the start time."
-            });
-        }
-
-        // Get today's date in Malaysia
-        const today = new Intl.DateTimeFormat("en-CA", {
-            timeZone: "Asia/Kuala_Lumpur",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit"
-        }).format(new Date());
-
-        // Only allow editing appointments scheduled for a future date
-        if (appointment_date <= today) {
-            return res.status(400).json({
-                message: "The appointment date must be a future date."
+                message: "Invalid appointment date or time format."
             });
         }
 
@@ -3425,7 +3562,6 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
                 a.appointment_type,
                 a.appointment_date,
                 a.start_time,
-                a.end_time,
                 a.status,
                 u.full_name AS patient_name,
                 u.email AS patient_email
@@ -3447,63 +3583,42 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
             });
         }
 
-        // Determine clinic opening and closing times
-        // JavaScript getUTCDay(): Sunday = 0, Saturday = 6
-        const dayOfWeek = selectedDate.getUTCDay();
+        // Preserve the existing rule: the appointment being edited
+        // must already be scheduled for a future date.
+        const { date: today } = getMalaysiaDateTime();
 
-        if (dayOfWeek === 0) {
+        if (appointment_date <= today) {
+            return res.status(400).json({
+                message: "The appointment date must be a future date."
+            });
+        }
+
+        // Validate the date and its permitted time slots
+        const allowedSlots = getAllowedTimeSlots(appointment_date);
+
+        if (allowedSlots === null) {
+            return res.status(400).json({
+                message: "Please select a valid appointment date."
+            });
+        }
+
+        if (allowedSlots.length === 0) {
             return res.status(400).json({
                 message: "The clinic is closed on Sundays."
             });
         }
 
-        const openingTime = dayOfWeek === 6 ? "09:00" : "08:30";
-        const closingTime = dayOfWeek === 6 ? "13:00" : "17:00";
-
-        if (
-            start_time < openingTime ||
-            end_time > closingTime
-        ) {
+        if (!allowedSlots.includes(start_time)) {
             return res.status(400).json({
-                message: dayOfWeek === 6
-                    ? "Saturday appointments must be between 9:00 AM and 1:00 PM."
-                    : "Weekday appointments must be between 8:30 AM and 5:00 PM."
-            });
-        }
-
-        // Check for overlapping appointments of the same type
-        // Exclude the appointment currently being edited
-        const overlappingAppointment = db.prepare(`
-            SELECT appointment_id, start_time, end_time
-            FROM Appointment
-            WHERE appointment_date = ?
-              AND appointment_type = ?
-              AND status = 'Confirmed'
-              AND appointment_id != ?
-              AND start_time < ?
-              AND end_time > ?
-            LIMIT 1
-        `).get(
-            appointment_date,
-            appointment.appointment_type,
-            appointmentId,
-            end_time,
-            start_time
-        );
-
-        if (overlappingAppointment) {
-            return res.status(409).json({
-                message: `This time slot is unavailable. Another appointment of the same type is scheduled from ${overlappingAppointment.start_time} to ${overlappingAppointment.end_time}. Please choose another time.`
+                message: "Please select a valid clinic appointment time slot."
             });
         }
 
         // Check whether any appointment details actually changed
         const detailsChanged =
             appointment.appointment_date !== appointment_date ||
-            appointment.start_time !== start_time ||
-            appointment.end_time !== end_time;
+            appointment.start_time !== start_time;
 
-        // If nothing changed, return success without sending notifications
         if (!detailsChanged) {
             return res.status(200).json({
                 message: "No changes were made to the appointment.",
@@ -3511,24 +3626,48 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
             });
         }
 
-        // Update the appointment and create its notification together
+        // Check capacity and update the appointment atomically
         const updateAppointmentTransaction = db.transaction(() => {
+            const existingAppointments = db.prepare(`
+                SELECT COUNT(*) AS total
+                FROM Appointment
+                WHERE appointment_date = ?
+                    AND start_time = ?
+                    AND appointment_type = ?
+                    AND appointment_id != ?
+            `).get(
+                appointment_date,
+                start_time,
+                appointment.appointment_type,
+                appointmentId
+            );
+
+            if (existingAppointments.total >= 4) {
+                const error = new Error(
+                    "This time slot is full. Please select another available slot."
+                );
+                error.statusCode = 409;
+                throw error;
+            }
+
             const result = db.prepare(`
                 UPDATE Appointment
                 SET appointment_date = ?,
-                    start_time = ?,
-                    end_time = ?
+                    start_time = ?
                 WHERE appointment_id = ?
-                AND status = 'Confirmed'
+                    AND status = 'Confirmed'
             `).run(
                 appointment_date,
                 start_time,
-                end_time,
                 appointmentId
             );
 
             if (result.changes !== 1) {
-                throw new Error("APPOINTMENT_UPDATE_FAILED");
+                const error = new Error(
+                    "The appointment could not be updated. It may have changed or is no longer available for editing."
+                );
+                error.statusCode = 409;
+                throw error;
             }
 
             db.prepare(`
@@ -3537,31 +3676,30 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
             `).run(
                 appointment.user_id,
                 "Appointment Details Updated",
-                `Your ${appointment.appointment_type} appointment has been updated. Your appointment is now scheduled for ${appointment_date} from ${start_time} to ${end_time}.`
+                `Your ${appointment.appointment_type} appointment has been updated. Your appointment is now scheduled for ${appointment_date} at ${start_time}.`
             );
         });
 
         try {
             updateAppointmentTransaction();
         } catch (error) {
-            if (error.message === "APPOINTMENT_UPDATE_FAILED") {
+            if (error.statusCode === 409) {
                 return res.status(409).json({
-                    message: "The appointment could not be updated. It may have changed or is no longer available for editing."
+                    message: error.message
                 });
             }
 
             throw error;
         }
 
-        // Send the email after the database transaction succeeds
+        // Send the email after the transaction succeeds
         try {
             await sendAppointmentUpdatedEmail(
                 appointment.patient_email,
                 appointment.patient_name,
                 appointment.appointment_type,
                 appointment_date,
-                start_time,
-                end_time
+                start_time
             );
         } catch (emailError) {
             console.error(
@@ -3586,239 +3724,208 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
 
 
 // Approve a reschedule request
-app.patch("/api/staff/reschedule-requests/:requestId/approve", requireRole("staff"), async (req, res) => {
-    try {
-        const requestId = Number(req.params.requestId);
+app.patch(
+    "/api/staff/reschedule-requests/:requestId/approve",
+    requireRole("staff"),
+    async (req, res) => {
+        try {
+            const requestId = Number(req.params.requestId);
 
-        if (!Number.isSafeInteger(requestId) || requestId <= 0) {
-            return res.status(400).json({
-                message: "Invalid reschedule request ID."
-            });
-        }
-
-        const request = db.prepare(`
-            SELECT
-                rr.reschedule_request_id,
-                rr.appointment_id,
-                rr.appointment_date AS proposed_date,
-                rr.start_time AS proposed_start_time,
-                rr.end_time AS proposed_end_time,
-                rr.status AS request_status,
-                a.appointment_type,
-                a.status AS appointment_status,
-                a.user_id,
-                u.full_name AS patient_name,
-                u.email AS patient_email
-            FROM Reschedule_Request AS rr
-            JOIN Appointment AS a
-                ON a.appointment_id = rr.appointment_id
-            JOIN User AS u
-                ON u.user_id = a.user_id
-            WHERE rr.reschedule_request_id = ?
-        `).get(requestId);
-
-        if (!request) {
-            return res.status(404).json({
-                message: "Reschedule request not found."
-            });
-        }
-
-        if (request.request_status !== "Pending") {
-            return res.status(409).json({
-                message: "This reschedule request has already been processed."
-            });
-        }
-
-        if (request.appointment_status !== "Confirmed") {
-            return res.status(409).json({
-                message: "The original appointment is no longer confirmed."
-            });
-        }
-
-        const date = request.proposed_date;
-        const startTime = request.proposed_start_time;
-        const endTime = request.proposed_end_time;
-
-        if (
-            !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
-            !/^\d{2}:\d{2}$/.test(startTime) ||
-            !/^\d{2}:\d{2}$/.test(endTime)
-        ) {
-            return res.status(400).json({
-                message: "The proposed date or time is invalid."
-            });
-        }
-
-        const [year, month, day] = date.split("-").map(Number);
-        const selectedDate = new Date(
-            Date.UTC(year, month - 1, day)
-        );
-
-        if (
-            selectedDate.getUTCFullYear() !== year ||
-            selectedDate.getUTCMonth() !== month - 1 ||
-            selectedDate.getUTCDate() !== day
-        ) {
-            return res.status(400).json({
-                message: "The proposed date is not a valid calendar date."
-            });
-        }
-
-        const [startHour, startMinute] = startTime.split(":").map(Number);
-        const [endHour, endMinute] = endTime.split(":").map(Number);
-
-        if (
-            startHour > 23 || startMinute > 59 ||
-            endHour > 23 || endMinute > 59 ||
-            endTime <= startTime
-        ) {
-            return res.status(400).json({
-                message: "The proposed appointment times are invalid."
-            });
-        }
-
-        const today = new Intl.DateTimeFormat("en-CA", {
-            timeZone: "Asia/Kuala_Lumpur",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit"
-        }).format(new Date());
-
-        if (date <= today) {
-            return res.status(400).json({
-                message: "The proposed appointment date must be in the future."
-            });
-        }
-
-        const dayOfWeek = selectedDate.getUTCDay();
-
-        if (dayOfWeek === 0) {
-            return res.status(400).json({
-                message: "The clinic is closed on Sundays."
-            });
-        }
-
-        const openingTime = dayOfWeek === 6 ? "09:00" : "08:30";
-        const closingTime = dayOfWeek === 6 ? "13:00" : "17:00";
-
-        if (startTime < openingTime || endTime > closingTime) {
-            return res.status(400).json({
-                message: dayOfWeek === 6
-                    ? "Saturday appointments must be between 9:00 AM and 1:00 PM."
-                    : "Weekday appointments must be between 8:30 AM and 5:00 PM."
-            });
-        }
-
-        const overlappingAppointment = db.prepare(`
-            SELECT appointment_id, start_time, end_time
-            FROM Appointment
-            WHERE appointment_date = ?
-                AND appointment_type = ?
-                AND status = 'Confirmed'
-                AND appointment_id != ?
-                AND start_time < ?
-                AND end_time > ?
-            LIMIT 1
-        `).get(
-            date,
-            request.appointment_type,
-            request.appointment_id,
-            endTime,
-            startTime
-        );
-
-        if (overlappingAppointment) {
-            return res.status(409).json({
-                message: `Cannot approve this request. Another appointment of the same type is scheduled from ${overlappingAppointment.start_time} to ${overlappingAppointment.end_time}.`
-            });
-        }
-
-        const approveTransaction = db.transaction(() => {
-            const updatedRequest = db.prepare(`
-                UPDATE Reschedule_Request
-                SET status = 'Approved'
-                WHERE reschedule_request_id = ?
-                    AND status = 'Pending'
-            `).run(requestId);
-
-            if (updatedRequest.changes !== 1) {
-                throw new Error("REQUEST_ALREADY_PROCESSED");
+            if (!Number.isSafeInteger(requestId) || requestId <= 0) {
+                return res.status(400).json({
+                    message: "Invalid reschedule request ID."
+                });
             }
 
-            const updatedAppointment = db.prepare(`
-                UPDATE Appointment
-                SET appointment_date = ?,
-                    start_time = ?,
-                    end_time = ?
-                WHERE appointment_id = ?
-                    AND status = 'Confirmed'
-            `).run(
+            const request = db.prepare(`
+                SELECT
+                    rr.reschedule_request_id,
+                    rr.appointment_id,
+                    rr.appointment_date AS proposed_date,
+                    rr.start_time AS proposed_start_time,
+                    rr.status AS request_status,
+                    a.appointment_type,
+                    a.status AS appointment_status,
+                    a.user_id,
+                    u.full_name AS patient_name,
+                    u.email AS patient_email
+                FROM Reschedule_Request AS rr
+                JOIN Appointment AS a
+                    ON a.appointment_id = rr.appointment_id
+                JOIN User AS u
+                    ON u.user_id = a.user_id
+                WHERE rr.reschedule_request_id = ?
+            `).get(requestId);
+
+            if (!request) {
+                return res.status(404).json({
+                    message: "Reschedule request not found."
+                });
+            }
+
+            if (request.request_status !== "Pending") {
+                return res.status(409).json({
+                    message: "This reschedule request has already been processed."
+                });
+            }
+
+            if (request.appointment_status !== "Confirmed") {
+                return res.status(409).json({
+                    message: "The original appointment is no longer confirmed."
+                });
+            }
+
+            const date = request.proposed_date;
+            const startTime = request.proposed_start_time;
+
+            // Validate the requested date and time formats
+            if (
+                typeof date !== "string" ||
+                !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+                typeof startTime !== "string" ||
+                !/^\d{2}:\d{2}$/.test(startTime)
+            ) {
+                return res.status(400).json({
+                    message: "The proposed date or time is invalid."
+                });
+            }
+
+            // Validate the actual calendar date and allowed time slots
+            const allowedSlots = getAllowedTimeSlots(date);
+
+            if (allowedSlots === null) {
+                return res.status(400).json({
+                    message: "The proposed date is not a valid calendar date."
+                });
+            }
+
+            if (allowedSlots.length === 0) {
+                return res.status(400).json({
+                    message: "The clinic is closed on Sundays."
+                });
+            }
+
+            if (!allowedSlots.includes(startTime)) {
+                return res.status(400).json({
+                    message: "The proposed time is not an available appointment slot."
+                });
+            }
+
+            const { date: today, time: currentTime } =
+                getMalaysiaDateTime();
+
+            if (date < today || (date === today && startTime <= currentTime)) {
+                return res.status(400).json({
+                    message: "The proposed appointment must be in the future."
+                });
+            }
+
+            // Check slot capacity, excluding the appointment being rescheduled
+            const appointmentCount = db.prepare(`
+                SELECT COUNT(*) AS total
+                FROM Appointment
+                WHERE appointment_date = ?
+                  AND start_time = ?
+                  AND appointment_type = ?
+                  AND appointment_id != ?
+            `).get(
                 date,
                 startTime,
-                endTime,
+                request.appointment_type,
                 request.appointment_id
             );
 
-            if (updatedAppointment.changes !== 1) {
-                throw new Error("APPOINTMENT_NOT_UPDATED");
+            if (appointmentCount.total >= APPOINTMENT_CAPACITY) {
+                return res.status(409).json({
+                    message: "This appointment slot is full. Please choose another slot."
+                });
             }
 
-            db.prepare(`
-                INSERT INTO Notification (
-                    user_id,
-                    title,
-                    message
-                )
-                VALUES (?, ?, ?)
-            `).run(
-                request.user_id,
-                request.appointment_id,
-                "Reschedule Request Approved",
-                `Your reschedule request has been approved. Your appointment is now scheduled for ${date} from ${startTime} to ${endTime}.`
-            );
-        });
+            // Update the appointment, request, and notification together
+            const approveTransaction = db.transaction(() => {
+                const updatedRequest = db.prepare(`
+                    UPDATE Reschedule_Request
+                    SET status = 'Approved'
+                    WHERE reschedule_request_id = ?
+                      AND status = 'Pending'
+                `).run(requestId);
 
-        approveTransaction();
+                if (updatedRequest.changes !== 1) {
+                    throw new Error("REQUEST_ALREADY_PROCESSED");
+                }
 
-        try {
-            await sendRescheduleApprovedEmail(
-                request.patient_email,
-                request.patient_name,
-                date,
-                startTime,
-                endTime
-            );
-        } catch (emailError) {
-            console.error(
-                "Reschedule approved, but approval email failed:",
-                emailError
-            );
-        }
+                const updatedAppointment = db.prepare(`
+                    UPDATE Appointment
+                    SET appointment_date = ?,
+                        start_time = ?
+                    WHERE appointment_id = ?
+                      AND status = 'Confirmed'
+                `).run(
+                    date,
+                    startTime,
+                    request.appointment_id
+                );
 
-        return res.json({
-            message: "Reschedule request approved successfully."
-        });
+                if (updatedAppointment.changes !== 1) {
+                    throw new Error("APPOINTMENT_NOT_UPDATED");
+                }
 
-    } catch (error) {
-        if (error.message === "REQUEST_ALREADY_PROCESSED") {
-            return res.status(409).json({
-                message: "This reschedule request has already been processed."
+                db.prepare(`
+                    INSERT INTO Notification (
+                        user_id,
+                        title,
+                        message
+                    )
+                    VALUES (?, ?, ?)
+                `).run(
+                    request.user_id,
+                    "Reschedule Request Approved",
+                    `Your reschedule request has been approved. Your appointment is now scheduled for ${date} at ${startTime}.`
+                );
+            });
+
+            approveTransaction();
+
+            // Email is sent after the transaction succeeds
+            try {
+                await sendRescheduleApprovedEmail(
+                    request.patient_email,
+                    request.patient_name,
+                    date,
+                    startTime
+                );
+            } catch (emailError) {
+                console.error(
+                    "Reschedule approved, but approval email failed:",
+                    emailError
+                );
+            }
+
+            return res.json({
+                message: "Reschedule request approved successfully."
+            });
+
+        } catch (error) {
+            if (error.message === "REQUEST_ALREADY_PROCESSED") {
+                return res.status(409).json({
+                    message: "This reschedule request has already been processed."
+                });
+            }
+
+            if (error.message === "APPOINTMENT_NOT_UPDATED") {
+                return res.status(409).json({
+                    message: "The appointment could not be updated."
+                });
+            }
+
+            console.error("Error approving reschedule request:", error);
+
+            return res.status(500).json({
+                message: "An error occurred while approving the request."
             });
         }
-
-        if (error.message === "APPOINTMENT_NOT_UPDATED") {
-            return res.status(409).json({
-                message: "The appointment could not be updated."
-            });
-        }
-
-        console.error("Error approving reschedule request:", error);
-
-        return res.status(500).json({
-            message: "An error occurred while approving the request."
-        });
-    }   
-});
+    }
+);
 
 
 // Reject a reschedule request
@@ -3856,7 +3963,6 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", requireRole("staff
                 rr.appointment_id,
                 rr.appointment_date AS proposed_date,
                 rr.start_time AS proposed_start_time,
-                rr.end_time AS proposed_end_time,
                 rr.status AS request_status,
                 a.user_id,
                 u.full_name AS patient_name,
@@ -3905,7 +4011,7 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", requireRole("staff
             `).run(
                 request.user_id,
                 "Reschedule Request Rejected",
-                `Your reschedule request for ${request.proposed_date} from ${request.proposed_start_time} to ${request.proposed_end_time} has been rejected. Reason: ${rejectReason} Your original appointment remains unchanged.`
+                `Your reschedule request for ${request.proposed_date} at ${request.proposed_start_time} has been rejected. Reason: ${rejectReason} Your original appointment remains unchanged.`
             );
         });
 
@@ -3918,7 +4024,6 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", requireRole("staff
                 request.patient_name,
                 request.proposed_date,
                 request.proposed_start_time,
-                request.proposed_end_time,
                 rejectReason
             );
         } catch (emailError) {
@@ -3952,117 +4057,77 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", requireRole("staff
 
 
 // Submit a reschedule request
-app.post(
-    "/api/patient/appointments/:appointmentId/reschedule-requests",
-    requireRole("mother", "child"),
-    (req, res) => {
+app.post("/api/patient/appointments/:appointmentId/reschedule-requests",
+    requireRole("mother", "child"), (req, res) => {
         try {
             const appointmentId = Number(req.params.appointmentId);
             const userId = req.session.user.userId;
+            const { appointment_date, start_time } = req.body;
 
-            const { appointment_date, start_time, end_time } = req.body;
-
-            // Validate appointment ID
-            if (
-                !Number.isSafeInteger(appointmentId) ||
-                appointmentId <= 0
-            ) {
+            if (!Number.isSafeInteger(appointmentId) || appointmentId <= 0) {
                 return res.status(400).json({
                     message: "Invalid appointment ID."
                 });
             }
 
-            // Validate submitted fields
             if (
                 typeof appointment_date !== "string" ||
-                typeof start_time !== "string" ||
-                typeof end_time !== "string" ||
                 !/^\d{4}-\d{2}-\d{2}$/.test(appointment_date) ||
-                !/^\d{2}:\d{2}$/.test(start_time) ||
-                !/^\d{2}:\d{2}$/.test(end_time)
+                typeof start_time !== "string" ||
+                !/^\d{2}:\d{2}$/.test(start_time)
             ) {
                 return res.status(400).json({
-                    message: "Please provide a valid date and time."
+                    message: "Please provide a valid appointment date and time slot."
                 });
             }
 
-            // Validate the calendar date
-            const [year, month, day] = appointment_date
-                .split("-")
-                .map(Number);
+            // Verify the date and time against the shared slot rules.
+            const allowedSlots = getAllowedTimeSlots(appointment_date);
 
-            const selectedDate = new Date(
-                Date.UTC(year, month - 1, day)
-            );
-
-            if (
-                selectedDate.getUTCFullYear() !== year ||
-                selectedDate.getUTCMonth() !== month - 1 ||
-                selectedDate.getUTCDate() !== day
-            ) {
+            if (allowedSlots === null) {
                 return res.status(400).json({
                     message: "Please select a valid calendar date."
                 });
             }
 
-            // Validate the time values and duration
-            const [startHour, startMinute] = start_time.split(":").map(Number);
-            const [endHour, endMinute] = end_time.split(":").map(Number);
+            if (!allowedSlots.includes(start_time)) {
+                return res.status(400).json({
+                    message: "The selected time is not a valid appointment slot."
+                });
+            }
+
+            const { date: today, time: currentTime } =
+                getMalaysiaDateTime();
 
             if (
-                startHour > 23 || startMinute > 59 ||
-                endHour > 23 || endMinute > 59 ||
-                end_time <= start_time
+                appointment_date < today ||
+                (appointment_date === today && start_time <= currentTime)
             ) {
                 return res.status(400).json({
-                    message: "Please select a valid start and end time."
+                    message: "The new appointment date and time must be in the future."
                 });
             }
 
-            // The proposed date must be in the future (Malaysia time)
-            const today = new Intl.DateTimeFormat("en-CA", {
-                timeZone: "Asia/Kuala_Lumpur",
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
-            }).format(new Date());
-
-            if (appointment_date <= today) {
-                return res.status(400).json({
-                    message: "The new appointment date must be in the future."
-                });
-            }
-
-            // Validate clinic operating hours
-            const dayOfWeek = selectedDate.getUTCDay();
-
-            if (dayOfWeek === 0) {
-                return res.status(400).json({
-                    message: "The clinic is closed on Sundays."
-                });
-            }
-
-            const openingTime = dayOfWeek === 6 ? "09:00" : "08:30";
-            const closingTime = dayOfWeek === 6 ? "13:00" : "17:00";
-
-            if (
-                start_time < openingTime ||
-                end_time > closingTime
-            ) {
-                return res.status(400).json({
-                    message: dayOfWeek === 6
-                        ? "Saturday appointments must be between 9:00 AM and 1:00 PM."
-                        : "Weekday appointments must be between 8:30 AM and 5:00 PM."
-                });
-            }
-
-            // Confirm that this appointment belongs to the logged-in patient
             const appointment = db.prepare(`
-                SELECT appointment_id, appointment_type, status
+                SELECT
+                    appointment_id,
+                    appointment_type,
+                    appointment_date,
+                    start_time,
+                    status
                 FROM Appointment
                 WHERE appointment_id = ?
-                  AND user_id = ?
+                AND user_id = ?
             `).get(appointmentId, userId);
+
+            if (
+                appointment.appointment_date === appointment_date &&
+                appointment.start_time === start_time
+            ) {
+                return res.status(400).json({
+                    message: "The selected date and time are the same as your current appointment. Please choose a different slot."
+                });
+            }
 
             if (!appointment) {
                 return res.status(404).json({
@@ -4076,7 +4141,7 @@ app.post(
                 });
             }
 
-            // Prevent multiple pending requests for the same appointment
+            // Prevent multiple pending requests for the same appointment.
             const pendingRequest = db.prepare(`
                 SELECT reschedule_request_id
                 FROM Reschedule_Request
@@ -4090,46 +4155,40 @@ app.post(
                 });
             }
 
-            // Check for an existing confirmed appointment at the proposed time
-            const overlappingAppointment = db.prepare(`
-                SELECT start_time, end_time
+            // Check current capacity, excluding the original appointment.
+            const appointmentCount = db.prepare(`
+                SELECT COUNT(*) AS total
                 FROM Appointment
                 WHERE appointment_date = ?
+                  AND start_time = ?
                   AND appointment_type = ?
-                  AND status = 'Confirmed'
                   AND appointment_id != ?
-                  AND start_time < ?
-                  AND end_time > ?
-                LIMIT 1
             `).get(
                 appointment_date,
+                start_time,
                 appointment.appointment_type,
-                appointmentId,
-                end_time,
-                start_time
+                appointmentId
             );
 
-            if (overlappingAppointment) {
+            if (appointmentCount.total >= APPOINTMENT_CAPACITY) {
                 return res.status(409).json({
-                    message: `That time conflicts with another appointment of the same type (${overlappingAppointment.start_time}–${overlappingAppointment.end_time}). Please choose another time.`
+                    message: "This appointment slot is full. Please choose another slot."
                 });
             }
 
-            // Create the request without changing the original appointment
+            // Save the request without changing the original appointment.
             const result = db.prepare(`
                 INSERT INTO Reschedule_Request (
                     appointment_id,
                     appointment_date,
                     start_time,
-                    end_time,
                     status
                 )
-                VALUES (?, ?, ?, ?, 'Pending')
+                VALUES (?, ?, ?, 'Pending')
             `).run(
                 appointmentId,
                 appointment_date,
-                start_time,
-                end_time
+                start_time
             );
 
             return res.status(201).json({
@@ -4799,7 +4858,6 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                     a.appointment_type,
                     a.appointment_date,
                     a.start_time,
-                    a.end_time,
                     a.status AS appointment_status,
 
                     q.queue_entry_id,
@@ -5150,7 +5208,6 @@ app.get("/api/staff/queue", requireRole("staff"),
                     a.appointment_type,
                     a.appointment_date,
                     a.start_time,
-                    a.end_time,
                     a.status AS appointment_status,
 
                     u.user_id,

@@ -297,8 +297,6 @@ async function loadAppointments() {
                 <td>${escapeHtml(formatDate(appointmentDate))}</td>
                 <td>
                     ${escapeHtml(formatTime(appointment.start_time))}
-                    -
-                    ${escapeHtml(formatTime(appointment.end_time))}
                 </td>
                 <td>
                     <span class="status-badge ${displayStatus.toLowerCase().replace(/\s+/g, '-')}">
@@ -387,7 +385,7 @@ viewAppointmentModal.addEventListener("show.bs.modal", event => {
         formatDate(appointment.appointment_date);
 
     document.getElementById("modalAppointmentTime").textContent =
-        `${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`;
+        `${formatTime(appointment.start_time)}`;
 });
 
 
@@ -510,6 +508,8 @@ function selectPatient(patient) {
     selectedPatientDetails.hidden = false;
     patientSearchResults.replaceChildren();
     patientSearchMessage.textContent = "Patient selected.";
+
+    loadAvailableTimeSlots();
 }
 
 // Allow staff to change their selection
@@ -531,8 +531,6 @@ document.getElementById("changePatientButton").addEventListener("click", () => {
 // Appointment date and time validation
 const appointmentDateInput = document.getElementById("appointmentDate");
 const appointmentStartTimeInput = document.getElementById("appointmentStartTime");
-const appointmentEndTimeInput = document.getElementById("appointmentEndTime");
-const appointmentDateMessage = document.getElementById("appointmentDateMessage");
 const scheduleAppointmentMessage = document.getElementById("scheduleAppointmentMessage");
 const scheduleAppointmentForm = document.getElementById("scheduleAppointmentForm");
 
@@ -550,20 +548,16 @@ function getTodayDate() {
 // Set the earliest selectable date to today
 appointmentDateInput.min = getTodayDate();
 
-// Validate the selected appointment date and times
+// Validate the selected appointment date and time slot
 function validateAppointmentSchedule() {
     const appointmentDate = appointmentDateInput.value;
     const startTime = appointmentStartTimeInput.value;
-    const endTime = appointmentEndTimeInput.value;
 
-    // Reset previous validation messages
     appointmentDateInput.setCustomValidity("");
     appointmentStartTimeInput.setCustomValidity("");
-    appointmentEndTimeInput.setCustomValidity("");
 
     appointmentDateInput.classList.remove("is-invalid");
     appointmentStartTimeInput.classList.remove("is-invalid");
-    appointmentEndTimeInput.classList.remove("is-invalid");
 
     scheduleAppointmentMessage.hidden = true;
     scheduleAppointmentMessage.textContent = "";
@@ -577,84 +571,31 @@ function validateAppointmentSchedule() {
     let errorMessage = "";
     let invalidInput = null;
 
-    // Require a date
     if (!appointmentDate) {
         errorMessage = "Please select an appointment date.";
         invalidInput = appointmentDateInput;
-    }
-
-    // Prevent appointments in the past
-    else if (appointmentDate < getTodayDate()) {
+    } else if (appointmentDate < getTodayDate()) {
         errorMessage = "The appointment date cannot be in the past.";
         invalidInput = appointmentDateInput;
-    }
+    } else if (!startTime) {
+        errorMessage = "Please select an available appointment time slot.";
+        invalidInput = appointmentStartTimeInput;
+    } else if (
+        appointmentDate === getTodayDate()
+    ) {
+        const now = new Date();
 
-    // Check the clinic's operating day and hours
-    else {
-        // Interpret YYYY-MM-DD as a local calendar date
-        const [year, month, day] = appointmentDate
-            .split("-")
-            .map(Number);
+        const currentTime =
+            `${String(now.getHours()).padStart(2, "0")}:` +
+            `${String(now.getMinutes()).padStart(2, "0")}`;
 
-        const selectedDate = new Date(year, month - 1, day);
-        const dayOfWeek = selectedDate.getDay();
-
-        let openingTime;
-        let closingTime;
-
-        if (dayOfWeek === 0) {
-            errorMessage = "The clinic is closed on Sundays.";
-            invalidInput = appointmentDateInput;
-        } else if (dayOfWeek === 6) {
-            openingTime = "09:00";
-            closingTime = "13:00";
-        } else {
-            openingTime = "08:30";
-            closingTime = "17:00";
-        }
-
-        // Continue only if the selected day is permitted
-        if (!errorMessage) {
-            if (!startTime) {
-                errorMessage = "Please select a start time.";
-                invalidInput = appointmentStartTimeInput;
-            } else if (!endTime) {
-                errorMessage = "Please select an end time.";
-                invalidInput = appointmentEndTimeInput;
-            } else if (
-                startTime < openingTime ||
-                startTime >= closingTime
-            ) {
-                errorMessage =
-                    `Start time must be between ${openingTime} and ${closingTime}.`;
-                invalidInput = appointmentStartTimeInput;
-            } else if (
-                endTime <= startTime ||
-                endTime > closingTime
-            ) {
-                errorMessage =
-                    "End time must be after the start time and no later than closing time.";
-                invalidInput = appointmentEndTimeInput;
-            } else {
-                // Prevent a start time in the past today
-                if (appointmentDate === getTodayDate()) {
-                    const now = new Date();
-
-                    const currentTime =
-                        `${String(now.getHours()).padStart(2, "0")}:` +
-                        `${String(now.getMinutes()).padStart(2, "0")}`;
-
-                    if (startTime <= currentTime) {
-                        errorMessage =
-                            "The start time must be later than the current time.";
-                        invalidInput = appointmentStartTimeInput;
-                    }
-                }
-            }
+        if (startTime <= currentTime) {
+            errorMessage =
+                "Please select a time slot that has not started yet.";
+            invalidInput = appointmentStartTimeInput;
         }
     }
 
-    // Display validation errors
     if (errorMessage) {
         scheduleAppointmentMessage.textContent = errorMessage;
         scheduleAppointmentMessage.classList.add(
@@ -676,11 +617,81 @@ function validateAppointmentSchedule() {
 }
 
 
+async function loadAvailableTimeSlots() {
+    const timeSlotSelect = appointmentStartTimeInput;
+    const timeMessage = document.getElementById("appointmentTimeMessage");
+
+    timeSlotSelect.innerHTML =
+        '<option value="">Loading available slots...</option>';
+    timeSlotSelect.disabled = true;
+    timeMessage.textContent = "";
+
+    if (!selectedPatient || !appointmentDateInput.value) {
+        timeSlotSelect.innerHTML =
+            '<option value="">Select a patient and date first</option>';
+        timeMessage.textContent =
+            "Available slots will appear after you select a patient and date.";
+        return;
+    }
+
+    try {
+        const params = new URLSearchParams({
+            user_id: selectedPatient.user_id,
+            date: appointmentDateInput.value
+        });
+
+        const response = await fetch(
+            `/api/staff/available-slots?${params}`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to load available slots.");
+        }
+
+        timeSlotSelect.innerHTML = "";
+
+        if (result.slots.length === 0) {
+            timeSlotSelect.innerHTML =
+                '<option value="">No available slots</option>';
+            timeMessage.textContent =
+                "There are no available slots for this patient on the selected date.";
+            return;
+        }
+
+        timeSlotSelect.add(new Option("Select a time slot", ""));
+
+        result.slots.forEach(slot => {
+            const [hour, minute] = slot.split(":").map(Number);
+            const period = hour >= 12 ? "PM" : "AM";
+            const displayHour = hour % 12 || 12;
+            const label = `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+
+            timeSlotSelect.add(new Option(label, slot));
+        });
+
+        timeSlotSelect.disabled = false;
+        timeMessage.textContent =
+            "Each time slot accommodates up to 4 appointments of the same type.";
+
+    } catch (error) {
+        console.error("Failed to load available time slots:", error);
+
+        timeSlotSelect.innerHTML =
+            '<option value="">Unable to load slots</option>';
+        timeMessage.textContent = error.message;
+    }
+}
+
+appointmentDateInput.addEventListener("change", () => {
+    loadAvailableTimeSlots();
+});
+
 // Validate again whenever a field changes
 [
     appointmentDateInput,
-    appointmentStartTimeInput,
-    appointmentEndTimeInput
+    appointmentStartTimeInput
 ].forEach(input => {
     input.addEventListener("change", validateAppointmentSchedule);
 });
@@ -733,8 +744,7 @@ scheduleAppointmentForm.addEventListener("submit", async event => {
             body: JSON.stringify({
                 user_id: selectedPatient.user_id,
                 appointment_date: appointmentDateInput.value,
-                start_time: appointmentStartTimeInput.value,
-                end_time: appointmentEndTimeInput.value
+                start_time: appointmentStartTimeInput.value
             })
         });
 
@@ -792,8 +802,7 @@ scheduleAppointmentModal.addEventListener("hidden.bs.modal", () => {
     // Clear validation styling and custom error messages
     [
         appointmentDateInput,
-        appointmentStartTimeInput,
-        appointmentEndTimeInput
+        appointmentStartTimeInput
     ].forEach(input => {
         input.setCustomValidity("");
         input.classList.remove("is-invalid");
@@ -855,11 +864,92 @@ const editPatientName = document.getElementById("editPatientName");
 const editAppointmentType = document.getElementById("editAppointmentType");
 const editAppointmentDate = document.getElementById("editAppointmentDate");
 const editAppointmentStartTime = document.getElementById("editAppointmentStartTime");
-const editAppointmentEndTime = document.getElementById("editAppointmentEndTime");
+const editAppointmentTimeMessage = document.getElementById("editAppointmentTimeMessage");
 const editAppointmentMessage = document.getElementById("editAppointmentMessage");
 const saveAppointmentChangesButton = document.getElementById("saveAppointmentChangesButton");
 
 let editingAppointmentId = null;
+let editingAppointmentUserId = null;
+
+
+async function loadEditAvailableTimeSlots(preferredTime = "") {
+    editAppointmentStartTime.disabled = true;
+    editAppointmentStartTime.innerHTML =
+        '<option value="">Loading available slots...</option>';
+    editAppointmentTimeMessage.textContent = "";
+
+    if (!editingAppointmentId || !editingAppointmentUserId ||
+        !editAppointmentDate.value) {
+        editAppointmentStartTime.innerHTML =
+            '<option value="">Select a date first</option>';
+        editAppointmentTimeMessage.textContent =
+            "Available slots will appear after you select a date.";
+        return;
+    }
+
+    try {
+        const params = new URLSearchParams({
+            user_id: editingAppointmentUserId,
+            date: editAppointmentDate.value,
+            appointment_id: editingAppointmentId
+        });
+
+        const response = await fetch(
+            `/api/staff/available-slots?${params}`
+        );
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to load available slots."
+            );
+        }
+
+        editAppointmentStartTime.innerHTML = "";
+        editAppointmentStartTime.add(
+            new Option("Select a time slot", "")
+        );
+
+        if (result.slots.length === 0) {
+            editAppointmentStartTime.innerHTML =
+                '<option value="">No available slots</option>';
+            editAppointmentTimeMessage.textContent =
+                "No time slots are available on this date.";
+            return;
+        }
+
+        result.slots.forEach(slot => {
+            const [hour, minute] = slot.split(":").map(Number);
+            const period = hour >= 12 ? "PM" : "AM";
+            const displayHour = hour % 12 || 12;
+            const label =
+                `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+
+            editAppointmentStartTime.add(new Option(label, slot));
+        });
+
+        if (result.slots.includes(preferredTime)) {
+            editAppointmentStartTime.value = preferredTime;
+        }
+
+        editAppointmentStartTime.disabled = false;
+        editAppointmentTimeMessage.textContent =
+            "Each time slot accommodates up to 4 appointments of the same type.";
+
+    } catch (error) {
+        console.error("Failed to load edit appointment slots:", error);
+
+        editAppointmentStartTime.innerHTML =
+            '<option value="">Unable to load slots</option>';
+        editAppointmentTimeMessage.textContent = error.message;
+    }
+}
+
+// Refresh available slots whenever the date changes
+editAppointmentDate.addEventListener("change", () => {
+    loadEditAvailableTimeSlots();
+});
+
 
 // Open the Edit Appointment modal when Edit is clicked
 document.addEventListener("click", function (event) {
@@ -874,42 +964,47 @@ document.addEventListener("click", function (event) {
     );
 
     if (!appointment) {
-        showToast("Unable to find this appointment. Please refresh the page.", "error");
+        showToast(
+            "Unable to find this appointment. Please refresh the page.",
+            "error"
+        );
         return;
     }
 
-    // Only allow editing upcoming confirmed appointments
     const today = getLocalDateString();
 
     if (
         appointment.appointment_date <= today ||
         appointment.status !== "Confirmed"
     ) {
-        showToast("Only upcoming confirmed appointments can be edited.", "error");
+        showToast(
+            "Only upcoming confirmed appointments can be edited.",
+            "error"
+        );
         return;
     }
 
     editingAppointmentId = appointment.appointment_id;
+    editingAppointmentUserId = appointment.user_id;
 
     editPatientName.value = appointment.patient_name;
     editAppointmentType.value = appointment.appointment_type;
     editAppointmentDate.value = appointment.appointment_date;
-    editAppointmentStartTime.value = appointment.start_time;
-    editAppointmentEndTime.value = appointment.end_time;
 
     editAppointmentMessage.hidden = true;
     editAppointmentMessage.textContent = "";
     editAppointmentMessage.className = "mt-3";
 
-    // Remove old validation styling
     [
         editAppointmentDate,
-        editAppointmentStartTime,
-        editAppointmentEndTime
+        editAppointmentStartTime
     ].forEach(input => {
         input.classList.remove("is-invalid");
         input.setCustomValidity("");
     });
+
+    // Load available slots and preselect the appointment's current time
+    loadEditAvailableTimeSlots(appointment.start_time);
 
     bootstrap.Modal.getOrCreateInstance(editAppointmentModal).show();
 });
@@ -934,13 +1029,10 @@ editAppointmentForm.addEventListener("submit", async function (event) {
 
     const appointmentDate = editAppointmentDate.value;
     const startTime = editAppointmentStartTime.value;
-    const endTime = editAppointmentEndTime.value;
 
-    // Clear previous validation styling
     [
         editAppointmentDate,
-        editAppointmentStartTime,
-        editAppointmentEndTime
+        editAppointmentStartTime
     ].forEach(input => {
         input.classList.remove("is-invalid");
         input.setCustomValidity("");
@@ -949,27 +1041,21 @@ editAppointmentForm.addEventListener("submit", async function (event) {
     editAppointmentMessage.hidden = true;
     editAppointmentMessage.textContent = "";
 
-    let hasError = false;
-
-    // Prevent selecting a past date
-    if (appointmentDate < getLocalDateString()) {
+    if (!appointmentDate || appointmentDate <= getLocalDateString()) {
         editAppointmentDate.classList.add("is-invalid");
         showEditAppointmentMessage(
-            "The appointment date cannot be in the past."
+            "Please select a future appointment date."
         );
-        hasError = true;
+        return;
     }
 
-    // Ensure the end time is later than the start time
-    if (startTime && endTime && endTime <= startTime) {
-        editAppointmentEndTime.classList.add("is-invalid");
+    if (!startTime) {
+        editAppointmentStartTime.classList.add("is-invalid");
         showEditAppointmentMessage(
-            "The end time must be later than the start time."
+            "Please select an available appointment time slot."
         );
-        hasError = true;
+        return;
     }
-
-    if (hasError) return;
 
     saveAppointmentChangesButton.disabled = true;
     saveAppointmentChangesButton.innerHTML = `
@@ -992,8 +1078,7 @@ editAppointmentForm.addEventListener("submit", async function (event) {
                 },
                 body: JSON.stringify({
                     appointment_date: appointmentDate,
-                    start_time: startTime,
-                    end_time: endTime
+                    start_time: startTime
                 })
             }
         );
@@ -1001,17 +1086,18 @@ editAppointmentForm.addEventListener("submit", async function (event) {
         const result = await response.json();
 
         if (!response.ok) {
-            showToast(result.message || "Unable to update the appointment.", "error");
+            showEditAppointmentMessage(
+                result.message || "Unable to update the appointment."
+            );
             return;
         }
 
-        // Refresh the table using the updated database records
         await loadAppointments();
 
         bootstrap.Modal.getOrCreateInstance(editAppointmentModal).hide();
 
         if (result.changed) {
-            showToast("Appointment successfully rescheduled.", "success");
+            showToast("Appointment successfully updated.", "success");
         } else {
             showToast("No changes were made to the appointment.", "info");
         }
@@ -1041,8 +1127,7 @@ editAppointmentModal.addEventListener("hidden.bs.modal", function () {
 
     [
         editAppointmentDate,
-        editAppointmentStartTime,
-        editAppointmentEndTime
+        editAppointmentStartTime
     ].forEach(input => {
         input.classList.remove("is-invalid");
         input.setCustomValidity("");
@@ -1152,13 +1237,13 @@ document.addEventListener("click", async function (event) {
             formatDate(request.original_date);
 
         document.getElementById("rescheduleOriginalTime").textContent =
-            `${formatTime(request.original_start_time)} – ${formatTime(request.original_end_time)}`;
+            `${formatTime(request.original_start_time)}`;
 
         document.getElementById("rescheduleProposedDate").textContent =
             formatDate(request.proposed_date);
 
         document.getElementById("rescheduleProposedTime").textContent =
-            `${formatTime(request.proposed_start_time)} – ${formatTime(request.proposed_end_time)}`;
+            `${formatTime(request.proposed_start_time)}`;
 
         // Enable the decision buttons once the request has loaded
         approveRescheduleRequestButton.disabled = false;

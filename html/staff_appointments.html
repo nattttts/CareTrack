@@ -405,44 +405,30 @@
                                 id="appointmentDateMessage"
                                 class="form-text"
                             >
-                                Monday-Friday: 8:30 AM-5:00 PM.
+                                Monday-Friday: 8:00 AM-5:00 PM, excluding 12:00 PM-1:00 PM.
                                 Saturday: 9:00 AM-1:00 PM.
                                 Closed Sundays.
+                                Each time slot accommodates up to 4 appointments per type.
                             </div>
                         </div>
 
-                        <!-- Appointment Time -->
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label
-                                    for="appointmentStartTime"
-                                    class="form-label"
-                                >
-                                    Start Time
-                                </label>
+                        <!-- Appointment Time Slot -->
+                        <div class="mb-3">
+                            <label for="appointmentStartTime" class="form-label">
+                                Appointment Time Slot
+                            </label>
 
-                                <input
-                                    type="time"
-                                    id="appointmentStartTime"
-                                    class="form-control"
-                                    required
-                                >
-                            </div>
+                            <select
+                                id="appointmentStartTime"
+                                class="form-select"
+                                required
+                                disabled
+                            >
+                                <option value="">Select a patient and date first</option>
+                            </select>
 
-                            <div class="col-md-6">
-                                <label
-                                    for="appointmentEndTime"
-                                    class="form-label"
-                                >
-                                    End Time
-                                </label>
-
-                                <input
-                                    type="time"
-                                    id="appointmentEndTime"
-                                    class="form-control"
-                                    required
-                                >
+                            <div id="appointmentTimeMessage" class="form-text">
+                                Available slots will appear after you select a patient and date.
                             </div>
                         </div>
 
@@ -646,44 +632,33 @@
                                 id="editAppointmentDateMessage"
                                 class="form-text"
                             >
-                                Monday-Friday: 8:30 AM-5:00 PM.
+                                Monday-Friday: 8:00 AM-5:00 PM, excluding 12:00 PM-1:00 PM.
                                 Saturday: 9:00 AM-1:00 PM.
                                 Closed Sundays.
+                                Each time slot accommodates up to 4 appointments per type.
                             </div>
                         </div>
+                        
+                        <!-- Appointment Time Slot -->
+                        <div class="mb-3">
+                            <label
+                                for="editAppointmentStartTime"
+                                class="form-label"
+                            >
+                                Appointment Time Slot
+                            </label>
 
-                        <!-- Appointment Time -->
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label
-                                    for="editAppointmentStartTime"
-                                    class="form-label"
-                                >
-                                    Start Time
-                                </label>
+                            <select
+                                id="editAppointmentStartTime"
+                                class="form-select"
+                                required
+                                disabled
+                            >
+                                <option value="">Select a date first</option>
+                            </select>
 
-                                <input
-                                    type="time"
-                                    id="editAppointmentStartTime"
-                                    class="form-control"
-                                    required
-                                >
-                            </div>
-
-                            <div class="col-md-6">
-                                <label
-                                    for="editAppointmentEndTime"
-                                    class="form-label"
-                                >
-                                    End Time
-                                </label>
-
-                                <input
-                                    type="time"
-                                    id="editAppointmentEndTime"
-                                    class="form-control"
-                                    required
-                                >
+                            <div id="editAppointmentTimeMessage" class="form-text">
+                                Available slots will appear after you select a date.
                             </div>
                         </div>
 
