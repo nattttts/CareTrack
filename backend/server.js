@@ -86,8 +86,6 @@ app.use((req, res, next) => {
         return next();
     }
 
-   
-
     const pageName = path.basename(req.path).toLowerCase();
 
     // Allow public pages without login
@@ -4720,6 +4718,7 @@ app.post(
     "/api/patient/queue/:appointmentId/check-in", requireRole("mother", "child"),
     (req, res) => {
         const appointmentId = Number(req.params.appointmentId);
+        const { code } = req.body;
         const userId = req.session.user.userId;
         const role = req.session.user.role;
         const today = getMalaysiaDate();
@@ -4804,6 +4803,21 @@ app.post(
                     };
                 }
 
+                // ================= VERIFY DAILY CHECK-IN CODE =================
+                if (typeof code !== "string" || !/^\d{6}$/.test(code)) {
+                    throw new Error("INVALID_CHECKIN_CODE");
+                }
+
+                const dailyCode = db.prepare(`
+                    SELECT code
+                    FROM Daily_Checkin_Code
+                    WHERE code_date = ?
+                `).get(today);
+
+                if (!dailyCode || dailyCode.code !== code) {
+                    throw new Error("INVALID_CHECKIN_CODE");
+                }
+
                 // Check whether the appointment is within the allowed check-in period.
                 const appointmentStartTime = Date.parse(
                     `${appointment.appointment_date}T${appointment.start_time}+08:00`
@@ -4882,6 +4896,12 @@ app.post(
             });
 
         } catch (error) {
+            if (error.message === "INVALID_CHECKIN_CODE") {
+                return res.status(400).json({
+                    message: "Invalid check-in code. Please ask the clinic staff for today's code."
+                });
+            }
+
             if (error.message === "APPOINTMENT_NOT_FOUND") {
                 return res.status(404).json({
                     message: "Appointment not found."
@@ -4983,6 +5003,58 @@ app.get("/api/patient/live-queue", requireRole("mother", "child"),
 
             return res.status(500).json({
                 message: "Failed to load the live queue."
+            });
+        }
+    }
+);
+
+// ================= STAFF: GET DAILY CHECK-IN CODE =================
+app.get(
+    "/api/staff/daily-checkin-code",
+    requireRole("staff"),
+    (req, res) => {
+        try {
+            const today = getMalaysiaDate();
+
+            // Check whether today's code already exists.
+            let dailyCode = db.prepare(`
+                SELECT code_date, code
+                FROM Daily_Checkin_Code
+                WHERE code_date = ?
+            `).get(today);
+
+            // Generate a new six-digit code if today's code does not exist.
+            if (!dailyCode) {
+                const { randomInt } = require("crypto");
+                const newCode = String(randomInt(100000, 1000000));
+
+                // Insert the code only if today's record does not exist.
+                db.prepare(`
+                    INSERT OR IGNORE INTO Daily_Checkin_Code (
+                        code_date,
+                        code
+                    )
+                    VALUES (?, ?)
+                `).run(today, newCode);
+
+                // Retrieve the saved code.
+                dailyCode = db.prepare(`
+                    SELECT code_date, code
+                    FROM Daily_Checkin_Code
+                    WHERE code_date = ?
+                `).get(today);
+            }
+
+            return res.json({
+                codeDate: dailyCode.code_date,
+                code: dailyCode.code
+            });
+
+        } catch (error) {
+            console.error("Error loading daily check-in code:", error);
+
+            return res.status(500).json({
+                message: "Failed to load today's check-in code."
             });
         }
     }
