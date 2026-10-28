@@ -362,11 +362,6 @@ img {
     color: #e81f67;
 }
 
-.queue-status.in-progress {
-    background: #eaf8f0;
-    color: #07854d;
-}
-
 /* ================= QUEUE NUMBER ================= */
 .queue-number-section {
     text-align: center;
@@ -499,10 +494,6 @@ img {
 
 .queue-item-status.called {
     color: #e81f67;
-}
-
-.queue-item-status.in-progress {
-    color: #07854d;
 }
 
 .queue-empty {

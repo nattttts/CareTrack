@@ -530,9 +530,6 @@ function getQueueStatusClass(status) {
         case "Called":
             return "called";
 
-        case "In Progress":
-            return "in-progress";
-
         case "Completed":
             return "completed";
 
