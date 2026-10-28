@@ -13,12 +13,6 @@ const callPatientName = document.getElementById("callPatientName");
 const callQueueNumber = document.getElementById("callQueueNumber");
 const confirmCallButton = document.getElementById("confirmCallButton");
 
-// Start Visit Modal
-const startVisitModalElement = document.getElementById("startVisitModal");
-const startVisitPatientName = document.getElementById("startVisitPatientName");
-const startVisitQueueNumber = document.getElementById("startVisitQueueNumber");
-const confirmStartVisitButton = document.getElementById("confirmStartVisitButton");
-
 // Complete Modal
 const completeModalElement = document.getElementById("completeModal");
 const completePatientName = document.getElementById("completePatientName");
@@ -31,7 +25,6 @@ const confirmSkipButton = document.getElementById("confirmSkipButton");
 
 
 const selectedCallState = { row: null };
-const selectedStartVisitState = { row: null };
 const selectedCompleteState = { row: null };
 const selectedSkipState = { row: null };
 
@@ -254,7 +247,6 @@ function updateSummary() {
     let total = 0;
     let waiting = 0;
     let called = 0;
-    let inProgress = 0;
     let completed = 0;
 
     queueData.forEach(entry => {
@@ -265,8 +257,6 @@ function updateSummary() {
             waiting++;
         } else if (entry.queue_status === "Called") {
             called++;
-        } else if (entry.queue_status === "In Progress") {
-            inProgress++;
         } else if (entry.queue_status === "Completed") {
             completed++;
         }
@@ -275,7 +265,6 @@ function updateSummary() {
     document.getElementById("totalCount").textContent = total;
     document.getElementById("waitingCount").textContent = waiting;
     document.getElementById("calledCount").textContent = called;
-    document.getElementById("progressCount").textContent = inProgress;
     document.getElementById("completedCount").textContent = completed;
 }
 
@@ -319,24 +308,14 @@ function updateActionButton(row) {
 
         actionContainer.append(
             createActionButton(
-                "Start Visit",
-                "start",
-                "start-button"
+                "Complete",
+                "complete",
+                "complete-button"
             ),
             createActionButton(
                 "Skip",
                 "skip",
                 "skip-button"
-            )
-        );
-
-    } else if (status === "In Progress") {
-
-        actionContainer.appendChild(
-            createActionButton(
-                "Complete",
-                "complete",
-                "complete-button"
             )
         );
 
@@ -378,7 +357,6 @@ function updateStatusBadge(row) {
     const classNames = {
         "Waiting": "waiting",
         "Called": "called",
-        "In Progress": "in-progress",
         "Completed": "completed",
         "Skipped": "skipped"
     };
@@ -413,13 +391,7 @@ function isServiceOccupied(row) {
             continue;
         }
 
-        if (
-            otherRow.dataset.service === service &&
-            (
-                otherRow.dataset.status === "Called" ||
-                otherRow.dataset.status === "In Progress"
-            )
-        ) {
+        if (otherRow.dataset.service === service && otherRow.dataset.status === "Called") {
             return otherRow;
         }
     }
@@ -513,7 +485,7 @@ function handleAction(button) {
     const action = button.dataset.action;
     const currentStatus = row.dataset.status;
 
-    if (action === "skip") {
+    if (action === "skip" && currentStatus === "Called") {
         openSkipModal(row);
         return;
     }
@@ -546,12 +518,7 @@ function handleAction(button) {
         return;
     }
 
-    if (action === "start" && currentStatus === "Called") {
-        openStartVisitModal(row);
-        return;
-    }
-
-    if (action === "complete" && currentStatus === "In Progress") {
+    if (action === "complete" && currentStatus === "Called") {
         openCompleteModal(row);
         return;
     }
@@ -570,21 +537,6 @@ function openCallModal(row) {
     );
 
     callModal.show();
-}
-
-// ================= OPEN START VISIT MODAL =================
-function openStartVisitModal(row) {
-
-    selectedStartVisitState.row = row;
-
-    startVisitPatientName.textContent = row.dataset.patient;
-    startVisitQueueNumber.textContent = row.dataset.queue;
-
-    const startVisitModal = bootstrap.Modal.getOrCreateInstance(
-        startVisitModalElement
-    );
-
-    startVisitModal.show();
 }
 
 // ================= OPEN COMPLETE MODAL =================
@@ -647,43 +599,6 @@ if (confirmCallButton) {
 
         } finally {
             confirmCallButton.disabled = false;
-        }
-    });
-}
-
-// ================= CONFIRM START VISIT =================
-if (confirmStartVisitButton) {
-
-    confirmStartVisitButton.addEventListener("click", async function () {
-
-        const row = selectedStartVisitState.row;
-
-        if (!row) {
-            return;
-        }
-
-        confirmStartVisitButton.disabled = true;
-
-        try {
-
-            const success = await updateQueueStatus(row, "In Progress");
-
-            if (!success) {
-                return;
-            }
-
-            const startVisitModal = bootstrap.Modal.getInstance(
-                startVisitModalElement
-            );
-
-            if (startVisitModal) {
-                startVisitModal.hide();
-            }
-
-            selectedStartVisitState.row = null;
-
-        } finally {
-            confirmStartVisitButton.disabled = false;
         }
     });
 }

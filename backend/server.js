@@ -4878,7 +4878,7 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                             FROM Queue_Entry AS q2
                             WHERE date(q2.check_in_time, '+8 hours') = ?
                             AND q2.queue_number <= q.queue_number
-                            AND q2.status IN ('Waiting', 'Called', 'In Progress')
+                            AND q2.status IN ('Waiting', 'Called')
 
                             -- Only count entries for the same appointment type
                             AND EXISTS (
@@ -5170,7 +5170,7 @@ app.get("/api/patient/live-queue", requireRole("mother", "child"),
 
                 WHERE a.appointment_date = ?
                   AND date(q.check_in_time, '+8 hours') = ?
-                  AND q.status IN ('Waiting', 'Called', 'In Progress')
+                  AND q.status IN ('Waiting', 'Called')
 
                 ORDER BY q.queue_number ASC
             `).all(today, today);
@@ -5201,7 +5201,6 @@ app.get("/api/staff/queue", requireRole("staff"),
                     q.check_in_time,
                     q.status AS queue_status,
                     q.called_at,
-                    q.visit_at,
                     q.completed_at,
                     q.skipped_at,
 
@@ -5232,12 +5231,11 @@ app.get("/api/staff/queue", requireRole("staff"),
 
                 ORDER BY
                     CASE q.status
-                        WHEN 'In Progress' THEN 1
-                        WHEN 'Called' THEN 2
-                        WHEN 'Waiting' THEN 3
-                        WHEN 'Completed' THEN 4
-                        WHEN 'Skipped' THEN 5
-                        ELSE 6
+                        WHEN 'Called' THEN 1
+                        WHEN 'Waiting' THEN 2
+                        WHEN 'Completed' THEN 3
+                        WHEN 'Skipped' THEN 4
+                        ELSE 5
                     END,
                     q.queue_number ASC
             `).all(today, today);
@@ -5273,7 +5271,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
         }
 
         // Only these status transitions are supported.
-        const allowedStatuses = ["Called", "In Progress", "Completed", "Skipped"];
+        const allowedStatuses = ["Called", "Completed", "Skipped"];
 
         if (!allowedStatuses.includes(newStatus)) {
             return res.status(400).json({
@@ -5338,7 +5336,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         throw new Error("APPOINTMENT_NOT_STARTED");
                     }
 
-                    // Prevent calling another patient when the same service already has a Called or In Progress entry.
+                    // Prevent calling another patient when the same service already has a Called entry.
                     const occupiedEntry = db.prepare(`
                         SELECT q.queue_entry_id
                         FROM Queue_Entry AS q
@@ -5350,7 +5348,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                           AND a.appointment_date = ?
                           AND date(q.check_in_time, '+8 hours') = ?
                           AND q.queue_entry_id != ?
-                          AND q.status IN ('Called', 'In Progress')
+                          AND q.status = 'Called'
 
                         LIMIT 1
                     `).get(
@@ -5377,56 +5375,10 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                     }
                 }
 
-                // ================= START VISIT =================
-                else if (newStatus === "In Progress") {
-
-                    if (currentStatus !== "Called") {
-                        throw new Error("INVALID_STATUS_TRANSITION");
-                    }
-
-                    // Do not allow two patients to be in progress for the same service at the same time.
-                    const activeVisit = db.prepare(`
-                        SELECT q.queue_entry_id
-                        FROM Queue_Entry AS q
-
-                        INNER JOIN Appointment AS a
-                            ON q.appointment_id = a.appointment_id
-
-                        WHERE a.appointment_type = ?
-                          AND a.appointment_date = ?
-                          AND date(q.check_in_time, '+8 hours') = ?
-                          AND q.queue_entry_id != ?
-                          AND q.status IN ('Called', 'In Progress')
-
-                        LIMIT 1
-                    `).get(
-                        entry.appointment_type,
-                        today,
-                        today,
-                        queueEntryId
-                    );
-
-                    if (activeVisit) {
-                        throw new Error("SERVICE_OCCUPIED");
-                    }
-
-                    const queueUpdate = db.prepare(`
-                        UPDATE Queue_Entry
-                        SET status = 'In Progress',
-                            visit_at = CURRENT_TIMESTAMP
-                        WHERE queue_entry_id = ?
-                        AND status = 'Called'
-                    `).run(queueEntryId);
-
-                    if (queueUpdate.changes !== 1) {
-                        throw new Error("QUEUE_UPDATE_FAILED");
-                    }
-                }
-
                 // ================= COMPLETE VISIT =================
                 else if (newStatus === "Completed") {
 
-                    if (currentStatus !== "In Progress") {
+                    if (currentStatus !== "Called") {
                         throw new Error("INVALID_STATUS_TRANSITION");
                     }
 
@@ -5440,7 +5392,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         SET status = 'Completed',
                             completed_at = CURRENT_TIMESTAMP
                         WHERE queue_entry_id = ?
-                        AND status = 'In Progress'
+                        AND status = 'Called'
                     `).run(queueEntryId);
 
                     if (queueUpdate.changes !== 1) {
@@ -5506,7 +5458,6 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         q.check_in_time,
                         q.status AS queue_status,
                         q.called_at,
-                        q.visit_at,
                         q.completed_at,
                         q.skipped_at,
                         a.status AS appointment_status
@@ -5540,7 +5491,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
 
             if (error.message === "SERVICE_OCCUPIED") {
                 return res.status(409).json({
-                    message: "Another patient is already called or being served for this service. Please wait."
+                    message: "Another patient is already called for this service. Please wait."
                 });
             }
 

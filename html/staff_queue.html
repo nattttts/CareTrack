@@ -149,20 +149,6 @@
                     </div>
                 </div>
 
-                <!-- In Progress -->
-                <div class="col-12 col-sm-6 col-lg">
-                    <div class="summary-card progress-card">
-                        <div class="summary-icon">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </div>
-
-                        <div>
-                            <p>In Progress</p>
-                            <strong id="progressCount"></strong>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Completed -->
                 <div class="col-12 col-sm-6 col-lg">
                     <div class="summary-card completed-card">
@@ -239,7 +225,6 @@
                             <option value="all">All Statuses</option>
                             <option value="Waiting">Waiting</option>
                             <option value="Called">Called</option>
-                            <option value="In Progress">In Progress</option>
                             <option value="Completed">Completed</option>
                             <option value="Skipped">Skipped</option>
                         </select>
@@ -345,44 +330,6 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="button" class="btn" id="confirmCallButton">Call</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- ================= START VISIT CONFIRMATION MODAL ================= -->
-            <div
-                class="modal fade"
-                id="startVisitModal"
-                tabindex="-1"
-                aria-labelledby="startVisitModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="startVisitModalLabel">
-                                Start Visit?
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-
-                        <div class="modal-body">
-                            <p class="mb-2">
-                                Are you sure you want to start the visit for
-                                <strong id="startVisitPatientName"></strong>?
-                            </p>
-
-                            <p class="mb-0 text-muted">
-                                Queue Number:
-                                <strong id="startVisitQueueNumber"></strong>
-                            </p>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn" id="confirmStartVisitButton">Start Visit</button>
                         </div>
                     </div>
                 </div>

@@ -121,12 +121,6 @@ a {
     border: 1px solid var(--caretrack-pink);
 }
 
-/* Progress */
-.progress-card {
-    background: #edf6ff;
-    border: 1px solid #2271b1;
-}
-
 /* Completed */
 .completed-card {
     background: #eaf8f0;
@@ -150,11 +144,6 @@ a {
 /* Called Icon */
 .called-card .summary-icon {
     color: var(--caretrack-pink);
-}
-
-/* Progress Icon */
-.progress-card .summary-icon {
-    color: #2271b1;
 }
 
 /* Completed Icon */
@@ -187,11 +176,6 @@ a {
 /* Called Count */
 .called-card strong {
     color: var(--caretrack-pink);
-}
-
-/* Progress Count */
-.progress-card strong {
-    color: #2271b1;
 }
 
 /* Completed Count */
@@ -439,12 +423,6 @@ a {
     background: var(--caretrack-pink-light);
 }
 
-/* In Progress */
-.status-badge.in-progress {
-    color: #2271b1;
-    background: #edf6ff;
-}
-
 /* Completed */
 .status-badge.completed {
     color: #16804e;
@@ -491,17 +469,6 @@ a {
 .call-button:hover {
     border-color: var(--caretrack-pink-dark);
     background: var(--caretrack-pink-dark);
-}
-
-/* Start Visit */
-.start-button {
-    border: 1px solid #2885d1;
-    background: #2885d1;
-}
-
-.start-button:hover {
-    border-color: #2271b1;
-    background: #2271b1;
 }
 
 /* Skip */
@@ -618,7 +585,6 @@ a {
 }
 
 #confirmCallButton,
-#confirmStartVisitButton,
 #confirmCompleteButton,
 #confirmSkipButton {
     color: var(--white);
@@ -626,7 +592,6 @@ a {
 }
 
 #confirmCallButton:hover,
-#confirmStartVisitButton:hover,
 #confirmCompleteButton:hover,
 #confirmSkipButton:hover {
     background: var(--caretrack-pink-dark);
