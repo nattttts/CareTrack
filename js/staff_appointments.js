@@ -242,7 +242,7 @@ async function loadAppointments() {
                         Approve / Reject
                     </button>
                 `;
-            } else if (displayStatus === "Completed") {
+            } else if (displayStatus === "Completed" && appointment.role === "mother") {
                 if (appointment.account_status === "Active") {
                     actionButtons += `
                         <button
