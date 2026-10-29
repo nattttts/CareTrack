@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Maternal Records | CareTrack</title>
+
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Existing CareTrack CSS -->
+    <link rel="stylesheet" href="../css/patient_header.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+
+    <!-- New Maternal Records CSS -->
+    <link rel="stylesheet" href="../css/staff_maternal.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="top-header">
+        <div class="logo">
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal &amp; Child Healthcare</p>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="profile">
+                <img src="../icons/user.png" alt="Profile">
+                <span id="userName"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Layout -->
+    <div class="page-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+
+                <a href="staff_dashboard.html" class="sidebar-link">
+                    <img src="../icons/home.png" alt="">
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="staff_appointments.html" class="sidebar-link">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Appointments</span>
+                </a>
+
+                <a href="patient_management.html" class="sidebar-link">
+                    <img src="../icons/patients.png" alt="">
+                    <span>Patient Management</span>
+                </a>
+
+                <a href="staff_vaccination.html" class="sidebar-link">
+                    <img src="../icons/syringe.png" alt="">
+                    <span>Vaccinations</span>
+                </a>
+
+                <a href="staff_maternal.html" class="sidebar-link active">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Maternal Records</span>
+                </a>
+
+                <a href="staff_queue.html" class="sidebar-link">
+                    <img src="../icons/queue.png" alt="">
+                    <span>Queue Management</span>
+                </a>
+
+                <a href="staff_profile.html" class="sidebar-link">
+                    <img src="../icons/user.png" alt="">
+                    <span>My Profile</span>
+                </a>
+
+                <a href="login.html" id="logoutButton" class="sidebar-link logout-link">
+                    <img src="../icons/logout.png" alt="">
+                    <span>Log Out</span>
+                </a>
+
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-heading">
+                    <div class="page-icon">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+
+                    <div>
+                        <h2>Maternal Records</h2>
+                        <p>
+                            Manage mothers' maternal follow-up visits and medical records.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Search Mother -->
+            <section class="filter-card">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-9">
+                            <label for="motherSearch" class="form-label">
+                                Search Mother
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+
+                                <input
+                                    type="search"
+                                    id="motherSearch"
+                                    class="form-control"
+                                    placeholder="Enter mother's name or IC number"
+                                    autocomplete="off"
+                                >
+
+                                <button
+                                    type="button"
+                                    id="searchMotherButton"
+                                    class="btn search-button"
+                                >
+                                    Search
+                                </button>
+                            </div>
+
+                            <div class="form-text">
+                                Search for a registered mother to view her maternal visit history.
+                            </div>
+                        </div>
+                    </div>
+            </section>
+
+           <div
+                id="maternalMessage"
+                class="maternal-message"
+                role="status"
+                aria-live="polite"
+                hidden
+            ></div>
+            </section>
+
+            <!-- Selected Mother -->
+            <section id="motherDetailsCard" class="content-card" hidden>
+
+                <div class="content-card-header">
+                <div class="mother-heading">
+                    <div class="mother-icon">
+                        <i class="bi bi-person"></i>
+                    </div>
+
+                    <div>
+                        <h3 id="motherName">Mother's Name</h3>
+                        <p id="motherIC">IC Number: -</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span class="record-count" id="recordCount">0 Visits</span>
+
+                </div>
+            </div>
+
+                <!-- Visit History -->
+                <div class="section-heading">
+                    <div>
+                        <h4>Maternal Visit History</h4>
+                        <p>View and update the mother's recorded visits.</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive maternal-table-container">
+                    <table class="table maternal-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Visit</th>
+                                <th>Visit Date</th>
+                                <th>Height (cm)</th>
+                                <th>Weight (kg)</th>
+                                <th>Doctor's Remarks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="maternalRecordsTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="noMaternalRecords" class="no-results" hidden>
+                    <i class="bi bi-clipboard2-heart"></i>
+                    <h5>No maternal visits recorded</h5>
+                    <p>Select Add Visit to record the mother's first visit.</p>
+                </div>
+
+                <div class="table-footer">
+                    <span id="maternalRecordSummary">No records</span>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Add / Edit Maternal Visit Modal -->
+    <div
+        class="modal fade"
+        id="maternalVisitModal"
+        tabindex="-1"
+        aria-labelledby="maternalVisitModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="maternalVisitModalLabel">
+                            Add Maternal Visit
+                        </h5>
+                        <p class="modal-subtitle" id="visitModalSubtitle">
+                            Enter the mother's visit information.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <form id="maternalVisitForm">
+
+                        <div class="selected-mother-summary">
+                            <i class="bi bi-person-check"></i>
+                            <div>
+                                <span>Selected Mother</span>
+                                <strong id="formMotherName">-</strong>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+
+                            <div class="col-md-6">
+                                <label for="visitNumber" class="form-label">
+                                    Visit Number
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="visitNumber"
+                                    class="form-control"
+                                    min="1"
+                                    step="1"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="visitDate" class="form-label">
+                                    Visit Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="visitDate"
+                                    class="form-control"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="visitHeight" class="form-label">
+                                    Height (cm)
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="visitHeight"
+                                    class="form-control"
+                                    min="1"
+                                    max="300"
+                                    step="0.1"
+                                    placeholder="e.g. 160"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="visitWeight" class="form-label">
+                                    Weight (kg)
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="visitWeight"
+                                    class="form-control"
+                                    min="1"
+                                    max="500"
+                                    step="0.1"
+                                    placeholder="e.g. 55.5"
+                                >
+                            </div>
+
+                            <div class="col-12">
+                                <label for="doctorRemarks" class="form-label">
+                                    Doctor's Remarks
+                                </label>
+
+                                <textarea
+                                    id="doctorRemarks"
+                                    class="form-control"
+                                    rows="4"
+                                    maxlength="3000"
+                                    placeholder="Enter maternal follow-up notes and observations"
+                                ></textarea>
+                            </div>
+
+                        </div>
+
+                        <div
+                            id="visitFormMessage"
+                            class="maternal-message"
+                            role="alert"
+                            hidden
+                        ></div>
+
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn cancel-button"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        form="maternalVisitForm"
+                        id="saveVisitButton"
+                        class="btn save-visit-button"
+                    >
+                        <i class="bi bi-check-circle"></i>
+                        Save Visit
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Page JavaScript -->
+    <script type="module" src="../js/staff_maternal.js"></script>
+
+    <!-- Existing Header and Logout Scripts -->
+    <script src="../js/header.js"></script>
+    <script src="../js/logout.js"></script>
+
+</body>
+</html>
