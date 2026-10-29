@@ -2865,7 +2865,6 @@ app.post(
                         appointment_type,
                         appointment_date,
                         start_time,
-                        end_time,
                         child_vaccination_id
                     )
                     VALUES (?, ?, ?, ?, ?, ?)
