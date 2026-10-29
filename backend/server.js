@@ -4763,29 +4763,6 @@ app.get(
 );
 
 // =========================================
-// NOTIFICATIONS TABLE
-// =========================================
-db.exec(`
-    CREATE TABLE IF NOT EXISTS Notification (
-        notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
-        title TEXT NOT NULL,
-        type TEXT NOT NULL DEFAULT 'general',
-        message TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        is_read INTEGER NOT NULL DEFAULT 0,
-        appointment_date TEXT,
-        appointment_time TEXT,
-        note TEXT,
-        FOREIGN KEY (user_id) REFERENCES User(user_id)
-            ON DELETE CASCADE
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_notification_user
-    ON Notification(user_id, created_at);
-`);
-
-// =========================================
 // MARK ONE NOTIFICATION AS READ
 // =========================================
 app.patch(
