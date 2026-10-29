@@ -152,6 +152,25 @@ function requireRole(...allowedRoles) {
 
 const PORT = 3000;
 
+const appointmentColumns = db.prepare(`
+    PRAGMA table_info(Appointment)
+`).all();
+
+if (!appointmentColumns.some(column =>
+    column.name === "child_vaccination_id"
+)) {
+    db.exec(`
+        ALTER TABLE Appointment
+        ADD COLUMN child_vaccination_id INTEGER
+        REFERENCES Child_Vaccination(child_vaccination_id)
+    `);
+}
+
+db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_appointment_child_vaccination
+    ON Appointment(child_vaccination_id)
+`);
+
 app.get("/", (req, res) => {
     res.send("CareTrack backend is working!");
 });
@@ -2723,17 +2742,33 @@ app.post(
                 });
             }
 
-            const openingTime = dayOfWeek === 6 ? "09:00" : "08:30";
-            const closingTime = dayOfWeek === 6 ? "13:00" : "17:00";
+            const allowedSlots = getAllowedTimeSlots(due_date);
 
-            if (
-                start_time < openingTime ||
-                start_time >= closingTime
-            ) {
+            if (allowedSlots === null) {
                 return res.status(400).json({
-                    message: `Appointment start time must be within clinic hours (${openingTime}–${closingTime}).`
+                    message: "Please provide a valid appointment date."
                 });
             }
+
+            if (allowedSlots.length === 0) {
+                return res.status(400).json({
+                    message: "The clinic is closed on Sundays."
+                });
+            }
+
+            if (!allowedSlots.includes(start_time)) {
+            const dayOfWeek = selectedDate.getUTCDay();
+
+            if (dayOfWeek === 6) {
+                return res.status(400).json({
+                    message: "For Saturday appointments, only 9:00 AM to 12:00 PM is available."
+                });
+            }
+
+            return res.status(400).json({
+                message: "Weekday appointments are available from 8:00 AM to 12:00 PM and 1:00 PM to 5:00 PM."
+            });
+        }
 
             if (due_date === today) {
                 const currentTime = new Intl.DateTimeFormat("en-GB", {
@@ -2823,18 +2858,20 @@ app.post(
                         appointment_type,
                         appointment_date,
                         start_time,
-                        end_time
+                        end_time,
+                        child_vaccination_id
                     )
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 `).run(
                     userId,
                     "Child Vaccination",
                     due_date,
                     start_time,
-                    calculatedEndTime
+                    calculatedEndTime,
+                    Number(vaccinationResult.lastInsertRowid)
                 );
 
-                const appointmentId = Number(appointmentResult.lastInsertRowid);
+                appointmentId = Number(appointmentResult.lastInsertRowid);
 
                     db.prepare(`
                         INSERT INTO Notification (
@@ -2873,7 +2910,7 @@ app.post(
 
             return res.status(201).json({
                 message: created.appointmentId
-                    ? "Upcoming vaccination and appointment added successfully."
+                    ? "Upcoming vaccination added successfully."
                     : "Completed vaccination record added successfully.",
                 record_id: created.recordId,
                 appointment_id: created.appointmentId
@@ -2891,7 +2928,8 @@ app.post(
 
 // DELETE: Delete a vaccination record.
 app.delete(
-    "/api/vaccination-management/records/:recordId", requireRole("staff"),
+    "/api/vaccination-management/records/:recordId",
+    requireRole("staff"),
     (req, res) => {
         const recordId = Number(req.params.recordId);
 
@@ -2902,12 +2940,78 @@ app.delete(
         }
 
         try {
-            const result = db.prepare(`
-                DELETE FROM Child_Vaccination
+            const deleteVaccination = db.transaction(() => {
+            
+            const record = db.prepare(`
+                SELECT child_vaccination_id, user_id, due_date
+                FROM Child_Vaccination
                 WHERE child_vaccination_id = ?
-            `).run(recordId);
+            `).get(recordId);
 
-            if (result.changes === 0) {
+                if (!record) {
+                    return false;
+                }
+
+                let appointments = db.prepare(`
+                    SELECT appointment_id
+                    FROM Appointment
+                    WHERE child_vaccination_id = ?
+                `).all(recordId);
+
+                // If this is an older record without a link,
+                // find its appointment using the child's ID and vaccination date.
+                if (appointments.length === 0) {
+                    appointments = db.prepare(`
+                        SELECT appointment_id
+                        FROM Appointment
+                        WHERE user_id = ?
+                        AND appointment_date = ?
+                        AND appointment_type = 'Child Vaccination'
+                    `).all(record.user_id, record.due_date);
+                }
+
+                for (const appointment of appointments) {
+                    const appointmentId = appointment.appointment_id;
+
+                    db.prepare(`
+                        DELETE FROM Queue_Entry
+                        WHERE appointment_id = ?
+                    `).run(appointmentId);
+
+                    db.prepare(`
+                        DELETE FROM Reschedule_Request
+                        WHERE appointment_id = ?
+                    `).run(appointmentId);
+
+                    db.prepare(`
+                        DELETE FROM Notification
+                        WHERE appointment_id = ?
+                    `).run(appointmentId);
+
+                    db.prepare(`
+                        DELETE FROM Appointment
+                        WHERE appointment_id = ?
+                    `).run(appointmentId);
+                }
+
+                // Delete notifications linked to the vaccination record
+                db.prepare(`
+                    DELETE FROM Notification
+                    WHERE child_vaccination_id = ?
+                `).run(recordId);
+
+                // Delete the vaccination record last
+                db.prepare(`
+                    DELETE FROM Child_Vaccination
+                    WHERE child_vaccination_id = ?
+                `).run(recordId);
+
+                return true;
+            });
+
+            const deleted = deleteVaccination();
+
+            if (!deleted) {
                 return res.status(404).json({
                     message: "Vaccination record not found."
                 });
@@ -2918,7 +3022,10 @@ app.delete(
             });
 
         } catch (error) {
-            console.error("Error deleting vaccination record:", error);
+            console.error(
+                "Error deleting vaccination record:",
+                error
+            );
 
             return res.status(500).json({
                 message: "Failed to delete vaccination record."
