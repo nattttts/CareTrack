@@ -13,7 +13,8 @@ const {
     sendAppointmentUpdatedEmail,
     sendRescheduleApprovedEmail,
     sendRescheduleRejectedEmail,
-    sendVaccinationNotificationEmail
+    sendVaccinationNotificationEmail,
+    sendQueueCalledEmail
 } = require("./email");
 const session = require("express-session");
 const SqliteStore = require("better-sqlite3-session-store")(session);
@@ -5357,7 +5358,7 @@ app.get("/api/staff/queue", requireRole("staff"),
 
 // Staff queue: Update queue status
 app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
-    (req, res) => {
+    async (req, res) => {
         const queueEntryId = Number(req.params.queueEntryId);
         const { status: newStatus } = req.body;
 
@@ -5397,12 +5398,18 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         a.appointment_type,
                         a.appointment_date,
                         a.start_time,
-                        a.status AS appointment_status
+                        a.status AS appointment_status,
+
+                        u.full_name AS patient_name,
+                        u.email AS patient_email
 
                     FROM Queue_Entry AS q
 
                     INNER JOIN Appointment AS a
                         ON q.appointment_id = a.appointment_id
+
+                    INNER JOIN User AS u
+                        ON a.user_id = u.user_id
 
                     WHERE q.queue_entry_id = ?
                       AND a.appointment_date = ?
@@ -5564,23 +5571,51 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                     }
                 }
 
-                // Return the latest saved queue entry.
-                return db.prepare(`
-                    SELECT
-                        q.queue_entry_id,
-                        q.appointment_id,
-                        q.queue_number,
-                        q.check_in_time,
-                        q.status AS queue_status,
-                        a.status AS appointment_status
-                    FROM Queue_Entry AS q
-                    INNER JOIN Appointment AS a
-                        ON q.appointment_id = a.appointment_id
-                    WHERE q.queue_entry_id = ?
-                `).get(queueEntryId);
+                // Return the latest saved queue entry and email details.
+                return {
+                    queueEntry: db.prepare(`
+                        SELECT
+                            q.queue_entry_id,
+                            q.appointment_id,
+                            q.queue_number,
+                            q.check_in_time,
+                            q.status AS queue_status,
+                            a.status AS appointment_status
+                        FROM Queue_Entry AS q
+                        INNER JOIN Appointment AS a
+                            ON q.appointment_id = a.appointment_id
+                        WHERE q.queue_entry_id = ?
+                    `).get(queueEntryId),
+
+                    emailDetails: {
+                        email: entry.patient_email,
+                        patientName: entry.patient_name,
+                        queueNumber: entry.queue_number,
+                        serviceType: entry.appointment_type
+                    }
+                };
             });
 
-            const updatedEntry = updateQueueTransaction();
+            const result = updateQueueTransaction();
+            const updatedEntry = result.queueEntry;
+
+            // ================= SEND QUEUE CALLED EMAIL =================
+            if (newStatus === "Called") {
+                try {
+                    await sendQueueCalledEmail(
+                        result.emailDetails.email,
+                        result.emailDetails.patientName,
+                        result.emailDetails.queueNumber,
+                        result.emailDetails.serviceType
+                    );
+                } catch (emailError) {
+                    // Email failure should not undo the successful queue update.
+                    console.error(
+                        "Failed to send queue called email:",
+                        emailError
+                    );
+                }
+            }
 
             return res.json({
                 message: "Queue status updated successfully.",

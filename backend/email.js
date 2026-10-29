@@ -427,6 +427,64 @@ CareTrack Team`,
     return { messageId: info.messageId };
 }
 
+
+async function sendQueueCalledEmail(
+    email,
+    patientName,
+    queueNumber,
+    serviceType
+) {
+    const transporter = createEmailTransporter();
+
+    const safeName = escapeHtml(patientName);
+    const safeQueueNumber = escapeHtml(queueNumber);
+    const safeServiceType = escapeHtml(serviceType);
+
+    const info = await transporter.sendMail({
+        from: `"CareTrack Notifications" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Your CareTrack Queue Number Has Been Called",
+
+        text: `Hello ${patientName},
+
+Your queue number has been called.
+
+Queue Number: ${queueNumber}
+Service: ${serviceType}
+
+Please proceed to the service point and wait for assistance from our healthcare staff.
+
+Regards,
+CareTrack Team`,
+
+        html: `
+            <h2>Your Queue Number Has Been Called</h2>
+            <p>Hello ${safeName},</p>
+            <p>Your queue number has been called.</p>
+            
+            <p>
+                <strong>Queue Number:</strong>
+                ${safeQueueNumber}
+            </p>
+            <p>
+                <strong>Service:</strong>
+                ${safeServiceType}
+            </p>
+            
+            <p>
+                Please proceed to the service point and wait
+                for assistance from our healthcare staff.
+            </p>
+            <p>Regards,<br>CareTrack Team</p>
+        `
+    });
+
+    console.log("Queue called email accepted by Gmail.");
+    console.log("Message ID:", info.messageId);
+
+    return { messageId: info.messageId };
+}
+
 module.exports = {
     sendInvitationEmail,
     sendPasswordResetEmail,
@@ -434,5 +492,6 @@ module.exports = {
     sendAppointmentUpdatedEmail,
     sendRescheduleApprovedEmail,
     sendRescheduleRejectedEmail,
-    sendVaccinationNotificationEmail
+    sendVaccinationNotificationEmail,
+    sendQueueCalledEmail
 };
