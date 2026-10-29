@@ -131,7 +131,6 @@ app.use("/icons", express.static(path.join(__dirname, "../icons")));
 app.use("/images", express.static(path.join(__dirname, "../images")));
 
 
-/* ================= API AUTHENTICATION ================= */
 // Check whether the logged-in user has the required role
 function requireRole(...allowedRoles) {
     return (req, res, next) => {
@@ -4805,7 +4804,7 @@ function getMalaysiaDate() {
     }).format(new Date());
 }
 
-// ================= AUTO-UPDATE MISSED APPOINTMENTS =================
+// Auto-update missed appointment
 function updateMissedAppointments() {
     try {
         const today = getMalaysiaDate();
@@ -5152,7 +5151,7 @@ app.post(
     }
 );
 
- // ================= PATIENT LIVE QUEUE =================
+ // Patient live queue
 app.get("/api/patient/live-queue", requireRole("mother", "child"),
     (req, res) => {
         try {
@@ -5187,7 +5186,7 @@ app.get("/api/patient/live-queue", requireRole("mother", "child"),
     }
 );
 
-// ================= STAFF QUEUE: GET TODAY'S QUEUE =================
+// Staff queue: Get today's queue
 app.get("/api/staff/queue", requireRole("staff"),
     (req, res) => {
         try {
@@ -5249,7 +5248,7 @@ app.get("/api/staff/queue", requireRole("staff"),
     }
 );
 
-// ================= STAFF QUEUE: UPDATE QUEUE STATUS =================
+// Staff queue: Update queue status
 app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
     (req, res) => {
         const queueEntryId = Number(req.params.queueEntryId);
@@ -5287,6 +5286,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         q.queue_number,
                         q.status AS queue_status,
 
+                        a.user_id,
                         a.appointment_type,
                         a.appointment_date,
                         a.start_time,
@@ -5369,6 +5369,20 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                     if (queueUpdate.changes !== 1) {
                         throw new Error("QUEUE_UPDATE_FAILED");
                     }
+
+                    // Create a notification when the patient is called.
+                    db.prepare(`
+                        INSERT INTO Notification (
+                            user_id,
+                            title,
+                            message
+                        )
+                        VALUES (?, ?, ?)
+                    `).run(
+                        entry.user_id,
+                        "You Have Been Called",  
+                        `Your queue number is ${entry.queue_number}. Please proceed to the service point.`
+                    );
                 }
 
                 // ================= COMPLETE VISIT =================
