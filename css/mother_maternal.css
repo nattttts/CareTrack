@@ -1,0 +1,226 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #142d58;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* ================= MAIN CONTENT ================= */
+.main-content {
+    flex: 1;
+    min-width: 0;
+    padding: 30px;
+    background: #fff8fb;
+    min-height: calc(100vh - 80px);
+}
+
+
+/* ================= PAGE HEADER ================= */
+
+.page-header {
+    margin-bottom: 24px;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.title-icon {
+    width: 58px;
+    height: 58px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fee6ef;
+    border-radius: 14px;
+}
+
+.title-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.page-title h2 {
+    margin: 0 0 7px;
+    color: #183153;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.page-title p {
+    margin: 0;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+
+/* ================= RECORDS CARD ================= */
+
+.maternal-records-card {
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #f2dce6;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(24, 49, 83, 0.05);
+}
+
+.records-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.records-heading h3 {
+    margin: 0 0 6px;
+    color: #183153;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.records-heading p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
+/* ================= REFRESH BUTTON ================= */
+
+.refresh-button {
+    flex-shrink: 0;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #f9528e;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.refresh-button:hover {
+    background: #e81f67;
+}
+
+.refresh-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* ================= TABLE ================= */
+
+.maternal-table {
+    width: 100%;
+    min-width: 700px;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.maternal-table thead th {
+    padding: 14px 12px;
+    background: #fee6ef;
+    color: #183153;
+    border-bottom: 1px solid #f0d5e1;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.maternal-table tbody td {
+    padding: 15px 12px;
+    color: #344054;
+    border-bottom: 1px solid #eee7ec;
+    font-size: 14px;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.maternal-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.maternal-table tbody tr:hover {
+    background: #fffafd;
+}
+
+.empty-state {
+    padding: 28px !important;
+    text-align: center;
+    color: #777f8d !important;
+}
+
+
+/* ================= STATUS MESSAGE ================= */
+
+.maternal-message {
+    margin-bottom: 18px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background: #f8eaf1;
+    color: #183153;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.maternal-message.error {
+    background: #fff0f0;
+    color: #a12626;
+}
+
+.maternal-message[hidden] {
+    display: none;
+}
+
+
+/* ================= RESPONSIVE LAYOUT ================= */
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 20px 14px;
+    }
+
+    .maternal-records-card {
+        padding: 16px;
+    }
+
+    .page-title h2 {
+        font-size: 22px;
+    }
+
+    .records-heading {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .records-heading {
+        flex-direction: column;
+    }
+
+    .refresh-button {
+        width: 100%;
+    }
+}

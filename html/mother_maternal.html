@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Maternal Records | CareTrack</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="css/mother_maternal.css">
+    <link rel="stylesheet" href="css/patient_header.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+
+    <script src="js/mother_maternal.js" defer></script>
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header class="top-header">
+
+        <a href="dashboard.html" class="logo">
+            <img src="../images/CareTrack Logo.png" alt="CareTrack Logo">
+
+            <div class="logo-text">
+                <h1>CareTrack</h1>
+                <p>Maternal &amp; Child Healthcare</p>
+            </div>
+        </a>
+
+        <div class="header-right">
+            <div class="profile">
+                <img src="../icons/user.png" alt="Profile">
+                <span id="headerProfileName">Mother</span>
+            </div>
+        </div>
+
+    </header>
+
+
+    <!-- ================= MAIN LAYOUT ================= -->
+
+    <div class="page-layout d-flex">
+
+        <!-- ================= SIDEBAR ================= -->
+
+        <aside class="sidebar">
+
+            <nav class="sidebar-nav">
+
+                <a href="#" class="sidebar-link">
+                    <img src="../icons/home.png" alt="">
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="patient_appointments.html" class="sidebar-link">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Appointments</span>
+                </a>
+
+                <a href="mother_maternal_records.html"
+                class="sidebar-link active"
+                id="maternalRecordsLink">
+                    <img src="../icons/pregnant.png" alt="">
+                    <span>Maternal Records</span>
+                </a>
+
+                <a href="queue.html" class="sidebar-link">
+                    <img src="../icons/queue.png" alt="">
+                    <span>Queue Monitoring</span>
+                </a>
+
+                <a href="notification.html" class="sidebar-link">
+                    <img src="../icons/reminder.png" alt="">
+                    <span>Notifications</span>
+                </a>
+
+                <a href="patient_profile.html" class="sidebar-link">
+                    <img src="../icons/user.png" alt="">
+                    <span>My Profile</span>
+                </a>
+                
+                <a href="login.html" id="logoutButton" class="sidebar-link logout-link">
+                    <img src="../icons/logout.png" alt="">
+                    <span>Log Out</span>
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- ================= MAIN CONTENT ================= -->
+
+        <main class="main-content">
+
+            <!-- PAGE HEADING -->
+
+            <section class="page-header">
+
+                <div class="page-title">
+
+                    <div class="title-icon">
+                        <img src="../icons/pregnant.png"
+                             alt="Maternal Records">
+                    </div>
+
+                    <div>
+                        <h2>My Maternal Records</h2>
+                        <p>
+                            View your maternal visits and follow-up records.
+                        </p>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- VISIT HISTORY -->
+
+            <section class="maternal-records-card">
+
+                <div class="records-heading">
+                    <div>
+                        <h3>Visit History</h3>
+                        <p>
+                            Your recorded maternal visits are displayed below.
+                        </p>
+                    </div>
+
+                    <button type="button" id="refreshRecords"
+                            class="refresh-button">
+                        Refresh
+                    </button>
+                </div>
+
+
+                <div id="maternalMessage"
+                     class="maternal-message"
+                     role="status"
+                     aria-live="polite"
+                     hidden>
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table maternal-table">
+
+                        <thead>
+                            <tr>
+                                <th>Visit No.</th>
+                                <th>Visit Date</th>
+                                <th>Height (cm)</th>
+                                <th>Weight (kg)</th>
+                                <th>Doctor's Remarks</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="maternalRecordsBody">
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    Loading your records...
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="../js/role_sidebar.js"></script>
+
+</body>
+</html>

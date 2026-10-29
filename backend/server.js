@@ -2,6 +2,34 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const db = require("./database");
+/* =====================================================
+   MATERNAL RECORDS TABLE
+===================================================== */
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS Maternal_Record (
+        maternal_record_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        appointment_id INTEGER NOT NULL UNIQUE,
+        mother_id INTEGER NOT NULL,
+        visit_number INTEGER NOT NULL,
+        visit_date TEXT NOT NULL,
+        height REAL,
+        weight REAL,
+        doctor_remarks TEXT DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (mother_id)
+            REFERENCES Mother(mother_id)
+            ON DELETE CASCADE,
+
+        UNIQUE (mother_id, visit_number),
+
+        CHECK (visit_number > 0),
+        CHECK (height IS NULL OR (height > 0 AND height <= 300)),
+        CHECK (weight IS NULL OR (weight > 0 AND weight <= 500))
+    );
+`);
 const { createInvitation } = require("./invitation");
 const crypto = require("node:crypto");
 const { hashPassword, verifyPassword } = require("./password");
@@ -75,7 +103,13 @@ const pageRoles = {
 
     "patient_dashboard.html": ["mother", "child"],
     "patient_appointments.html": ["mother", "child"],
-    "child_vaccination.html": ["mother", "child"],
+
+    // Only child accounts can access vaccination records
+    "child_vaccination.html": ["child"],
+
+    // Only mother accounts can access maternal records
+    "mother_maternal.html": ["mother"],
+
     "queue.html": ["mother", "child"],
     "notification.html": ["mother", "child"],
     "patient_profile.html": ["mother", "child"]
@@ -3214,6 +3248,383 @@ app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
     }
 });
 
+
+/* =====================================================
+   MATERNAL RECORDS API
+===================================================== */
+
+/* =====================================================
+   MOTHER: VIEW OWN MATERNAL VISIT HISTORY
+===================================================== */
+app.get(
+    "/api/maternal-records/my-visits",
+    requireRole("mother"),
+    (req, res) => {
+        try {
+            const userId = req.session.user.userId;
+
+            // Find the Mother profile linked to this account.
+            const mother = db.prepare(`
+                SELECT mother_id
+                FROM Mother
+                WHERE user_id = ?
+            `).get(userId);
+
+            if (!mother) {
+                return res.status(404).json({
+                    message: "Mother profile not found."
+                });
+            }
+
+            // Return only this mother's visit records.
+            const visits = db.prepare(`
+                SELECT *
+                FROM Maternal_Record
+                WHERE mother_id = ?
+                ORDER BY visit_number
+            `).all(mother.mother_id);
+
+            return res.json({ visits });
+
+        } catch (error) {
+            console.error(
+                "Mother maternal visit history error:",
+                error
+            );
+
+            return res.status(500).json({
+                message: "Unable to load your maternal visit records."
+            });
+        }
+    }
+);
+
+// Search registered mothers by name or user ID / IC number.
+app.get(
+    "/api/maternal-records/mothers",
+    requireRole("staff"),
+    (req, res) => {
+        const search = String(req.query.search || "").trim();
+
+        if (!search) {
+            return res.status(400).json({
+                message: "Please enter a mother's name or IC number."
+            });
+        }
+
+        try {
+            const mothers = db.prepare(`
+                SELECT
+                    Mother.mother_id,
+                    User.user_id,
+                    User.full_name,
+                    User.email
+                FROM Mother
+                INNER JOIN User
+                    ON User.user_id = Mother.user_id
+                WHERE User.role = 'mother'
+                  AND (
+                      User.full_name LIKE ?
+                      OR User.user_id LIKE ?
+                  )
+                ORDER BY User.full_name
+                LIMIT 50
+            `).all(`%${search}%`, `%${search}%`);
+
+            return res.json({ mothers });
+        } catch (error) {
+            console.error("Maternal mother search error:", error);
+
+            return res.status(500).json({
+                message: "Unable to search for mothers."
+            });
+        }
+    }
+);
+
+// Get a mother's maternal visit history.
+app.get(
+    "/api/maternal-records/mothers/:motherId/visits",
+    requireRole("staff"),
+    (req, res) => {
+        const motherId = Number(req.params.motherId);
+
+        if (!Number.isInteger(motherId) || motherId <= 0) {
+            return res.status(400).json({
+                message: "Invalid mother ID."
+            });
+        }
+
+        try {
+            const mother = db.prepare(`
+                SELECT mother_id
+                FROM Mother
+                WHERE mother_id = ?
+            `).get(motherId);
+
+            if (!mother) {
+                return res.status(404).json({
+                    message: "Mother not found."
+                });
+            }
+
+            const visits = db.prepare(`
+                SELECT *
+                FROM Maternal_Record
+                WHERE mother_id = ?
+                ORDER BY visit_number
+            `).all(motherId);
+
+            return res.json({ visits });
+        } catch (error) {
+            console.error("Maternal visit retrieval error:", error);
+
+            return res.status(500).json({
+                message: "Unable to load maternal visit records."
+            });
+        }
+    }
+);
+
+// Add a maternal visit.
+app.post(
+    "/api/maternal-records/visits",
+    requireRole("staff"),
+    (req, res) => {
+        const {
+            mother_id,
+            visit_number,
+            visit_date,
+            height,
+            weight,
+            doctor_remarks
+        } = req.body;
+
+        const motherId = Number(mother_id);
+        const visitNumber = Number(visit_number);
+
+        if (
+            !Number.isInteger(motherId) ||
+            motherId <= 0 ||
+            !Number.isInteger(visitNumber) ||
+            visitNumber <= 0 ||
+            typeof visit_date !== "string" ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(visit_date)
+        ) {
+            return res.status(400).json({
+                message: "Please provide a valid mother, visit number and date."
+            });
+        }
+
+        if (visit_date > new Date().toLocaleDateString("en-CA", {
+            timeZone: "Asia/Kuala_Lumpur"
+        })) {
+            return res.status(400).json({
+                message: "Visit date cannot be in the future."
+            });
+        }
+
+        if (
+            height != null &&
+            (typeof height !== "number" || !Number.isFinite(height) ||
+                height <= 0 || height > 300)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid height."
+            });
+        }
+
+        if (
+            weight != null &&
+            (typeof weight !== "number" || !Number.isFinite(weight) ||
+                weight <= 0 || weight > 500)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid weight."
+            });
+        }
+
+        if (
+            doctor_remarks != null &&
+            typeof doctor_remarks !== "string"
+        ) {
+            return res.status(400).json({
+                message: "Invalid doctor's remarks."
+            });
+        }
+
+        try {
+            const mother = db.prepare(`
+                SELECT mother_id
+                FROM Mother
+                WHERE mother_id = ?
+            `).get(motherId);
+
+            if (!mother) {
+                return res.status(404).json({
+                    message: "Mother not found."
+                });
+            }
+
+            const result = db.prepare(`
+                INSERT INTO Maternal_Record (
+                    mother_id,
+                    visit_number,
+                    visit_date,
+                    height,
+                    weight,
+                    doctor_remarks
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            `).run(
+                motherId,
+                visitNumber,
+                visit_date,
+                height ?? null,
+                weight ?? null,
+                String(doctor_remarks ?? "").trim()
+            );
+
+            return res.status(201).json({
+                message: "Maternal visit added successfully.",
+                maternal_record_id: Number(result.lastInsertRowid)
+            });
+        } catch (error) {
+            if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+                return res.status(409).json({
+                    message: "This visit number already exists."
+                });
+            }
+
+            console.error("Maternal visit creation error:", error);
+
+            return res.status(500).json({
+                message: "Unable to save the maternal visit."
+            });
+        }
+    }
+);
+
+// Update an existing maternal visit.
+app.put(
+    "/api/maternal-records/visits/:recordId",
+    requireRole("staff"),
+    (req, res) => {
+        const recordId = Number(req.params.recordId);
+
+        const {
+            mother_id,
+            visit_number,
+            visit_date,
+            height,
+            weight,
+            doctor_remarks
+        } = req.body;
+
+        const motherId = Number(mother_id);
+        const visitNumber = Number(visit_number);
+
+        if (
+            !Number.isInteger(recordId) || recordId <= 0 ||
+            !Number.isInteger(motherId) || motherId <= 0 ||
+            !Number.isInteger(visitNumber) || visitNumber <= 0 ||
+            typeof visit_date !== "string" ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(visit_date)
+        ) {
+            return res.status(400).json({
+                message: "Please provide valid maternal visit details."
+            });
+        }
+
+        if (visit_date > new Date().toLocaleDateString("en-CA", {
+            timeZone: "Asia/Kuala_Lumpur"
+        })) {
+            return res.status(400).json({
+                message: "Visit date cannot be in the future."
+            });
+        }
+
+        if (
+            height != null &&
+            (typeof height !== "number" || !Number.isFinite(height) ||
+                height <= 0 || height > 300)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid height."
+            });
+        }
+
+        if (
+            weight != null &&
+            (typeof weight !== "number" || !Number.isFinite(weight) ||
+                weight <= 0 || weight > 500)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid weight."
+            });
+        }
+
+        if (
+            doctor_remarks != null &&
+            typeof doctor_remarks !== "string"
+        ) {
+            return res.status(400).json({
+                message: "Invalid doctor's remarks."
+            });
+        }
+
+        try {
+            const existing = db.prepare(`
+                SELECT maternal_record_id
+                FROM Maternal_Record
+                WHERE maternal_record_id = ?
+                  AND mother_id = ?
+            `).get(recordId, motherId);
+
+            if (!existing) {
+                return res.status(404).json({
+                    message: "Maternal visit not found for this mother."
+                });
+            }
+
+            const result = db.prepare(`
+                UPDATE Maternal_Record
+                SET visit_number = ?,
+                    visit_date = ?,
+                    height = ?,
+                    weight = ?,
+                    doctor_remarks = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE maternal_record_id = ?
+                  AND mother_id = ?
+            `).run(
+                visitNumber,
+                visit_date,
+                height ?? null,
+                weight ?? null,
+                String(doctor_remarks ?? "").trim(),
+                recordId,
+                motherId
+            );
+
+            return res.json({
+                message: "Maternal visit updated successfully."
+            });
+        } catch (error) {
+            if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+                return res.status(409).json({
+                    message: "This visit number already exists."
+                });
+            }
+
+            console.error("Maternal visit update error:", error);
+
+            return res.status(500).json({
+                message: "Unable to update the maternal visit."
+            });
+        }
+    }
+);
 
 function getAllowedTimeSlots(appointmentDate) {
     const [year, month, day] = appointmentDate.split("-").map(Number);
