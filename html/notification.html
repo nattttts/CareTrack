@@ -43,9 +43,20 @@
                     <span>Appointments</span>
                 </a>
 
-                <a href="child_vaccination.html" class="sidebar-link">
+                <!-- Vaccination link: children only -->
+                <a href="child_vaccination.html"
+                class="sidebar-link"
+                id="childVaccinationLink">
                     <img src="../icons/syringe.png" alt="">
                     <span>Vaccinations</span>
+                </a>
+
+                <!-- Maternal Records link: mothers only -->
+                <a href="mother_maternal_records.html"
+                class="sidebar-link"
+                id="maternalRecordsLink">
+                    <img src="../icons/appointment.png" alt="">
+                    <span>Maternal Records</span>
                 </a>
 
                 <a href="queue.html" class="sidebar-link">
@@ -316,6 +327,7 @@
 
     <!-- Logout JavaScript -->
     <script src="../js/logout.js"></script>
+    <script src="../js/role_sidebar.js"></script>
 
 </body>
 </html>
