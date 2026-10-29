@@ -3922,14 +3922,15 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 ? "Child Vaccination"
                 : "Maternal Follow-up";
 
+        
         const createAppointmentTransaction = db.transaction(() => {
-            // Recheck capacity immediately before inserting
+            // Recheck appointment capacity before inserting.
             const existingAppointments = db.prepare(`
                 SELECT COUNT(*) AS total
                 FROM Appointment
                 WHERE appointment_date = ?
-                    AND start_time = ?
-                    AND appointment_type = ?
+                AND start_time = ?
+                AND appointment_type = ?
             `).get(
                 appointment_date,
                 start_time,
@@ -3944,6 +3945,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 throw error;
             }
 
+            // Create the appointment.
             const result = db.prepare(`
                 INSERT INTO Appointment (
                     user_id,
@@ -3959,6 +3961,50 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 start_time
             );
 
+            const appointmentId = Number(result.lastInsertRowid);
+
+            // Automatically create a maternal record for maternal appointments only.
+            // Child vaccination appointments are not affected.
+            if (appointmentType === "Maternal Follow-up") {
+                const mother = db.prepare(`
+                    SELECT mother_id
+                    FROM Mother
+                    WHERE user_id = ?
+                `).get(user_id);
+
+                if (!mother) {
+                    throw new Error(
+                        "Mother profile not found. The appointment was not saved."
+                    );
+                }
+
+                // Assign the next visit number for this mother.
+                const nextVisit = db.prepare(`
+                    SELECT COALESCE(MAX(visit_number), 0) + 1 AS next_visit_number
+                    FROM Maternal_Record
+                    WHERE mother_id = ?
+                `).get(mother.mother_id);
+
+                // Create the record using the appointment date.
+                // Height, weight and remarks remain blank until staff updates them.
+                db.prepare(`
+                    INSERT INTO Maternal_Record (
+                        mother_id,
+                        visit_number,
+                        visit_date,
+                        height,
+                        weight,
+                        doctor_remarks
+                    )
+                    VALUES (?, ?, ?, NULL, NULL, '')
+                `).run(
+                    mother.mother_id,
+                    nextVisit.next_visit_number,
+                    appointment_date
+                );
+            }
+
+            // Notify the patient.
             db.prepare(`
                 INSERT INTO Notification (
                     user_id,
@@ -3972,7 +4018,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 `A new ${appointmentType} appointment has been scheduled for ${appointment_date} at ${start_time}.`
             );
 
-            return result.lastInsertRowid;
+            return appointmentId;
         });
 
         const appointmentId = createAppointmentTransaction();

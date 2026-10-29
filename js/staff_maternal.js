@@ -1,3 +1,5 @@
+import { showToast } from "./popup_message.js";
+
 const API_BASE = "http://localhost:3000/api/maternal-records";
 
 const $ = (id) => document.getElementById(id);
@@ -17,6 +19,20 @@ function escapeHTML(value) {
         '"': "&quot;",
         "'": "&#39;"
     })[character]);
+}
+
+/* =====================================================
+   TOAST NOTIFICATIONS
+===================================================== */
+function showToastMessage(message, type = "info") {
+    // Use the existing project toast function if available.
+    if (typeof showToast === "function") {
+        showToast(message, type);
+        return;
+    }
+
+    // Fallback if the shared toast function is unavailable.
+    showMessage(message, type === "success" ? "success" : "error");
 }
 
 function showMessage(message, type = "info") {
@@ -587,7 +603,7 @@ async function saveMaternalVisit(event) {
 
         await loadMaternalRecords(motherId);
 
-        showMessage(
+        showToastMessage(
             recordId
                 ? "Maternal visit updated successfully."
                 : "Maternal visit added successfully.",
@@ -595,7 +611,7 @@ async function saveMaternalVisit(event) {
         );
 
     } catch (error) {
-        showFormMessage(error.message);
+        showToastMessage(error.message, "error");
     } finally {
         saveButton.disabled = false;
 
@@ -608,34 +624,97 @@ async function saveMaternalVisit(event) {
 /* =====================================================
    EVENT LISTENERS
 ===================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-    visitModal = new bootstrap.Modal($("maternalVisitModal"));
+function initializeMaternalRecordPage() {
+    const searchButton = $("searchMotherButton");
+    const motherSearch = $("motherSearch");
+    const form = $("maternalVisitForm");
+    const recordsBody = $("maternalRecordsTableBody");
+    const modalElement = $("maternalVisitModal");
 
-    $("searchMotherButton").addEventListener("click", searchMother);
+    // Check that the required HTML elements exist.
+    if (!recordsBody || !modalElement || !form) {
+        console.error("Maternal record page: required HTML elements are missing.");
+        return;
+    }
 
-    // REMOVE THIS LINE
-    $("addVisitButton").addEventListener("click", openAddVisitModal);
+    // Initialise the Bootstrap modal safely.
+    if (typeof bootstrap === "undefined" || !bootstrap.Modal) {
+        console.error(
+            "Bootstrap JavaScript is missing. The edit modal cannot open."
+        );
+        return;
+    }
 
-    $("motherSearch").addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            searchMother();
+    visitModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+    if (searchButton) {
+        searchButton.addEventListener("click", searchMother);
+    }
+
+    const addVisitButton = $("addVisitButton");
+
+    if (addVisitButton) {
+        addVisitButton.addEventListener("click", openAddVisitModal);
+    }
+
+    if (motherSearch) {
+        motherSearch.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                searchMother();
+            }
+        });
+    }
+
+    form.addEventListener("submit", saveMaternalVisit);
+
+    // Handle Edit clicks, including clicks directly on the pencil icon.
+    recordsBody.addEventListener("click", event => {
+        const button = event.target.closest("button[data-edit-id]");
+
+        if (!button || !recordsBody.contains(button)) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const recordId = button.dataset.editId;
+
+        if (!recordId) {
+            showMessage(
+                "This record is missing its ID. Please refresh the page.",
+                "error"
+            );
+            return;
+        }
+
+        try {
+            openEditVisitModal(recordId);
+        } catch (error) {
+            console.error("Unable to open maternal record for editing:", error);
+
+            showMessage(
+                "Unable to open the edit form. Please check the browser console.",
+                "error"
+            );
         }
     });
 
-    $("maternalVisitForm").addEventListener("submit", saveMaternalVisit);
-
-    $("maternalRecordsTableBody").addEventListener("click", event => {
-        const button = event.target.closest("[data-edit-id]");
-
-        if (button) {
-            openEditVisitModal(button.dataset.editId);
-        }
-    });
-
-    $("maternalVisitModal").addEventListener("hidden.bs.modal", () => {
-        delete $("maternalVisitForm").dataset.recordId;
-        $("maternalVisitForm").reset();
+    modalElement.addEventListener("hidden.bs.modal", () => {
+        delete form.dataset.recordId;
+        form.reset();
         clearFormMessage();
     });
-});
+
+    console.log("Maternal record page event listeners initialised.");
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeMaternalRecordPage,
+        { once: true }
+    );
+} else {
+    initializeMaternalRecordPage();
+}

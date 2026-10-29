@@ -550,6 +550,73 @@ a {
     color: #405777;
 }
 
+
+/* Toast notification */
+.app-toast {
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    width: min(437px, calc(100vw - 32px));
+    min-height: 56px;
+    padding: 14px 15px;
+
+    background-color: #198754;
+    color: #ffffff;
+
+    border-radius: 8px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+
+    font-size: 16px;
+    font-weight: 600;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-12px);
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        visibility 0.25s ease;
+}
+
+.app-toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.app-toast-close {
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #064b36;
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.app-toast-close:hover {
+    color: #ffffff;
+}
+
+/* Error notification */
+.app-toast.error {
+    background-color: #dc3545;
+}
+
+.app-toast.error .app-toast-close {
+    color: #ffffff;
+}
+
 /* =====================================================
    RESPONSIVE
 ===================================================== */
