@@ -3990,15 +3990,17 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 db.prepare(`
                     INSERT INTO Maternal_Record (
                         mother_id,
+                        appointment_id,
                         visit_number,
                         visit_date,
                         height,
                         weight,
                         doctor_remarks
                     )
-                    VALUES (?, ?, ?, NULL, NULL, '')
+                    VALUES (?, ?, ?, ?, NULL, NULL, '')
                 `).run(
                     mother.mother_id,
+                    appointmentId,
                     nextVisit.next_visit_number,
                     appointment_date
                 );
