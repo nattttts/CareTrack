@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadWelcomeUserName();
     loadUpcomingAppointment();
     loadDashboardQueue();
+    loadDashboardNotifications();
 
     // Refresh queue information every 10 seconds.
     setInterval(loadDashboardQueue, 10000);
@@ -356,6 +357,182 @@ function getDashboardQueueStatusClass(status) {
         default:
             return "waiting";
     }
+}
+
+// Load Dashboard Notifications
+async function loadDashboardNotifications() {
+
+    const notificationList = document.getElementById(
+        "dashboardNotificationList"
+    );
+
+    const noNotifications = document.getElementById(
+        "noDashboardNotifications"
+    );
+
+    if (!notificationList || !noNotifications) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/patient/dashboard/notifications"
+        );
+
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to load dashboard notifications.");
+        }
+
+        const notifications = await response.json();
+
+        if (!Array.isArray(notifications)) {
+            throw new Error("Invalid notification data.");
+        }
+
+        if (notifications.length === 0) {
+            notificationList.classList.add("d-none");
+            noNotifications.classList.remove("d-none");
+            return;
+        }
+
+        notificationList.innerHTML = notifications
+            .map(notification => {
+
+                const style = getDashboardNotificationStyle(
+                    notification.type
+                );
+
+                return `
+                    <div class="notification-item">
+
+                        <div class="notification-item-icon ${style.iconClass}">
+                            ${style.icon}
+                        </div>
+
+                        <div class="notification-content">
+
+                            <div class="notification-title-row">
+                                <h3>${escapeHtml(notification.title)}</h3>
+                                <span>${getDashboardNotificationTime(notification.created_at)}</span>
+                            </div>
+
+                            <p>${escapeHtml(notification.message)}</p>
+
+                        </div>
+
+                    </div>
+                `;
+            })
+            .join("");
+
+        notificationList.classList.remove("d-none");
+        noNotifications.classList.add("d-none");
+
+    } catch (error) {
+        console.error("Error loading dashboard notifications:", error);
+
+        notificationList.innerHTML = `
+            <div class="text-center text-danger py-4">
+                Unable to load notifications.
+                Please refresh the page and try again.
+            </div>
+        `;
+
+        notificationList.classList.remove("d-none");
+        noNotifications.classList.add("d-none");
+    }
+}
+
+// Get Dashboard Notification Style
+function getDashboardNotificationStyle(type) {
+
+    const styles = {
+        appointment: {
+            icon: `<img src="../icons/appointment.png" alt="Appointment">`,
+            iconClass: "appointment"
+        },
+
+        confirmed: {
+            icon: `<img src="../icons/appointment.png" alt="Appointment">`,
+            iconClass: "appointment"
+        },
+
+        vaccination: {
+            icon: `<img src="../icons/blue_syringe.png" alt="Vaccination">`,
+            iconClass: "vaccination"
+        },
+
+        completed: {
+            icon: `<i class="bi bi-shield-check"></i>`,
+            iconClass: "update"
+        },
+
+        maintenance: {
+            icon: `<i class="bi bi-gear"></i>`,
+            iconClass: "update"
+        },
+
+        general: {
+            icon: `<i class="bi bi-bell"></i>`,
+            iconClass: "appointment"
+        }
+    };
+
+    return styles[String(type ?? "").toLowerCase()] || styles.general;
+}
+
+// Format Dashboard Notification Time
+function getDashboardNotificationTime(createdAt) {
+
+    if (!createdAt) {
+        return "";
+    }
+
+    let dateString = String(createdAt);
+
+    // Convert SQLite datetime format to JavaScript date format
+    if (!dateString.includes("T")) {
+        dateString = dateString.replace(" ", "T") + "Z";
+    }
+
+    const notificationDate = new Date(dateString);
+
+    if (Number.isNaN(notificationDate.getTime())) {
+        return "";
+    }
+
+    const now = new Date();
+
+    const difference = Math.floor(
+        (now - notificationDate) / 1000
+    );
+
+    if (difference < 60) {
+        return "Just now";
+    }
+
+    if (difference < 3600) {
+        return `${Math.floor(difference / 60)} minutes ago`;
+    }
+
+    if (difference < 86400) {
+        return `${Math.floor(difference / 3600)} hours ago`;
+    }
+
+    if (difference < 604800) {
+        return `${Math.floor(difference / 86400)} days ago`;
+    }
+
+    return notificationDate.toLocaleDateString("en-MY", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    });
 }
 
 function escapeHtml(value) {

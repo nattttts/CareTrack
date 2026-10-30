@@ -6357,7 +6357,43 @@ async function notifyVaccinationChange(childUserId, action, recordId) {
     }
 }
 
-// ================= AUTO-UPDATE MISSED APPOINTMENTS =================
+// Get latest 3 notifications for dashboard
+app.get(
+    "/api/patient/dashboard/notifications",
+    requireRole("mother", "child"),
+    (req, res) => {
+        try {
+            const userId = req.session.user.userId;
+
+            const notifications = db.prepare(`
+                SELECT
+                    notification_id,
+                    title,
+                    type,
+                    message,
+                    created_at,
+                    is_read
+                FROM Notification
+                WHERE user_id = ?
+                ORDER BY created_at DESC, notification_id DESC
+                LIMIT 3
+            `).all(userId);
+
+            res.json(notifications);
+        } catch (error) {
+            console.error(
+                "Error loading dashboard notifications:",
+                error
+            );
+
+            res.status(500).json({
+                message: "Failed to load dashboard notifications."
+            });
+        }
+    }
+);
+
+// Auto-update Missed Appointments
 // Check when the server starts
 updateMissedAppointments();
 
