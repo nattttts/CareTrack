@@ -429,8 +429,9 @@ img {
     border-radius: 50%;
 }
 
-.notification-item-icon.appointment {
+.notification-item-icon.called {
     background: var(--caretrack-pink-light);
+    color: #f9528e;
 }
 
 .notification-item-icon.vaccination {

@@ -479,7 +479,7 @@ function getDashboardNotificationStyle(type) {
 
         general: {
             icon: `<i class="bi bi-bell"></i>`,
-            iconClass: "appointment"
+            iconClass: "called"
         }
     };
 
