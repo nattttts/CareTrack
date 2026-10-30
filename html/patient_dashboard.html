@@ -161,7 +161,7 @@
 
                             <div class="card-content d-none" id="noUpcomingAppointment">
                                 <div class="text-center text-muted py-4">
-                                    <i class="bi bi-calendar-check fs-3"></i>
+                                    <i class="bi bi-calendar-x fs-3"></i>
                                     <p class="mt-2 mb-0">You have no upcoming appointments.</p>
                                 </div>
                             </div>
@@ -276,7 +276,6 @@
                         <section class="dashboard-card queue-card">
                             
                             <div class="dashboard-card-header">
-
                                 <div class="card-heading">
                                     <div class="card-icon">
                                         <img src="../icons/queue.png" alt="Queue">
@@ -292,11 +291,17 @@
                                     View All
                                     <i class="bi bi-arrow-right"></i>
                                 </a>
+                            </div>
 
+                            <!-- ================= QUEUE LOADING ================= -->
+                            <div id="queueLoading" class="card-content">
+                                <div class="text-center text-muted py-4">
+                                    Loading your queue information...
+                                </div>
                             </div>
 
                             <!-- ================= NOT CHECKED IN ================= -->
-                            <div class="queue-not-checked-in d-none">
+                            <div id="queueNotCheckedIn" class="queue-not-checked-in d-none">
 
                                 <div class="queue-status-header">
 
@@ -323,17 +328,18 @@
 
                             </div>
 
-                            <div class="queue-checked-in">
+                            <!-- ================= QUEUE STATUS ================= -->
+                            <div id="queueCheckedIn" class="queue-checked-in d-none">
 
                                 <div class="queue-status">
                                     <h4>Your Queue Status</h4>
-                                    <span id="queueStatusBadge" class="queue-status-badge waiting">Waiting</span>
+                                    <span id="dashboardQueueStatus" class="queue-status-badge waiting">Waiting</span>
                                 </div>
 
                                 <!-- Queue Number -->
                                 <div class="queue-number-section">
                                     <h6>Your Queue Number</h6>
-                                    <p id="queueNumber">1058</p>
+                                    <p id="dashboardQueueNumber"></p>
                                 </div>
 
                                 <!-- Queue Details -->
@@ -345,7 +351,7 @@
 
                                             <div>
                                                 <h6>Queue Position</h6>
-                                                <strong id="queuePosition">4th</strong>
+                                                <strong id="dashboardQueuePosition"></strong>
                                             </div>
                                         </div>
                                     </div>
@@ -356,13 +362,31 @@
 
                                             <div>
                                                 <h6>Estimated Waiting Time</h6>
-                                                <strong id="waitingTime">~20 min</strong>
+                                                <strong id="dashboardWaitingTime">Not available</strong>
                                             </div>
                                         </div>
                                     </div>
                             
                                 </div>
 
+                            </div>
+
+                            <!-- ================= NO APPOINTMENT ================= -->
+                            <div id="queueNoAppointment" class="card-content d-none">
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-calendar-x fs-3"></i>
+                                    <p class="mt-2 mb-0">
+                                        You have no appointment scheduled for today.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- ================= QUEUE ERROR ================= -->
+                            <div id="queueError" class="card-content d-none">
+                                <div class="text-center text-danger py-4">
+                                    Unable to load your queue information.
+                                    Please refresh the page and try again.
+                                </div>
                             </div>
 
                         </section>

@@ -1,5 +1,11 @@
 
-document.addEventListener("DOMContentLoaded", loadUpcomingAppointment);
+document.addEventListener("DOMContentLoaded", () => {
+    loadUpcomingAppointment();
+    loadDashboardQueue();
+
+    // Refresh queue information every 10 seconds.
+    setInterval(loadDashboardQueue, 10000);
+});
 
 async function loadUpcomingAppointment() {
     const appointmentContent = document.getElementById(
@@ -159,6 +165,171 @@ function formatAppointmentTime(time) {
         minute: "2-digit",
         hour12: true
     });
+}
+
+// Load Dashboard Queue
+let isLoadingDashboardQueue = false;
+
+async function loadDashboardQueue() {
+    if (isLoadingDashboardQueue) {
+        return;
+    }
+
+    isLoadingDashboardQueue = true;
+
+    try {
+        const response = await fetch("/api/patient/queue");
+
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to load queue information.");
+        }
+
+        const appointments = await response.json();
+
+        if (!Array.isArray(appointments)) {
+            throw new Error("Invalid queue data.");
+        }
+
+        if (appointments.length === 0) {
+            showDashboardNoAppointment();
+            return;
+        }
+
+        // Prefer an appointment that already has a queue entry
+        const appointment =
+            appointments.find(item => item.queue_entry_id) ||
+            appointments[0];
+
+        if (appointment.queue_entry_id) {
+            displayDashboardQueue(appointment);
+        } else {
+            showDashboardNotCheckedIn();
+        }
+
+    } catch (error) {
+        console.error("Error loading dashboard queue:", error);
+        showDashboardQueueError();
+
+    } finally {
+        isLoadingDashboardQueue = false;
+    }
+}
+
+// Display dashboard queue
+function displayDashboardQueue(appointment) {
+    hideDashboardQueueSections();
+
+    const queueCheckedIn = document.getElementById("queueCheckedIn");
+    const queueStatus = document.getElementById("dashboardQueueStatus");
+    const queueNumber = document.getElementById("dashboardQueueNumber");
+    const queuePosition = document.getElementById("dashboardQueuePosition");
+    const waitingTime = document.getElementById("dashboardWaitingTime");
+
+    const status = appointment.queue_status || "Waiting";
+
+    queueStatus.textContent = status;
+
+    queueStatus.className = `queue-status-badge ${getDashboardQueueStatusClass(status)}`;
+
+    queueNumber.textContent = appointment.queue_number ?? "";
+
+    queuePosition.textContent = formatDashboardQueuePosition(
+        appointment.queue_position
+    );
+
+    // The API does not provide a true estimated queue waiting time
+    waitingTime.textContent = "Not available";
+
+    queueCheckedIn.classList.remove("d-none");
+}
+
+// Show not checked in
+function showDashboardNotCheckedIn() {
+    hideDashboardQueueSections();
+
+    const section = document.getElementById("queueNotCheckedIn");
+
+    // Set the default message for patients who have not checked in
+    section.querySelector(".queue-status-header h3").textContent = "Not Checked In";
+    section.querySelector(".queue-status-header p").textContent = "You are not currently checked in for your appointment.";
+    section.querySelector(".queue-message strong").textContent = "Check in at the clinic";
+    section.querySelector(".queue-message p").textContent =
+        "Please complete check-in at the clinic when you arrive for your appointment. Your queue information will appear here after check-in.";
+
+    section.classList.remove("d-none");
+}
+
+// Show no appointment on queue
+function showDashboardNoAppointment() {
+    hideDashboardQueueSections();
+
+    document.getElementById(
+        "queueNoAppointment"
+    ).classList.remove("d-none");
+}
+
+// Show queue error
+function showDashboardQueueError() {
+    hideDashboardQueueSections();
+
+    document.getElementById(
+        "queueError"
+    ).classList.remove("d-none");
+}
+
+
+// ================= HIDE QUEUE SECTIONS =================
+function hideDashboardQueueSections() {
+    document.getElementById("queueLoading").classList.add("d-none");
+    document.getElementById("queueNotCheckedIn").classList.add("d-none");
+    document.getElementById("queueCheckedIn").classList.add("d-none");
+    document.getElementById("queueNoAppointment").classList.add("d-none");
+    document.getElementById("queueError").classList.add("d-none");
+}
+
+
+// ================= FORMAT QUEUE POSITION =================
+function formatDashboardQueuePosition(position) {
+    if (
+        position === null ||
+        position === undefined ||
+        position === ""
+    ) {
+        return "";
+    }
+
+    const number = Number(position);
+
+    if (!Number.isInteger(number) || number < 1) {
+        return "";
+    }
+
+    return number;
+}
+
+// ================= GET QUEUE STATUS CLASS =================
+function getDashboardQueueStatusClass(status) {
+    switch (status) {
+        case "Waiting":
+            return "waiting";
+
+        case "Called":
+            return "called";
+
+        case "Completed":
+            return "completed";
+
+        case "Skipped":
+            return "skipped";
+
+        default:
+            return "waiting";
+    }
 }
 
 function escapeHtml(value) {

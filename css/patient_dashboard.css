@@ -326,6 +326,24 @@ img {
     color: #d77b00;
 }
 
+/* Called queue status */
+.queue-status-badge.called {
+    background: #fee6ef;
+    color: #e81f67;
+}
+
+/* Completed queue status */
+.queue-status-badge.completed {
+    background: #eaf8f0;
+    color: #16804e;
+}
+
+/* Skipped queue status */
+.queue-status-badge.skipped {
+    background: #fff0f2;
+    color: #cf3a49;
+}
+
 /* ================= QUEUE NUMBER ================= */
 .queue-number-section {
     text-align: center;
