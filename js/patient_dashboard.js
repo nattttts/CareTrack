@@ -1,11 +1,39 @@
 
 document.addEventListener("DOMContentLoaded", () => {
+    loadWelcomeUserName();
     loadUpcomingAppointment();
     loadDashboardQueue();
 
     // Refresh queue information every 10 seconds.
     setInterval(loadDashboardQueue, 10000);
 });
+
+// Load Welcome User Name
+
+async function loadWelcomeUserName() {
+
+    const welcomeUserName = document.getElementById("welcomeUserName");
+
+    if (!welcomeUserName) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/me");
+
+        if (!response.ok) {
+            throw new Error("Failed to retrieve user information.");
+        }
+
+        const user = await response.json();
+
+        welcomeUserName.textContent = user.fullName;
+
+    } catch (error) {
+        console.error("Load welcome user name error:", error);
+        welcomeUserName.textContent = "User";
+    }
+}
 
 async function loadUpcomingAppointment() {
     const appointmentContent = document.getElementById(
@@ -282,8 +310,7 @@ function showDashboardQueueError() {
     ).classList.remove("d-none");
 }
 
-
-// ================= HIDE QUEUE SECTIONS =================
+// Hide queue sections
 function hideDashboardQueueSections() {
     document.getElementById("queueLoading").classList.add("d-none");
     document.getElementById("queueNotCheckedIn").classList.add("d-none");
@@ -292,8 +319,7 @@ function hideDashboardQueueSections() {
     document.getElementById("queueError").classList.add("d-none");
 }
 
-
-// ================= FORMAT QUEUE POSITION =================
+// Format queue position
 function formatDashboardQueuePosition(position) {
     if (
         position === null ||
@@ -312,7 +338,7 @@ function formatDashboardQueuePosition(position) {
     return number;
 }
 
-// ================= GET QUEUE STATUS CLASS =================
+// Get queue status class
 function getDashboardQueueStatusClass(status) {
     switch (status) {
         case "Waiting":
