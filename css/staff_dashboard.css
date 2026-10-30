@@ -98,6 +98,7 @@ a {
 
     margin: 0 auto 18px;
     padding: 20px 24px;
+    height: 160px;
 
     background: var(--white);
     border: 1px solid #f0dfe6;
@@ -121,19 +122,19 @@ a {
     color: var(--caretrack-pink);
 }
 
+.attention-icon {
+    background: #fff0f2;
+    color: #cf3a49;
+}
+
 .waiting-icon {
     background: #fff2d6;
     color: #d77b00;
 }
 
-.serving-icon {
-    background: #edf6ff;
-    color: #2271b1;
-}
-
-.attention-icon {
-    background: #fff0f2;
-    color: #cf3a49;
+.complete-icon {
+    background: #eaf8f0;
+    color: #16804e;
 }
 
 .overview-info p {

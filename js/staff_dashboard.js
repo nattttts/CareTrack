@@ -12,19 +12,32 @@ async function loadStaffDashboard() {
     const appointmentsList = document.getElementById(
         "todayAppointmentsList"
     );
+    const waitingCount = document.getElementById(
+        "todayWaitingCount"
+    );
+
+    const completedCount = document.getElementById(
+        "todayCompletedCount"
+    );
 
     try {
-        const [appointmentsResponse, requestsResponse] = await Promise.all([
+        const [
+            appointmentsResponse, 
+            requestsResponse,
+            queueResponse
+        ] = await Promise.all([
             fetch("/api/staff/appointments"),
-            fetch("/api/staff/reschedule-requests")
+            fetch("/api/staff/reschedule-requests"),
+            fetch("/api/staff/queue")
         ]);
 
-        if (!appointmentsResponse.ok || !requestsResponse.ok) {
+        if (!appointmentsResponse.ok || !requestsResponse.ok || !queueResponse.ok) {
             throw new Error("Failed to retrieve dashboard data.");
         }
 
         const appointments = await appointmentsResponse.json();
         const pendingRequests = await requestsResponse.json();
+        const queueEntries = await queueResponse.json();
 
         // Get today's date using the user's local date
         const today = getLocalDateString();
@@ -43,6 +56,15 @@ async function loadStaffDashboard() {
             appointment => appointment.status === "Missed"
         ).length;
 
+        // Count today's waiting and completed queue entries
+        const todayWaiting = queueEntries.filter(
+            entry => entry.queue_status === "Waiting"
+        ).length;
+
+        const todayCompleted = queueEntries.filter(
+            entry => entry.queue_status === "Completed"
+        ).length;
+
         // Count missed appointments and pending reschedule requests
         // These are attention items, not necessarily unique appointments
         const attentionCount = missedCount + pendingRequests.length;
@@ -50,6 +72,8 @@ async function loadStaffDashboard() {
         // Update the overview cards
         appointmentsCount.textContent = todayAppointments.length;
         needsAttentionCount.textContent = attentionCount;
+        waitingCount.textContent = todayWaiting;
+        completedCount.textContent = todayCompleted;
 
         // Display today's appointments
         displayTodayAppointments(todayAppointments);

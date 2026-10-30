@@ -130,38 +130,6 @@
 
                     </div>
 
-                    <!-- Waiting -->
-                    <div class="col-12 col-sm-6 col-lg">
-
-                        <div class="overview-card waiting">
-                            <div class="overview-icon waiting-icon">
-                                <i class="bi bi-clock"></i>
-                            </div>
-
-                            <div class="overview-info">
-                                <p>Waiting</p>
-                                <h2>5</h2>
-                                <span>Patients in active queues</span>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Currently Serving -->
-                    <!-- Waiting -->
-                    <div class="col-12 col-sm-6 col-lg">
-
-                        <div class="overview-card waiting">
-                            <div class="overview-icon waiting-icon">
-                                <i class="bi bi-clock"></i>
-                            </div>
-
-                            <div class="overview-info">
-                            </div>
-                        </div>
-
-                    </div>
-
                     <!-- Needs Attention -->
                     <div class="col-12 col-sm-6 col-lg">
                         
@@ -177,6 +145,40 @@
                             </div>
                         </div>
                     
+                    </div>
+
+                    <!-- Waiting -->
+                    <div class="col-12 col-sm-6 col-lg">
+
+                        <div class="overview-card waiting">
+                            <div class="overview-icon waiting-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+
+                            <div class="overview-info">
+                                <p>Waiting</p>
+                                <h2 id="todayWaitingCount">0</h2>
+                                <span>Patients waiting in queue</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Completed -->
+                    <div class="col-12 col-sm-6 col-lg">
+
+                        <div class="overview-card complete">
+                            <div class="overview-icon complete-icon">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+
+                            <div class="overview-info">
+                                <p>Completed</p>
+                                <h2 id="todayCompletedCount">0</h2>
+                                <span>Patients who have completed their visits</span>
+                            </div>
+                        </div>
+
                     </div>
 
                 </section>
