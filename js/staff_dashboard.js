@@ -1,5 +1,12 @@
 
-document.addEventListener("DOMContentLoaded", loadStaffDashboard);
+document.addEventListener("DOMContentLoaded", () => {
+
+    loadStaffDashboard();
+
+    // Refresh active queue every 10 seconds.
+    setInterval(loadDashboardActiveQueue, 10000);
+
+});
 
 // Load all dashboard data
 async function loadStaffDashboard() {
@@ -15,7 +22,6 @@ async function loadStaffDashboard() {
     const waitingCount = document.getElementById(
         "todayWaitingCount"
     );
-
     const completedCount = document.getElementById(
         "todayCompletedCount"
     );
@@ -77,6 +83,9 @@ async function loadStaffDashboard() {
 
         // Display today's appointments
         displayTodayAppointments(todayAppointments);
+
+        // Display active queue
+        displayActiveQueue(queueEntries);
 
     } catch (error) {
         console.error("Error loading staff dashboard:", error);
@@ -182,4 +191,92 @@ function displayTodayAppointments(appointments) {
             </div>
         `;
     }).join("");
+}
+
+// Display active queue
+function displayActiveQueue(queueEntries) {
+
+    const activeQueueList = document.getElementById(
+        "activeQueueList"
+    );
+
+    // Only display patients who are waiting or have been called.
+    const activeEntries = queueEntries
+        .filter(entry =>
+            entry.queue_status === "Waiting" || entry.queue_status === "Called"
+        )
+        .slice(0, 4);
+
+    if (activeEntries.length === 0) {
+        activeQueueList.innerHTML = `
+            <div class="text-center text-muted py-4">
+                No active queue at the moment.
+            </div>
+        `;
+        return;
+    }
+
+    const statusClasses = {
+        "Waiting": "status-waiting",
+        "Called": "status-called"
+    };
+
+    activeQueueList.innerHTML = activeEntries.map(entry => {
+
+        const status = entry.queue_status;
+        const statusClass = statusClasses[status];
+
+        return `
+            <div class="active-queue-item">
+
+                <div class="queue-info">
+
+                    <strong class="queue-number">
+                        ${escapeHtml(entry.queue_number)}
+                    </strong>
+
+                    <div class="queue-patient-details">
+
+                        <h6 class="patient-name">
+                            ${escapeHtml(entry.patient_name)}
+                        </h6>
+
+                        <p>
+                            ${escapeHtml(entry.appointment_type)}
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <span class="status-badge ${statusClass}">
+                    ${escapeHtml(status)}
+                </span>
+
+            </div>
+        `;
+
+    }).join("");
+}
+
+// Refresh active queue
+async function loadDashboardActiveQueue() {
+
+    try {
+
+        const response = await fetch("/api/staff/queue");
+
+        if (!response.ok) {
+            throw new Error("Failed to load active queue.");
+        }
+
+        const queueEntries = await response.json();
+
+        displayActiveQueue(queueEntries);
+
+    } catch (error) {
+
+        console.error("Error refreshing active queue:", error);
+
+    }
 }
