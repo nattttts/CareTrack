@@ -254,28 +254,26 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
 /* =====================================================
    MATERNAL RECORDS TABLE
 ===================================================== */
+CREATE TABLE IF NOT EXISTS Maternal_Record (
+    maternal_record_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    appointment_id INTEGER NOT NULL UNIQUE,
+    mother_id INTEGER NOT NULL,
+    visit_number INTEGER NOT NULL,
+    visit_date TEXT NOT NULL,
+    height REAL,
+    weight REAL,
+    doctor_remarks TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-db.exec(`
-    CREATE TABLE IF NOT EXISTS Maternal_Record (
-        maternal_record_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        appointment_id INTEGER NOT NULL UNIQUE,
-        mother_id INTEGER NOT NULL,
-        visit_number INTEGER NOT NULL,
-        visit_date TEXT NOT NULL,
-        height REAL,
-        weight REAL,
-        doctor_remarks TEXT DEFAULT '',
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (mother_id)
+        REFERENCES Mother(mother_id)
+        ON DELETE CASCADE,
 
-        FOREIGN KEY (mother_id)
-            REFERENCES Mother(mother_id)
-            ON DELETE CASCADE,
+    UNIQUE (mother_id, visit_number),
 
-        UNIQUE (mother_id, visit_number),
-
-        CHECK (visit_number > 0),
-        CHECK (height IS NULL OR (height > 0 AND height <= 300)),
-        CHECK (weight IS NULL OR (weight > 0 AND weight <= 500))
+    CHECK (visit_number > 0),
+    CHECK (height IS NULL OR (height > 0 AND height <= 300)),
+    CHECK (weight IS NULL OR (weight > 0 AND weight <= 500))
     );
 `);
