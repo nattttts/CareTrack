@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS User (
 CREATE TABLE IF NOT EXISTS Staff (
     staff_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL UNIQUE,
-    position TEXT,
     phone_no TEXT NOT NULL,
 
     FOREIGN KEY (user_id)

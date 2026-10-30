@@ -110,7 +110,7 @@
                                 type="text"
                                 id="staffSearch"
                                 class="form-control"
-                                placeholder="Search by name, email or position..."
+                                placeholder="Search by name, email, or IC number..."
                             >
                         </div>
                     </div>
@@ -154,7 +154,6 @@
                                 <th>Staff Name</th>
                                 <th>IC Number</th>
                                 <th>Email</th>
-                                <th>Position</th>
                                 <th>Account Status</th>
                                 <th>Date Created</th>
                                 <th class="text-center">
@@ -165,7 +164,7 @@
 
                         <tbody id="staffTableBody">
                             <tr id="noStaffFound" hidden>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="6" class="text-center py-4">
                                     No matching staff found.
                                 </td>
                             </tr>
@@ -267,16 +266,6 @@
                                 >
                             </div>
 
-                            <!-- Position -->
-                            <div class="col-md-6">
-                                <label class="form-label">Position</label>
-                                <select class="form-select" id="addStaffPosition" required>
-                                    <option value="" selected disabled>Select position</option>
-                                    <option value="Doctor">Doctor</option>
-                                    <option value="Nurse">Nurse</option>
-                                </select>
-                            </div>
-
                             <!-- System Role -->
                             <div class="col-12">
                                 <div class="system-role-note">
@@ -373,11 +362,6 @@
                         </div>
 
                         <div>
-                            <span>Position</span>
-                            <strong id="viewStaffPosition"></strong>
-                        </div>
-
-                        <div>
                             <span>Date Created</span>
                             <strong id="viewStaffDate"></strong>
                         </div>
@@ -459,24 +443,13 @@
                                 >
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label">Position</label>
-                                <select id="editStaffPosition" class="form-select" required>
-                                    <option value="Doctor">Doctor</option>
-                                    <option value="Nurse">Nurse</option>
-                                </select>
-                            </div>
-
                             <div class="col-12">
                                 <div class="system-role-note">
                                     <i class="bi bi-info-circle"></i>
                                     <span>
                                         <strong>System Role:</strong>
                                         Staff
-                                        <small>
-                                            Staff position does not change
-                                            the system role.
-                                        </small>
+                                        <small>(applied to all staff accounts)</small>
                                     </span>
                                 </div>
                             </div>

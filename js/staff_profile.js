@@ -76,14 +76,12 @@ async function loadStaffProfile() {
         setText("staffIdText", staffIC || "Not available");
         setValue("staffIdInput", staffIC || "");
 
-        setText("positionText", user.position);
         setText("phoneText", user.phoneNo);
         setText("emailText", user.email);
 
         // Populate inputs
         setValue("nameInput", user.fullName);
         setValue("roleInput", "Healthcare Staff");
-        setValue("departmentInput", user.position);
         setValue("phoneInput", user.phoneNo);
         setValue("emailInput", user.email);
 

@@ -25,8 +25,8 @@ const insert = {
 
     staff: db.prepare(`
         INSERT INTO Staff
-            (staff_id, user_id, position, phone_no)
-        VALUES (?, ?, ?, ?)
+            (staff_id, user_id, phone_no)
+        VALUES (?, ?, ?)
     `),
 
     mother: db.prepare(`
@@ -106,9 +106,9 @@ async function main() {
         // 2. STAFF
         // =========================================
         const staff = [
-            [1, "920102-07-0002", "Doctor", "012-3001001"],
-            [2, "930103-07-0004", "Nurse", "012-3001002"],
-            [3, "940104-07-0005", "Doctor", "012-3001003"]
+            [1, "920102-07-0002", "012-3001001"],
+            [2, "930103-07-0004", "012-3001002"],
+            [3, "940104-07-0005", "012-3001003"]
         ];
 
         staff.forEach(row => insert.staff.run(...row));

@@ -660,7 +660,7 @@ app.get("/api/me", (req, res) => {
         // Get Staff profile.
         if (user.role === "staff") {
             const staff = db.prepare(`
-                SELECT staff_id, position, phone_no
+                SELECT staff_id, phone_no
                 FROM Staff
                 WHERE user_id = ?
             `).get(userId);
@@ -674,7 +674,6 @@ app.get("/api/me", (req, res) => {
             return res.json({
                 ...userInfo,
                 staffId: staff.staff_id,
-                position: staff.position,
                 phoneNo: staff.phone_no
             });
         }
@@ -789,7 +788,6 @@ app.get("/api/staff", requireRole("admin"), (req, res) => {
                 User.user_id,
                 User.full_name,
                 User.email,
-                Staff.position,
                 User.account_status,
                 User.created_at,
                 Staff.phone_no,
@@ -811,15 +809,14 @@ app.get("/api/staff", requireRole("admin"), (req, res) => {
 
 // Add a new staff
 app.post("/api/staff", requireRole("admin"), async (req, res) => {
-    const { full_name, user_id, email, phone_no, position } = req.body;
+    const { full_name, user_id, email, phone_no } = req.body;
 
     // Validate required fields
     if (
         typeof full_name !== "string" ||
         typeof user_id !== "string" ||
         typeof email !== "string" ||
-        typeof phone_no !== "string" ||
-        typeof position !== "string"
+        typeof phone_no !== "string"
     ) {
         return res.status(400).json({
             message: "Please provide all required staff details."
@@ -854,12 +851,6 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
     if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
         return res.status(400).json({
             message: "Please enter a valid phone number e.g. 012-3456789"
-        });
-    }
-
-    if (!["Doctor", "Nurse"].includes(position)) {
-        return res.status(400).json({
-            message: "Position must be Doctor or Nurse."
         });
     }
 
@@ -918,13 +909,11 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
             const result = db.prepare(`
                 INSERT INTO Staff (
                     user_id,
-                    position,
                     phone_no
                 )
-                VALUES (?, ?, ?)
+                VALUES (?, ?)
             `).run(
                 icNumber,
-                position,
                 phone
             );
             
@@ -1058,8 +1047,7 @@ app.patch("/api/staff/:staffId", requireRole("admin"), (req, res) => {
         user_id,
         full_name,
         email,
-        phone_no,
-        position
+        phone_no
     } = req.body;
 
     // Validate staff ID
@@ -1074,8 +1062,7 @@ app.patch("/api/staff/:staffId", requireRole("admin"), (req, res) => {
         typeof user_id !== "string" ||
         typeof full_name !== "string" ||
         typeof email !== "string" ||
-        typeof phone_no !== "string" ||
-        typeof position !== "string"
+        typeof phone_no !== "string"
     ) {
         return res.status(400).json({
             message: "Please provide all required staff details."
@@ -1087,7 +1074,7 @@ app.patch("/api/staff/:staffId", requireRole("admin"), (req, res) => {
     const normalizedEmail = email.trim().toLowerCase();
     const phone = phone_no.trim();
 
-    if (!newIC || !name || !normalizedEmail || !phone || !position) {
+    if (!newIC || !name || !normalizedEmail || !phone) {
         return res.status(400).json({
             message: "All fields are required."
         });
@@ -1110,12 +1097,6 @@ app.patch("/api/staff/:staffId", requireRole("admin"), (req, res) => {
     if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
         return res.status(400).json({
             message: "Please enter a valid phone number e.g. 012-3456789"
-        });
-    }
-
-    if (!["Doctor", "Nurse"].includes(position)) {
-        return res.status(400).json({
-            message: "Please select a valid staff position."
         });
     }
 
@@ -1178,10 +1159,9 @@ app.patch("/api/staff/:staffId", requireRole("admin"), (req, res) => {
 
             db.prepare(`
                 UPDATE Staff
-                SET phone_no = ?,
-                    position = ?
+                SET phone_no = ?
                 WHERE staff_id = ?
-            `).run(phone, position, staffId);
+            `).run(phone, staffId);
         });
 
         updateStaff();

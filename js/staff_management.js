@@ -26,7 +26,7 @@ async function loadStaff() {
             row.dataset.search = [
                 staff.full_name,
                 staff.email,
-                staff.position
+                staff.user_id
             ].join(" ").toLowerCase();
 
             row.dataset.status = staff.account_status;
@@ -38,7 +38,6 @@ async function loadStaff() {
 
                 <td>${staff.user_id}</td>
                 <td>${staff.email}</td>
-                <td>${staff.position}</td>
                 <td>
                     <div class="account-status-group">
                         <span class="status-badge ${
@@ -136,7 +135,7 @@ async function loadStaff() {
         console.error("Error loading staff:", error);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center">
+                <td colspan="6" class="text-center">
                     Unable to load staff records.
                 </td>
             </tr>
@@ -290,9 +289,6 @@ staffTableBody.addEventListener("click", function (event) {
 
         document.getElementById("viewStaffPhone").textContent =
             staff.phone_no || "—";
-
-        document.getElementById("viewStaffPosition").textContent =
-            staff.position;
         
         document.getElementById("viewStaffDate").textContent =
             new Date(staff.created_at).toLocaleDateString("en-GB", {
@@ -340,9 +336,6 @@ staffTableBody.addEventListener("click", function (event) {
 
         document.getElementById("editStaffPhone").value =
             staff.phone_no || "";
-
-        document.getElementById("editStaffPosition").value =
-            staff.position;
 
         bootstrap.Modal
             .getOrCreateInstance(
@@ -417,8 +410,7 @@ document
             full_name: document.getElementById("addStaffName").value,
             user_id: document.getElementById("addStaffIC").value,
             email: document.getElementById("addStaffEmail").value,
-            phone_no: document.getElementById("addStaffPhoneNo").value,
-            position: document.getElementById("addStaffPosition").value
+            phone_no: document.getElementById("addStaffPhoneNo").value
         };
 
         try {
@@ -491,11 +483,7 @@ document.getElementById("editStaffForm").addEventListener(
 
             phone_no: document.getElementById(
                 "editStaffPhone"
-            ).value.trim(),
-
-            position: document.getElementById(
-                "editStaffPosition"
-            ).value
+            ).value.trim()
         };
 
         submitButton.disabled = true;
