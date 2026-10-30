@@ -2867,13 +2867,12 @@ app.post(
                         start_time,
                         child_vaccination_id
                     )
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?)
                 `).run(
                     userId,
                     "Child Vaccination",
                     due_date,
                     start_time,
-                    calculatedEndTime,
                     Number(vaccinationResult.lastInsertRowid)
                 );
 
