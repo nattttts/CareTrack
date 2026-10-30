@@ -276,4 +276,3 @@ CREATE TABLE IF NOT EXISTS Maternal_Record (
     CHECK (height IS NULL OR (height > 0 AND height <= 300)),
     CHECK (weight IS NULL OR (weight > 0 AND weight <= 500))
     );
-`);
