@@ -355,14 +355,27 @@ a {
     border-radius: 8px;
     background: #f9528e;
     color: #FFFFFF;
+
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: 0.2s;
 }
 
+/* Center Reset Password button on a new line */
+.reset-password-button-container {
+    grid-column: 1 / -1;
+    justify-self: center;
+    margin-top: 0;
+}
+
 .reset-password-button:hover {
     background: #e81f67;
+}
+
+.reset-password-button:focus-visible {
+    outline: 2px solid #183153;
+    outline-offset: 3px;
 }
 
 
@@ -568,6 +581,23 @@ a {
     font-weight: 600;
 }
 
+.edit-profile-button {
+    flex-shrink: 0;
+    padding: 9px 17px;
+    background-color: #ffffff;
+    border: 1px solid #f9528e;
+    border-radius: 8px;
+    color: #f9528e;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.edit-profile-button:hover {
+    background-color: #e81f67;
+    color: #ffffff;
+}
 
 /* =========================================
    ACTIVE STATUS

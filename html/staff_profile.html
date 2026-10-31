@@ -138,35 +138,28 @@
 
             <section class="profile-card">
 
-
-                <!-- CARD HEADER -->
+                <!-- PERSONAL INFORMATION -->
+            <section class="profile-card" id="personalInformationCard">
 
                 <div class="profile-card-title">
 
-
                     <div class="card-title-left">
-
-
                         <div class="card-icon">
-
-                            <img src="../icons/user.png"
-                                 alt="">
-
+                            <img src="../icons/user.png" alt="">
                         </div>
-
 
                         <div>
-
-                            <h3>Professional Information</h3>
-
-                            <p>
-                                Your healthcare staff account information
-                            </p>
-
+                            <h3>Personal Information</h3>
+                            <p>Your personal information</p>
                         </div>
-
-
                     </div>
+
+                    <button type="button"
+                            id="editButton"
+                            class="edit-profile-button"
+                            onclick="editProfile()">
+                        ✎ Edit Profile
+                    </button>
 
                 </div>
 
@@ -319,14 +312,13 @@
 
                     </div>
                     
-                    <button type="button"
-                        id="resetPassword"
-                        class="reset-password-button"
-                        onclick="resetPassword()">
-
-                        Reset Password
-
-                    </button>
+                    <div class="reset-password-button-container">
+                        <button type="button"
+                                id="resetPassword"
+                                class="reset-password-button"
+                                onclick="resetPassword()">
+                            Reset Password
+                        </button>
 
                 </div>
 

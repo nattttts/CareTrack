@@ -1,3 +1,4 @@
+
 function showProfileToast(message, type = "success") {
     const toastElement = document.getElementById("profileToast");
     const messageElement = document.getElementById("profileToastMessage");
@@ -36,11 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
    LOAD STAFF PROFILE
 ========================= */
 async function loadStaffProfile() {
-
     try {
         const response = await fetch(`${API_BASE}/me`, {
             method: "GET",
-            credentials: "same-origin"
+            credentials: "same-origin",
+            headers: {
+                Accept: "application/json"
+            }
         });
 
         if (response.status === 401) {
@@ -70,7 +73,7 @@ async function loadStaffProfile() {
         setText("nameText", user.fullName);
         setText("roleText", "Healthcare Staff");
 
-        // Display the logged-in staff member's IC number
+        // Staff IC number
         const staffIC = user.user_id ?? user.userId ?? user.staffId;
 
         setText("staffIdText", staffIC || "Not available");
@@ -105,8 +108,7 @@ async function loadStaffProfile() {
             }
         }
 
-        // Last Updated: no updated_at field is returned by /api/me.
-        // Do not display a fabricated update date.
+        // Last Updated
         if (accountRows[2]) {
             const lastUpdated = accountRows[2].querySelector("strong");
 
@@ -121,6 +123,9 @@ async function loadStaffProfile() {
     }
 }
 
+/* =========================
+   HELPER: SET TEXT
+========================= */
 function setText(id, value) {
     const element = document.getElementById(id);
 
@@ -129,6 +134,9 @@ function setText(id, value) {
     }
 }
 
+/* =========================
+   HELPER: SET INPUT VALUE
+========================= */
 function setValue(id, value) {
     const element = document.getElementById(id);
 
@@ -137,10 +145,12 @@ function setValue(id, value) {
     }
 }
 
+/* =========================
+   FORMAT DATE
+========================= */
 function formatDate(value) {
     if (!value) return "Not available";
 
-    // Handle SQLite date/time strings
     const date = new Date(
         /^\d{4}-\d{2}-\d{2}$/.test(value)
             ? `${value}T00:00:00`
@@ -156,6 +166,121 @@ function formatDate(value) {
         month: "long",
         year: "numeric"
     });
+}
+
+/* =========================
+   EDIT STAFF PROFILE
+========================= */
+async function editProfile() {
+    const card = document.getElementById("personalInformationCard");
+    const button = document.getElementById("editButton");
+
+    if (!card || !button) {
+        console.error("Profile card or Edit button not found.");
+        return;
+    }
+
+    // First click: enter edit mode
+    if (!card.classList.contains("editing")) {
+        card.classList.add("editing");
+        button.textContent = "✓ Save Changes";
+        return;
+    }
+
+    // Second click: save changes
+    const name = document.getElementById("nameInput").value.trim();
+    const phone = document.getElementById("phoneInput").value.trim();
+    const email = document.getElementById("emailInput").value.trim();
+
+    if (!name || !phone || !email) {
+        showProfileToast(
+            "Please fill in your name, phone number, and email.",
+            "error"
+        );
+        return;
+    }
+
+    if (!document.getElementById("emailInput").checkValidity()) {
+        showProfileToast("Please enter a valid email address.", "error");
+        return;
+    }
+
+    try {
+        button.disabled = true;
+        button.textContent = "Saving...";
+
+        const response = await fetch(`${API_BASE}/me`, {
+            method: "PUT",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                fullName: name,
+                phoneNo: phone,
+                email: email
+            })
+        });
+
+        const responseText = await response.text();
+        let result;
+
+        try {
+            result = JSON.parse(responseText);
+        } catch {
+            throw new Error(
+                `Invalid server response (HTTP ${response.status}). Check PUT /api/me.`
+            );
+        }
+
+        if (response.status === 401) {
+            showProfileToast(
+                "Your session has expired. Please log in again.",
+                "error"
+            );
+
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1500);
+
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Unable to update staff profile."
+            );
+        }
+
+        // Update displayed information
+        setText("userName", name);
+        setText("profileName", name);
+        setText("nameText", name);
+        setText("phoneText", phone);
+        setText("emailText", email);
+
+        card.classList.remove("editing");
+        button.textContent = "✎ Edit Profile";
+
+        showProfileToast(
+            result.message || "Profile updated successfully!"
+        );
+
+    } catch (error) {
+        console.error("Profile save error:", error);
+
+        showProfileToast(
+            error.message || "Unable to save your profile.",
+            "error"
+        );
+
+        // Keep the card in edit mode if saving fails
+        button.textContent = "✓ Save Changes";
+
+    } finally {
+        button.disabled = false;
+    }
 }
 
 /* =========================
@@ -222,6 +347,7 @@ async function resetPassword() {
             result = JSON.parse(responseText);
         } catch {
             console.error("Server returned HTML instead of JSON:", responseText);
+
             showProfileToast(
                 "Unable to reach the password API. Check your server route.",
                 "error"
@@ -230,10 +356,15 @@ async function resetPassword() {
         }
 
         if (response.status === 401) {
-            showProfileToast("Your session has expired. Please log in again.", "error");
+            showProfileToast(
+                "Your session has expired. Please log in again.",
+                "error"
+            );
+
             setTimeout(() => {
                 window.location.href = "login.html";
             }, 1500);
+
             return;
         }
 
@@ -251,6 +382,7 @@ async function resetPassword() {
 
     } catch (error) {
         console.error("Password reset error:", error);
+
         showProfileToast(
             "Cannot connect to the server. Please try again.",
             "error"
