@@ -381,6 +381,17 @@ function renderMaternalRecords() {
         const weight = getWeight(record);
         const remarks = getRemarks(record);
 
+        const systolic = record.systolic;
+        const diastolic = record.diastolic;
+
+        const bloodPressure =
+            systolic != null && diastolic != null
+                ? `${systolic}/${diastolic} mmHg`
+                : "-";
+
+        const urineTest = record.urine_test;
+        const bloodTest = record.blood_test;
+
         return `
             <tr>
                 <td>
@@ -391,9 +402,15 @@ function renderMaternalRecords() {
 
                 <td>${formatDate(visitDate)}</td>
 
+                <td>${escapeHTML(bloodPressure)}</td>
+
                 <td>${escapeHTML(height ?? "-")}</td>
 
                 <td>${escapeHTML(weight ?? "-")}</td>
+
+                <td>${escapeHTML(urineTest || "-")}</td>
+
+                <td>${escapeHTML(bloodTest || "-")}</td>
 
                 <td class="remarks-cell">${escapeHTML(remarks || "-")}</td>
 
@@ -477,6 +494,10 @@ function openEditVisitModal(recordId) {
 
     $("visitHeight").value = getHeight(record) ?? "";
     $("visitWeight").value = getWeight(record) ?? "";
+    $("systolic").value = record.systolic ?? "";
+    $("diastolic").value = record.diastolic ?? "";
+    $("urineTest").value = record.urine_test ?? "";
+    $("bloodTest").value = record.blood_test ?? "";
     $("doctorRemarks").value = getRemarks(record);
 
     // Store the selected record ID on the form.
@@ -577,6 +598,18 @@ async function saveMaternalVisit(event) {
         visit_date: visitDate,
         height,
         weight,
+
+        systolic: $("systolic").value
+            ? Number($("systolic").value)
+            : null,
+
+        diastolic: $("diastolic").value
+            ? Number($("diastolic").value)
+            : null,
+
+        urine_test: $("urineTest").value.trim(),
+        blood_test: $("bloodTest").value.trim(),
+
         doctor_remarks: $("doctorRemarks").value.trim()
     };
 

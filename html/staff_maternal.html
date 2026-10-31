@@ -192,8 +192,11 @@
                             <tr>
                                 <th>Visit</th>
                                 <th>Visit Date</th>
+                                <th>Blood Pressure</th>
                                 <th>Height (cm)</th>
                                 <th>Weight (kg)</th>
+                                <th>Urine Test</th>
+                                <th>Blood Test</th>
                                 <th>Doctor's Remarks</th>
                                 <th>Actions</th>
                             </tr>
@@ -319,6 +322,71 @@
                                     step="0.1"
                                     placeholder="e.g. 55.5"
                                 >
+                            </div>
+
+                            <!-- Blood Pressure -->
+                            <div class="col-md-6">
+                                <label class="form-label">Blood Pressure (mmHg)</label>
+
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label for="systolic" class="form-label">
+                                            Systolic
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="systolic"
+                                            class="form-control"
+                                            min="1"
+                                            max="300"
+                                            step="1"
+                                            placeholder="e.g. 120"
+                                        >
+                                    </div>
+
+                                    <div class="col-6">
+                                        <label for="diastolic" class="form-label">
+                                            Diastolic
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="diastolic"
+                                            class="form-control"
+                                            min="1"
+                                            max="200"
+                                            step="1"
+                                            placeholder="e.g. 80"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Urine Test -->
+                            <div class="col-md-6">
+                                <label for="urineTest" class="form-label">
+                                    Urine Test
+                                </label>
+                                <textarea
+                                    id="urineTest"
+                                    class="form-control"
+                                    rows="2"
+                                    maxlength="1000"
+                                    placeholder="Enter urine test results"
+                                ></textarea>
+                            </div>
+
+                            <!-- Blood Test -->
+                            <div class="col-md-6">
+                                <label for="bloodTest" class="form-label">
+                                    Blood Test
+                                </label>
+                                <textarea
+                                    id="bloodTest"
+                                    class="form-control"
+                                    rows="2"
+                                    maxlength="1000"
+                                    placeholder="Enter blood test results"
+                                ></textarea>
                             </div>
 
                             <div class="col-12">

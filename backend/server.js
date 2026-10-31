@@ -159,6 +159,49 @@ function requireRole(...allowedRoles) {
 
 const PORT = 3000;
 
+/* =========================================
+   MATERNAL RECORDS - NEW MEDICAL FIELDS
+========================================= */
+function migrateMaternalRecordFields() {
+    const columns = db.prepare(
+        "PRAGMA table_info(Maternal_Record)"
+    ).all();
+
+    const existingColumns = new Set(
+        columns.map(column => column.name)
+    );
+
+    const newColumns = [
+        {
+            name: "systolic",
+            sql: "ALTER TABLE Maternal_Record ADD COLUMN systolic INTEGER"
+        },
+        {
+            name: "diastolic",
+            sql: "ALTER TABLE Maternal_Record ADD COLUMN diastolic INTEGER"
+        },
+        {
+            name: "urine_test",
+            sql: "ALTER TABLE Maternal_Record ADD COLUMN urine_test TEXT"
+        },
+        {
+            name: "blood_test",
+            sql: "ALTER TABLE Maternal_Record ADD COLUMN blood_test TEXT"
+        }
+    ];
+
+    for (const column of newColumns) {
+        if (!existingColumns.has(column.name)) {
+            db.exec(column.sql);
+            console.log(
+                `Maternal_Record: added ${column.name}`
+            );
+        }
+    }
+}
+
+migrateMaternalRecordFields();
+
 const appointmentColumns = db.prepare(`
     PRAGMA table_info(Appointment)
 `).all();
@@ -3347,12 +3390,17 @@ app.post(
             visit_date,
             height,
             weight,
+            systolic,
+            diastolic,
+            urine_test,
+            blood_test,
             doctor_remarks
         } = req.body;
 
         const motherId = Number(mother_id);
         const visitNumber = Number(visit_number);
 
+        // Validate required fields.
         if (
             !Number.isInteger(motherId) ||
             motherId <= 0 ||
@@ -3366,6 +3414,7 @@ app.post(
             });
         }
 
+        // Validate that the date is not in the future.
         if (visit_date > new Date().toLocaleDateString("en-CA", {
             timeZone: "Asia/Kuala_Lumpur"
         })) {
@@ -3374,32 +3423,93 @@ app.post(
             });
         }
 
+        // Validate height.
         if (
             height != null &&
-            (typeof height !== "number" || !Number.isFinite(height) ||
-                height <= 0 || height > 300)
+            (typeof height !== "number" ||
+                !Number.isFinite(height) ||
+                height <= 0 ||
+                height > 300)
         ) {
             return res.status(400).json({
                 message: "Please enter a valid height."
             });
         }
 
+        // Validate weight.
         if (
             weight != null &&
-            (typeof weight !== "number" || !Number.isFinite(weight) ||
-                weight <= 0 || weight > 500)
+            (typeof weight !== "number" ||
+                !Number.isFinite(weight) ||
+                weight <= 0 ||
+                weight > 500)
         ) {
             return res.status(400).json({
                 message: "Please enter a valid weight."
             });
         }
 
+        // Blood pressure must have both values or neither.
         if (
-            doctor_remarks != null &&
-            typeof doctor_remarks !== "string"
+            (systolic == null) !== (diastolic == null)
         ) {
             return res.status(400).json({
-                message: "Invalid doctor's remarks."
+                message: "Please enter both systolic and diastolic values."
+            });
+        }
+
+        // Validate systolic.
+        if (
+            systolic != null &&
+            (!Number.isInteger(systolic) ||
+                systolic < 1 ||
+                systolic > 300)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid systolic value."
+            });
+        }
+
+        // Validate diastolic.
+        if (
+            diastolic != null &&
+            (!Number.isInteger(diastolic) ||
+                diastolic < 1 ||
+                diastolic > 200)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid diastolic value."
+            });
+        }
+
+        if (
+            systolic != null &&
+            diastolic != null &&
+            systolic <= diastolic
+        ) {
+            return res.status(400).json({
+                message: "Systolic must be higher than diastolic."
+            });
+        }
+
+        // Validate test results.
+        if (
+            (urine_test != null && typeof urine_test !== "string") ||
+            (blood_test != null && typeof blood_test !== "string") ||
+            (doctor_remarks != null && typeof doctor_remarks !== "string")
+        ) {
+            return res.status(400).json({
+                message: "Invalid maternal test results or doctor's remarks."
+            });
+        }
+
+        if (
+            (urine_test?.length ?? 0) > 1000 ||
+            (blood_test?.length ?? 0) > 1000 ||
+            (doctor_remarks?.length ?? 0) > 3000
+        ) {
+            return res.status(400).json({
+                message: "One or more text fields exceed the allowed length."
             });
         }
 
@@ -3423,15 +3533,23 @@ app.post(
                     visit_date,
                     height,
                     weight,
+                    systolic,
+                    diastolic,
+                    urine_test,
+                    blood_test,
                     doctor_remarks
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).run(
                 motherId,
                 visitNumber,
                 visit_date,
                 height ?? null,
                 weight ?? null,
+                systolic ?? null,
+                diastolic ?? null,
+                String(urine_test ?? "").trim(),
+                String(blood_test ?? "").trim(),
                 String(doctor_remarks ?? "").trim()
             );
 
@@ -3439,6 +3557,7 @@ app.post(
                 message: "Maternal visit added successfully.",
                 maternal_record_id: Number(result.lastInsertRowid)
             });
+
         } catch (error) {
             if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
                 return res.status(409).json({
@@ -3468,6 +3587,10 @@ app.put(
             visit_date,
             height,
             weight,
+            systolic,
+            diastolic,
+            urine_test,
+            blood_test,
             doctor_remarks
         } = req.body;
 
@@ -3475,9 +3598,12 @@ app.put(
         const visitNumber = Number(visit_number);
 
         if (
-            !Number.isInteger(recordId) || recordId <= 0 ||
-            !Number.isInteger(motherId) || motherId <= 0 ||
-            !Number.isInteger(visitNumber) || visitNumber <= 0 ||
+            !Number.isInteger(recordId) ||
+            recordId <= 0 ||
+            !Number.isInteger(motherId) ||
+            motherId <= 0 ||
+            !Number.isInteger(visitNumber) ||
+            visitNumber <= 0 ||
             typeof visit_date !== "string" ||
             !/^\d{4}-\d{2}-\d{2}$/.test(visit_date)
         ) {
@@ -3496,8 +3622,10 @@ app.put(
 
         if (
             height != null &&
-            (typeof height !== "number" || !Number.isFinite(height) ||
-                height <= 0 || height > 300)
+            (typeof height !== "number" ||
+                !Number.isFinite(height) ||
+                height <= 0 ||
+                height > 300)
         ) {
             return res.status(400).json({
                 message: "Please enter a valid height."
@@ -3506,8 +3634,10 @@ app.put(
 
         if (
             weight != null &&
-            (typeof weight !== "number" || !Number.isFinite(weight) ||
-                weight <= 0 || weight > 500)
+            (typeof weight !== "number" ||
+                !Number.isFinite(weight) ||
+                weight <= 0 ||
+                weight > 500)
         ) {
             return res.status(400).json({
                 message: "Please enter a valid weight."
@@ -3515,11 +3645,62 @@ app.put(
         }
 
         if (
-            doctor_remarks != null &&
-            typeof doctor_remarks !== "string"
+            (systolic == null) !== (diastolic == null)
         ) {
             return res.status(400).json({
-                message: "Invalid doctor's remarks."
+                message: "Please enter both systolic and diastolic values."
+            });
+        }
+
+        if (
+            systolic != null &&
+            (!Number.isInteger(systolic) ||
+                systolic < 1 ||
+                systolic > 300)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid systolic value."
+            });
+        }
+
+        if (
+            diastolic != null &&
+            (!Number.isInteger(diastolic) ||
+                diastolic < 1 ||
+                diastolic > 200)
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid diastolic value."
+            });
+        }
+
+        if (
+            systolic != null &&
+            diastolic != null &&
+            systolic <= diastolic
+        ) {
+            return res.status(400).json({
+                message: "Systolic must be higher than diastolic."
+            });
+        }
+
+        if (
+            (urine_test != null && typeof urine_test !== "string") ||
+            (blood_test != null && typeof blood_test !== "string") ||
+            (doctor_remarks != null && typeof doctor_remarks !== "string")
+        ) {
+            return res.status(400).json({
+                message: "Invalid maternal test results or doctor's remarks."
+            });
+        }
+
+        if (
+            (urine_test?.length ?? 0) > 1000 ||
+            (blood_test?.length ?? 0) > 1000 ||
+            (doctor_remarks?.length ?? 0) > 3000
+        ) {
+            return res.status(400).json({
+                message: "One or more text fields exceed the allowed length."
             });
         }
 
@@ -3543,6 +3724,10 @@ app.put(
                     visit_date = ?,
                     height = ?,
                     weight = ?,
+                    systolic = ?,
+                    diastolic = ?,
+                    urine_test = ?,
+                    blood_test = ?,
                     doctor_remarks = ?,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE maternal_record_id = ?
@@ -3552,6 +3737,10 @@ app.put(
                 visit_date,
                 height ?? null,
                 weight ?? null,
+                systolic ?? null,
+                diastolic ?? null,
+                String(urine_test ?? "").trim(),
+                String(blood_test ?? "").trim(),
                 String(doctor_remarks ?? "").trim(),
                 recordId,
                 motherId
@@ -3560,6 +3749,7 @@ app.put(
             return res.json({
                 message: "Maternal visit updated successfully."
             });
+
         } catch (error) {
             if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
                 return res.status(409).json({

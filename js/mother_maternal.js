@@ -102,14 +102,13 @@ async function loadMotherProfile() {
 
 
 /* ================= DISPLAY VISIT HISTORY ================= */
-
 function renderMaternalRecords(records) {
     const tbody = $("maternalRecordsBody");
 
     if (!Array.isArray(records) || records.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="empty-state">
+                <td colspan="8" class="empty-state">
                     No maternal visit records are available yet.
                 </td>
             </tr>
@@ -117,19 +116,35 @@ function renderMaternalRecords(records) {
         return;
     }
 
-    tbody.innerHTML = records.map(record => `
-        <tr>
-            <td>${escapeHTML(record.visit_number ?? "-")}</td>
-            <td>${formatDate(record.visit_date)}</td>
-            <td>${escapeHTML(record.height ?? "-")}</td>
-            <td>${escapeHTML(record.weight ?? "-")}</td>
-            <td>${escapeHTML(
-                record.doctor_remarks || "No remarks recorded"
-            )}</td>
-        </tr>
-    `).join("");
-}
+    tbody.innerHTML = records.map(record => {
+        const bloodPressure =
+            record.systolic != null && record.diastolic != null
+                ? `${record.systolic}/${record.diastolic} mmHg`
+                : "-";
 
+        return `
+            <tr>
+                <td>${escapeHTML(record.visit_number ?? "-")}</td>
+
+                <td>${formatDate(record.visit_date)}</td>
+
+                <td>${escapeHTML(bloodPressure)}</td>
+
+                <td>${escapeHTML(record.height ?? "-")}</td>
+
+                <td>${escapeHTML(record.weight ?? "-")}</td>
+
+                <td>${escapeHTML(record.urine_test || "-")}</td>
+
+                <td>${escapeHTML(record.blood_test || "-")}</td>
+
+                <td>${escapeHTML(
+                    record.doctor_remarks || "No remarks recorded"
+                )}</td>
+            </tr>
+        `;
+    }).join("");
+}
 
 /* ================= LOAD MATERNAL RECORDS ================= */
 
