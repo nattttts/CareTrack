@@ -5488,6 +5488,65 @@ function getMalaysiaDate() {
     }).format(new Date());
 }
 
+// Get clinic closing time
+function getClinicClosingTime(appointmentDate) {
+    const [year, month, day] = appointmentDate.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    const dayOfWeek = date.getUTCDay();
+
+    // Saturday: 1:00 PM
+    if (dayOfWeek === 6) {
+        return "13:00";
+    }
+
+    // Monday to Friday: 5:00 PM
+    return "17:00";
+}
+
+// Update missed appointments
+function updateMissedAppointments() {
+    try {
+        const today = getMalaysiaDate();
+
+        const currentTime = new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Asia/Kuala_Lumpur",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        }).format(new Date());
+
+        const clinicClosingTime = getClinicClosingTime(today);
+
+        // Only update appointments after the clinic has closed.
+        if (currentTime < clinicClosingTime) {
+            return;
+        }
+
+        // Mark confirmed appointments without a queue entry as missed.
+        const result = db.prepare(`
+            UPDATE Appointment
+            SET status = 'Missed'
+            WHERE appointment_date = ?
+            AND status = 'Confirmed'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM Queue_Entry
+                WHERE Queue_Entry.appointment_id = Appointment.appointment_id
+            )
+        `).run(today);
+
+        if (result.changes > 0) {
+            console.log(
+                `${result.changes} appointment(s) marked as missed.`
+            );
+        }
+
+    } catch (error) {
+        console.error("Error updating missed appointments:", error);
+    }
+}
+
 // Patient queue: Get Today's Appointments
 app.get("/api/patient/queue", requireRole("mother", "child"),
     (req, res) => {
@@ -5657,6 +5716,21 @@ app.post(
 
                 const now = Date.now();
 
+                // Check-in is not allowed after the clinic closes.
+                const currentTime = new Intl.DateTimeFormat("en-GB", {
+                    timeZone: "Asia/Kuala_Lumpur",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false
+                }).format(new Date());
+
+                const clinicClosingTime =
+                    getClinicClosingTime(appointment.appointment_date);
+
+                if (currentTime >= clinicClosingTime) {
+                    throw new Error("CLINIC_CLOSED");
+                }
+
                 // Check-in opens 15 minutes before the appointment.
                 const checkInOpensAt =
                     appointmentStartTime - 15 * 60 * 1000;
@@ -5749,6 +5823,12 @@ app.post(
             if (error.message === "APPOINTMENT_MISSED") {
                 return res.status(400).json({
                     message: "This appointment has already been marked as missed."
+                });
+            }
+
+            if (error.message === "CLINIC_CLOSED") {
+                return res.status(400).json({
+                    message: "The clinic has closed. Check-in is no longer available."
                 });
             }
 
@@ -6501,6 +6581,12 @@ app.get(
         }
     }
 );
+
+// Auto-update missed appointments when the server start
+updateMissedAppointments();
+
+// Check for missed appointments every 10 second.
+setInterval(updateMissedAppointments, 10000);
 
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);

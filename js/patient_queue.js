@@ -9,7 +9,7 @@ const queueStatus = document.getElementById("queueStatus");
 const liveQueue = document.getElementById("liveQueue");
 const queueInfo = document.getElementById("queueInfo");
 
-// Appointment details
+// ================= APPOINTMENT DETAILS =================
 const appointmentCard = document.getElementById("appointmentCard");
 const appointmentType = document.getElementById("appointmentType");
 const patientName = document.getElementById("patientName");
@@ -20,7 +20,7 @@ const appointmentStatusText = document.getElementById("appointmentStatusText");
 const expectedCheckInTime = document.getElementById("expectedCheckInTime");
 const expectedCheckInSection = document.querySelector(".expected-check-in");
 
-// Queue details
+// ================= QUEUE DETAILS =================
 const queueStatusBadge = document.getElementById("queueStatusBadge");
 const queueNumber = document.getElementById("queueNumber");
 const queuePosition = document.getElementById("queuePosition");
@@ -38,6 +38,14 @@ let currentAppointmentId = null;
 let currentAppointment = null;
 let checkInTimer = null;
 let waitingTimeTimer = null;
+
+// ================= GET CLINIC CLOSING TIME =================
+function getClinicClosingTime(appointmentDate) {
+    const [year, month, day] = appointmentDate.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    return date.getUTCDay() === 6 ? "13:00" : "17:00";
+}
 
 // ================= CHECK-IN TIME VALIDATION =================
 function getCheckInTimeStatus(appointment) {
@@ -58,6 +66,22 @@ function getCheckInTimeStatus(appointment) {
 
     const checkInOpensAt = appointmentStart - 15 * 60 * 1000;
     const now = Date.now();
+
+    // Check whether the clinic has closed.
+    const currentTime = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kuala_Lumpur",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    }).format(new Date());
+
+    const clinicClosingTime = getClinicClosingTime(
+        appointment.appointment_date
+    );
+
+    if (currentTime >= clinicClosingTime) {
+        return { status: "closed" };
+    }
 
     if (now < checkInOpensAt) {
         return {
@@ -81,6 +105,11 @@ function updateCheckInAvailability(appointment) {
             "Please refresh the page or contact clinic staff."
         );
 
+        return;
+    }
+
+    if (result.status === "closed") {
+        notCheckedIn.hidden = true;
         return;
     }
 
@@ -220,6 +249,24 @@ function showCheckInSection() {
     queueStatus.hidden = true;
     queueInfo.hidden = true;
     liveQueue.hidden = true;
+
+    // Handle missed appointments without a queue entry.
+    if (currentAppointment?.appointment_status === "Missed") {
+        notCheckedIn.hidden = true;
+        checkInButton.disabled = true;
+
+        showMessage(
+            "You Missed Your Appointment",
+            "You did not check in before the clinic closed."
+        );
+
+        if (checkInTimer) {
+            clearInterval(checkInTimer);
+            checkInTimer = null;
+        }
+
+        return;
+    }
 
     if (liveQueueTimer) {
         clearInterval(liveQueueTimer);
@@ -557,7 +604,8 @@ function showMessage(title, message, isSuccess = false) {
             checkInMessage.classList.add("success");
         } else if (
             title === "You Missed Your Appointment" ||
-            title === "Check-in failed"
+            title === "Check-in failed" ||
+            title === "Clinic Closed"
         ) {
             checkInMessage.classList.add("warning");
         } else {
