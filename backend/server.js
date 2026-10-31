@@ -5298,46 +5298,6 @@ function getMalaysiaDate() {
     }).format(new Date());
 }
 
-// Auto-update missed appointment
-function updateMissedAppointments() {
-    try {
-        const today = getMalaysiaDate();
-
-        const currentTime = new Date().toLocaleTimeString("en-GB", {
-            timeZone: "Asia/Kuala_Lumpur",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false
-        });
-
-        const result = db.prepare(`
-            UPDATE Appointment
-            SET status = 'Missed'
-            WHERE status = 'Confirmed'
-            AND ( appointment_date < ?
-                OR (
-                    appointment_date = ?
-                    AND time(start_time, '+5 minutes') <= ?
-                )
-            )
-            AND NOT EXISTS (
-                SELECT 1
-                FROM Queue_Entry
-                WHERE Queue_Entry.appointment_id = Appointment.appointment_id
-            )
-        `).run(today, today, currentTime);
-
-        if (result.changes > 0) {
-            console.log(
-                `Updated ${result.changes} appointment(s) to Missed.`
-            );
-        }
-    } catch (error) {
-        console.error("Error updating missed appointments:", error);
-    }
-}
-
 // Patient queue: Get Today's Appointments
 app.get("/api/patient/queue", requireRole("mother", "child"),
     (req, res) => {
@@ -5511,16 +5471,8 @@ app.post(
                 const checkInOpensAt =
                     appointmentStartTime - 15 * 60 * 1000;
 
-                // Check-in closes 5 minutes after the appointment starts.
-                const checkInClosesAt =
-                    appointmentStartTime + 5 * 60 * 1000;
-
                 if (now < checkInOpensAt) {
                     throw new Error("CHECK_IN_NOT_OPEN");
-                }
-
-                if (now >= checkInClosesAt) {
-                    throw new Error("APPOINTMENT_MISSED");
                 }
 
                 // Find the largest queue number issued today.
@@ -5604,29 +5556,15 @@ app.post(
                 });
             }
 
-            if (error.message === "CHECK_IN_NOT_OPEN") {
+            if (error.message === "APPOINTMENT_MISSED") {
                 return res.status(400).json({
-                    message: "Check-in opens 15 minutes before your appointment."
+                    message: "This appointment has already been marked as missed."
                 });
             }
 
-            if (error.message === "APPOINTMENT_MISSED") {
-                // Update the appointment status in the database.
-                db.prepare(`
-                    UPDATE Appointment
-                    SET status = 'Missed'
-                    WHERE appointment_id = ?
-                    AND user_id = ?
-                    AND status = 'Confirmed'
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM Queue_Entry
-                        WHERE Queue_Entry.appointment_id = Appointment.appointment_id
-                    )
-                `).run(appointmentId, userId);
-
+            if (error.message === "CHECK_IN_NOT_OPEN") {
                 return res.status(400).json({
-                    message: "You Missed Your Appointment. Check-in is now closed."
+                    message: "Check-in opens 15 minutes before your appointment."
                 });
             }
 
@@ -5809,7 +5747,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                 // Ensure the appointment is confirmed before calling or completing the visit
                 const currentStatus = entry.queue_status;
 
-                // ================= CALL PATIENT =================
+                // Call patient
                 if (newStatus === "Called") {
 
                     if (currentStatus !== "Waiting") {
@@ -5885,7 +5823,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                     );
                 }
 
-                // ================= COMPLETE VISIT =================
+                // Complete visit
                 else if (newStatus === "Completed") {
 
                     if (currentStatus !== "Called") {
@@ -5921,7 +5859,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                     }
                 }
 
-                // ================= SKIP PATIENT =================
+                // Skip patient
                 else if (newStatus === "Skipped") {
 
                     if (currentStatus !== "Called") {
@@ -5985,7 +5923,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
             const result = updateQueueTransaction();
             const updatedEntry = result.queueEntry;
 
-            // ================= SEND QUEUE CALLED EMAIL =================
+            // Send queue called email
             if (newStatus === "Called") {
                 try {
                     await sendQueueCalledEmail(
@@ -6373,13 +6311,6 @@ app.get(
         }
     }
 );
-
-// Auto-update Missed Appointments
-// Check when the server starts
-updateMissedAppointments();
-
-// Check every 30 seconds
-setInterval(updateMissedAppointments, 30 * 1000);
 
 app.listen(PORT, () => {
     console.log(`CareTrack server running at http://localhost:${PORT}`);

@@ -57,20 +57,12 @@ function getCheckInTimeStatus(appointment) {
     }
 
     const checkInOpensAt = appointmentStart - 15 * 60 * 1000;
-    const checkInClosesAt = appointmentStart + 5 * 60 * 1000;
     const now = Date.now();
 
     if (now < checkInOpensAt) {
         return {
             status: "not-open",
             opensAt: checkInOpensAt
-        };
-    }
-
-    if (now >= checkInClosesAt) {
-        return {
-            status: "missed",
-            closesAt: checkInClosesAt
         };
     }
 
@@ -95,32 +87,9 @@ function updateCheckInAvailability(appointment) {
     if (result.status === "not-open") {
         checkInButton.disabled = true;
 
-        const opensAt = new Date(result.opensAt).toLocaleTimeString(
-            "en-MY",
-            {
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-                timeZone: "Asia/Kuala_Lumpur"
-            }
-        );
-
-        showMessage(
-            "Check-in not open yet",
-            `Check-in opens at ${opensAt}. Please try again then.`
-        );
-
-        return;
-    }
-
-    if (result.status === "missed") {
-        checkInButton.disabled = true;
-        notCheckedIn.hidden = true;
-
-        showMessage(
-            "You Missed Your Appointment",
-            "The check-in period has ended. Please contact clinic staff for assistance."
-        );
+        if (checkInMessage) {
+            checkInMessage.hidden = true;
+        }
 
         return;
     }
@@ -204,11 +173,7 @@ function displayAppointment(appointment) {
         `${formatTime(appointment.start_time)}`;
 
     // Check whether the appointment has been missed.
-    const isMissed = appointment.appointment_status === "Missed" ||
-    (
-        getCheckInTimeStatus(appointment).status === "missed" &&
-        !appointment.queue_entry_id
-    );
+    const isMissed = appointment.appointment_status === "Missed";
 
     // Display appointment status.
     if (appointmentStatusText) {

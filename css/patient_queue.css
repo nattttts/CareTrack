@@ -272,6 +272,11 @@ img {
     background: #e81f67;
 }
 
+.checkin-button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
 /* ================= CHECK-IN MESSAGE ================= */
 .checkin-message {
     display: flex;
