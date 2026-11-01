@@ -277,7 +277,7 @@ function updateActionButton(row) {
 
     actionContainer.innerHTML = "";
 
-    function createActionButton(label, action, className, disabled = false) {
+    function createActionButton(label, action, className) {
 
         const button = document.createElement("button");
 
@@ -285,7 +285,6 @@ function updateActionButton(row) {
         button.classList.add("action-button", className);
         button.textContent = label;
         button.dataset.action = action;
-        button.disabled = disabled;
 
         return button;
     }
@@ -315,16 +314,6 @@ function updateActionButton(row) {
             )
         );
 
-    } else if (status === "Completed") {
-
-        actionContainer.appendChild(
-            createActionButton(
-                "Completed",
-                "view",
-                "view-button",
-                true
-            )
-        );
     }
 }
 
