@@ -181,11 +181,6 @@
                     <i class="bi bi-check-circle"></i>
                     Completed
                 </button>
-
-                <button class="queue-tab" data-tab="skipped">
-                    <i class="bi bi-skip-end-fill"></i>
-                    Skipped
-                </button>
             </div>
 
             <!-- ================= FILTER ================= -->
@@ -230,8 +225,8 @@
                             <option value="all">All Statuses</option>
                             <option value="Waiting">Waiting</option>
                             <option value="Called">Called</option>
-                            <option value="Completed">Completed</option>
                             <option value="Skipped">Skipped</option>
+                            <option value="Completed">Completed</option>
                         </select>
                     </div>
 
@@ -405,7 +400,8 @@
                             </p>
 
                             <p class="mb-0 text-muted">
-                                The patient will be moved to the skipped queue and will not be called again.
+                                If the clinic is still open, the patient will return to the waiting queue.
+                                If the clinic has closed, the patient will be marked as skipped.
                             </p>
                         </div>
 

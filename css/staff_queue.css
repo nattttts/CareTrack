@@ -185,7 +185,7 @@ a {
 
 /* ================= QUEUE TABS ================= */
 .queue-tabs {
-    width: 330px;
+    width: 260px;
     margin: 0 auto 18px;
     display: flex;
     background: var(--white);
@@ -195,7 +195,7 @@ a {
 }
 
 .queue-tab {
-    min-width: 110px;
+    min-width: 130px;
     padding: 12px 20px;
     display: flex;
     align-items: center;

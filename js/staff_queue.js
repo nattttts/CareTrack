@@ -81,10 +81,6 @@ function getQueueTab(status) {
         return "completed";
     }
 
-    if (status === "Skipped") {
-        return "skipped";
-    }
-
     return "queue";
 }
 
@@ -324,17 +320,6 @@ function updateActionButton(row) {
         actionContainer.appendChild(
             createActionButton(
                 "Completed",
-                "view",
-                "view-button",
-                true
-            )
-        );
-
-    } else if (status === "Skipped") {
-
-        actionContainer.appendChild(
-            createActionButton(
-                "Skipped",
                 "view",
                 "view-button",
                 true
