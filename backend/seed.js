@@ -73,8 +73,8 @@ const insert = {
 
     queue: db.prepare(`
         INSERT INTO Queue_Entry
-            (queue_entry_id, appointment_id, queue_number, check_in_time, status)
-        VALUES (?, ?, ?, ?, ?)
+            (queue_entry_id, appointment_id, queue_number, check_in_time, waiting_since, status)
+        VALUES (?, ?, ?, ?, ?, ?)
     `)
 };
 
@@ -230,10 +230,10 @@ async function main() {
         // Only appointments that have checked in.
         // =========================================
         const queueEntries = [
-            [1, 1, 3, "10:50:00", "Completed"],
-            [2, 2, 2, "10:20:00", "Completed"],
-            [3, 3, 1, "09:50:00", "Completed"],
-            [4, 4, 1, "08:50:00", "Completed"]
+            [1, 1, 3, "10:50:00", "10:50:00", "Completed"],
+            [2, 2, 2, "10:20:00", "10:20:00", "Completed"],
+            [3, 3, 1, "09:50:00", "09:50:00", "Completed"],
+            [4, 4, 1, "08:50:00", "08:50:00", "Completed"]
         ];
 
         queueEntries.forEach(row => insert.queue.run(...row));
