@@ -161,7 +161,6 @@ function renderQueue() {
         row.dataset.queue = String(queueNumber);
         row.dataset.service = service;
         row.dataset.status = status;
-        row.dataset.startTime = entry.start_time;
         row.dataset.tab = getQueueTab(status);
         row.dataset.role = entry.patient_role || "";
 
@@ -406,25 +405,6 @@ async function updateQueueStatus(row, newStatus) {
     }
 }
 
-// ================= CHECK APPOINTMENT START TIME =================
-function hasAppointmentStarted(row) {
-    const appointmentStartTime = row.dataset.startTime;
-
-    if (!appointmentStartTime) {
-        return false;
-    }
-
-    const currentTime = new Date().toLocaleTimeString("en-GB", {
-        timeZone: "Asia/Kuala_Lumpur",
-        hour12: false,
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-
-    // Compare the current time with the appointment start time.
-    return currentTime >= appointmentStartTime;
-}
-
 // ================= HANDLE ACTION =================
 function handleAction(button) {
 
@@ -443,15 +423,6 @@ function handleAction(button) {
     }
 
     if (action === "call" && currentStatus === "Waiting") {
-        // Check appointment start time first.
-        if (!hasAppointmentStarted(row)) {
-            alert(
-                "The appointment has not started yet. " +
-                "Please wait until the appointment start time."
-            );
-            return;
-        } 
-
         // Open the confirmation modal only when calling is allowed.
         openCallModal(row);
         return;

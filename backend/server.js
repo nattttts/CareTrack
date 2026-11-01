@@ -6106,19 +6106,6 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         throw new Error("APPOINTMENT_NOT_CONFIRMED");
                     }
 
-                    // Prevent calling a patient before their appointment start time.
-                    const currentTime = new Date().toLocaleTimeString("en-GB", {
-                        timeZone: "Asia/Kuala_Lumpur",
-                        hour12: false,
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit"
-                    });
-
-                    if (currentTime < entry.start_time) {
-                        throw new Error("APPOINTMENT_NOT_STARTED");
-                    }
-
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
                         SET status = 'Called'
@@ -6276,12 +6263,6 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
             if (error.message === "APPOINTMENT_NOT_CONFIRMED") {
                 return res.status(409).json({
                     message: "The appointment is not confirmed."
-                });
-            }
-
-            if (error.message === "APPOINTMENT_NOT_STARTED") {
-                return res.status(409).json({
-                    message: "The appointment has not started yet. Please wait until the appointment start time."
                 });
             }
 
