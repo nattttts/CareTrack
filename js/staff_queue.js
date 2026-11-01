@@ -378,27 +378,6 @@ function updateStatusBadge(row) {
     statusCell.replaceChildren(statusBadge);
 }
 
-// ================= CHECK SERVICE AVAILABILITY =================
-function isServiceOccupied(row) {
-
-    const service = row.dataset.service;
-
-    const rows = tableBody.querySelectorAll("tr");
-
-    for (const otherRow of rows) {
-
-        if (otherRow === row) {
-            continue;
-        }
-
-        if (otherRow.dataset.service === service && otherRow.dataset.status === "Called") {
-            return otherRow;
-        }
-    }
-
-    return null;
-}
-
 // ================= UPDATE STATUS THROUGH API =================
 async function updateQueueStatus(row, newStatus) {
 
@@ -465,8 +444,7 @@ function hasAppointmentStarted(row) {
         timeZone: "Asia/Kuala_Lumpur",
         hour12: false,
         hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
+        minute: "2-digit"
     });
 
     // Compare the current time with the appointment start time.
@@ -498,20 +476,7 @@ function handleAction(button) {
                 "Please wait until the appointment start time."
             );
             return;
-        }
-
-        // Check whether the same service is occupied.
-        const occupiedRow = isServiceOccupied(row);
-
-        if (occupiedRow) {
-            alert(
-                `${row.dataset.service} is currently occupied.\n\n` +
-                `${occupiedRow.dataset.patient} is currently ` +
-                `${occupiedRow.dataset.status.toLowerCase()}.\n\n` +
-                "Please wait until the current visit is completed."
-            );
-            return;
-        }
+        } 
 
         // Open the confirmation modal only when calling is allowed.
         openCallModal(row);
