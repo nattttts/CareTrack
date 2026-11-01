@@ -33,6 +33,9 @@ const queueList = document.getElementById("queueList");
 // Store the live queue refresh timer
 let liveQueueTimer = null;
 
+// Store the queue position refresh timer
+let queuePositionTimer = null;
+
 // Store the current appointment ID
 let currentAppointmentId = null;
 let currentAppointment = null;
@@ -186,6 +189,70 @@ async function loadTodayAppointment() {
     }
 }
 
+// ================= REFRESH QUEUE POSITION =================
+async function refreshQueuePosition() {
+    try {
+        const response = await fetch("/api/patient/queue");
+
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to refresh queue position.");
+        }
+
+        const appointments = await response.json();
+
+        if (!Array.isArray(appointments)) {
+            return;
+        }
+
+        // Find the current appointment.
+        const appointment = appointments.find(
+            item => item.appointment_id === currentAppointmentId
+        );
+
+        if (!appointment) {
+            return;
+        }
+
+        // Update the current appointment data.
+        currentAppointment = appointment;
+
+        // Update appointment status.
+        if (appointmentStatusText) {
+            appointmentStatusText.textContent =
+                appointment.appointment_status;
+        }
+
+        // Update queue information.
+        if (appointment.queue_entry_id) {
+
+            // Handle skipped queue entries.
+            if (appointment.queue_status === "Skipped") {
+                displayQueueStatus(appointment);
+                return;
+            }
+
+            const status = appointment.queue_status;
+
+            queueNumber.textContent = appointment.queue_number ?? "—";
+
+            queueStatusBadge.textContent = status;
+            queueStatusBadge.className =
+                `queue-status ${getQueueStatusClass(status)}`;
+
+            queuePosition.textContent =
+                appointment.queue_position ?? "—";
+        }
+
+    } catch (error) {
+        console.error("Error refreshing queue position:", error);
+    }
+}
+
 // ================= DISPLAY APPOINTMENT =================
 function displayAppointment(appointment) {
     appointmentType.textContent = appointment.appointment_type;
@@ -266,6 +333,12 @@ function showCheckInSection() {
         }
 
         return;
+    }
+
+    // Stop refreshing queue position.
+    if (queuePositionTimer) {
+        clearInterval(queuePositionTimer);
+        queuePositionTimer = null;
     }
 
     if (liveQueueTimer) {
@@ -355,16 +428,22 @@ function displayQueueStatus(appointment) {
         queueInfo.hidden = true;
         liveQueue.hidden = true;
 
-        // Stop refreshing the queue
-        if (liveQueueTimer) {
-            clearInterval(liveQueueTimer);
-            liveQueueTimer = null;
+        // Stop refreshing the queue position.
+        if (queuePositionTimer) {
+            clearInterval(queuePositionTimer);
+            queuePositionTimer = null;
         }
 
         // Stop updating the estimated waiting time
         if (waitingTimeTimer) {
             clearInterval(waitingTimeTimer);
             waitingTimeTimer = null;
+        }
+
+        // Stop refreshing the queue
+        if (liveQueueTimer) {
+            clearInterval(liveQueueTimer);
+            liveQueueTimer = null;
         }
 
         checkInButton.disabled = true;
@@ -391,7 +470,7 @@ function displayQueueStatus(appointment) {
     queueStatusBadge.className =
         `queue-status ${getQueueStatusClass(status)}`;
     
-    queuePosition.textContent = appointment.queue_position;
+    queuePosition.textContent = appointment.queue_position ?? "—";
 
     updateWaitingTime(appointment);
 
@@ -404,6 +483,13 @@ function displayQueueStatus(appointment) {
             updateWaitingTime(currentAppointment);
         }
     }, 30000);
+
+    // Refresh queue position every 10 seconds.
+    if (!queuePositionTimer) {
+        queuePositionTimer = setInterval(() => {
+            refreshQueuePosition();
+        }, 10000);
+    }
 
     checkInButton.disabled = true;
 
@@ -450,11 +536,6 @@ async function loadLiveQueue() {
             queueList.appendChild(emptyMessage);
             return;
         }
-
-        // Sort by queue number in ascending order.
-        queueEntries.sort(
-            (a, b) => a.queue_number - b.queue_number
-        );
 
         queueEntries.forEach((entry) => {
 
@@ -558,6 +639,11 @@ function showNoAppointment() {
     if (checkInTimer) {
         clearInterval(checkInTimer);
         checkInTimer = null;
+    }
+
+    if (queuePositionTimer) {
+        clearInterval(queuePositionTimer);
+        queuePositionTimer = null;
     }
 
     if (waitingTimeTimer) {

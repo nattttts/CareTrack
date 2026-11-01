@@ -5606,54 +5606,25 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                         -- No queue entry means the patient has not checked in
                         WHEN q.queue_entry_id IS NULL THEN NULL
 
-                        -- Completed or skipped patients have no active queue position
-                        WHEN q.status IN ('Completed', 'Skipped') THEN NULL
+                        -- Called, Completed and Skipped patients have no waiting position
+                        WHEN q.status IN ('Called', 'Completed', 'Skipped') THEN NULL
                         
-                        -- Count active queue entries in the same service
+                        -- Count all Waiting patients across both services
                         ELSE (
                             SELECT COUNT(*)
                             FROM Queue_Entry AS q2
 
                             WHERE date(q2.check_in_time, '+8 hours') = ?
-                            AND q2.status IN ('Waiting', 'Called')
-
-                            -- Only count entries for the same appointment type
-                            AND EXISTS (
-                                SELECT 1
-                                FROM Appointment AS a2
-                                WHERE a2.appointment_id = q2.appointment_id
-                                AND a2.appointment_type = a.appointment_type
-                            )
-
-                            -- Follow the same queue ordering as the staff queue
+                            AND q2.status = 'Waiting'
+                            
+                            -- Compare Waiting patients by waiting_since
                             AND (
-                                -- Called patients are ahead of Waiting patients
-                                (q.status = 'Waiting' AND q2.status = 'Called')
-
-                                OR
-
-                                -- Compare Called patients by queue number
-                                (
-                                    q.status = 'Called'
-                                    AND q2.status = 'Called'
+                                q2.waiting_since < q.waiting_since
+                                OR (
+                                    q2.waiting_since = q.waiting_since
                                     AND q2.queue_number <= q.queue_number
                                 )
-
-                                OR
-
-                                -- Compare Waiting patients by waiting_since
-                                (
-                                    q.status = 'Waiting'
-                                    AND q2.status = 'Waiting'
-                                    AND (
-                                        q2.waiting_since < q.waiting_since
-                                        OR (
-                                            q2.waiting_since = q.waiting_since
-                                            AND q2.queue_number <= q.queue_number
-                                        )
-                                    )
-                                )
-                            )
+                            )   
                         )
                     END AS queue_position
 
