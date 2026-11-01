@@ -3815,7 +3815,6 @@ function getMalaysiaDateTime() {
     };
 }
 
-
 // Retreive available time slots for appointments for staff
 app.get("/api/staff/available-slots", requireRole("staff"), (req, res) => {
     try {
@@ -5523,22 +5522,58 @@ function updateMissedAppointments() {
             return;
         }
 
-        // Mark confirmed appointments without a queue entry as missed.
-        const result = db.prepare(`
-            UPDATE Appointment
-            SET status = 'Missed'
-            WHERE appointment_date = ?
-            AND status = 'Confirmed'
-            AND NOT EXISTS (
-                SELECT 1
-                FROM Queue_Entry
-                WHERE Queue_Entry.appointment_id = Appointment.appointment_id
-            )
-        `).run(today);
+        const updateMissedTransaction = db.transaction(() => {
 
-        if (result.changes > 0) {
+            // Mark unfinished queue entries as skipped.
+            const queueResult = db.prepare(`
+                UPDATE Queue_Entry
+                SET status = 'Skipped'
+                WHERE status = 'Waiting'
+                AND appointment_id IN (
+                    SELECT appointment_id
+                    FROM Appointment
+                    WHERE appointment_date = ?
+                    AND status = 'Confirmed'
+                )
+            `).run(today);
+
+            // Mark appointments without a queue entry or with an unfinished queue entry as missed.
+            const appointmentResult = db.prepare(`
+                UPDATE Appointment
+                SET status = 'Missed'
+                WHERE appointment_date = ?
+                AND status = 'Confirmed'
+                AND (
+                    NOT EXISTS (
+                        SELECT 1
+                        FROM Queue_Entry
+                        WHERE Queue_Entry.appointment_id =
+                              Appointment.appointment_id
+                    )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM Queue_Entry
+                        WHERE Queue_Entry.appointment_id =
+                              Appointment.appointment_id
+                        AND Queue_Entry.status = 'Skipped'
+                    )
+                )
+            `).run(today);
+
+            return {
+                queueChanges: queueResult.changes,
+                appointmentChanges: appointmentResult.changes
+            };
+        });
+
+        const result = updateMissedTransaction();
+
+        if (
+            result.queueChanges > 0 ||
+            result.appointmentChanges > 0
+        ) {
             console.log(
-                `${result.changes} appointment(s) marked as missed.`
+                `${result.appointmentChanges} appointment(s) marked as missed.`
             );
         }
 
@@ -5578,8 +5613,8 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                         ELSE (
                             SELECT COUNT(*)
                             FROM Queue_Entry AS q2
+
                             WHERE date(q2.check_in_time, '+8 hours') = ?
-                            AND q2.queue_number <= q.queue_number
                             AND q2.status IN ('Waiting', 'Called')
 
                             -- Only count entries for the same appointment type
@@ -5588,6 +5623,36 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                                 FROM Appointment AS a2
                                 WHERE a2.appointment_id = q2.appointment_id
                                 AND a2.appointment_type = a.appointment_type
+                            )
+
+                            -- Follow the same queue ordering as the staff queue
+                            AND (
+                                -- Called patients are ahead of Waiting patients
+                                (q.status = 'Waiting' AND q2.status = 'Called')
+
+                                OR
+
+                                -- Compare Called patients by queue number
+                                (
+                                    q.status = 'Called'
+                                    AND q2.status = 'Called'
+                                    AND q2.queue_number <= q.queue_number
+                                )
+
+                                OR
+
+                                -- Compare Waiting patients by waiting_since
+                                (
+                                    q.status = 'Waiting'
+                                    AND q2.status = 'Waiting'
+                                    AND (
+                                        q2.waiting_since < q.waiting_since
+                                        OR (
+                                            q2.waiting_since = q.waiting_since
+                                            AND q2.queue_number <= q.queue_number
+                                        )
+                                    )
+                                )
                             )
                         )
                     END AS queue_position
@@ -5716,18 +5781,17 @@ app.post(
 
                 const now = Date.now();
 
-                // Check-in is not allowed after the clinic closes.
-                const currentTime = new Intl.DateTimeFormat("en-GB", {
-                    timeZone: "Asia/Kuala_Lumpur",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false
-                }).format(new Date());
+                // Get clinic closing time
+                const clinicClosingTime = getClinicClosingTime(appointment.appointment_date);
 
-                const clinicClosingTime =
-                    getClinicClosingTime(appointment.appointment_date);
+                // Last check-in time = 10 minutes before clinic closing
+                const clinicCloseAt = Date.parse(
+                    `${appointment.appointment_date}T${clinicClosingTime}+08:00`
+                );
 
-                if (currentTime >= clinicClosingTime) {
+                const checkInCloseAt = clinicCloseAt - 10 * 60 * 1000;
+
+                if (now >= checkInCloseAt) {
                     throw new Error("CLINIC_CLOSED");
                 }
 
@@ -5828,7 +5892,7 @@ app.post(
 
             if (error.message === "CLINIC_CLOSED") {
                 return res.status(400).json({
-                    message: "The clinic has closed. Check-in is no longer available."
+                    message: "Check-in is no longer available for today."
                 });
             }
 
@@ -5853,7 +5917,7 @@ app.post(
     }
 );
 
- // Patient live queue
+// Patient live queue
 app.get("/api/patient/live-queue", requireRole("mother", "child"),
     (req, res) => {
         try {
@@ -5873,7 +5937,17 @@ app.get("/api/patient/live-queue", requireRole("mother", "child"),
                   AND date(q.check_in_time, '+8 hours') = ?
                   AND q.status IN ('Waiting', 'Called')
 
-                ORDER BY q.queue_number ASC
+                ORDER BY
+                    CASE q.status
+                        WHEN 'Called' THEN 1
+                        WHEN 'Waiting' THEN 2
+                        ELSE 3
+                    END,
+                    CASE
+                        WHEN q.status = 'Waiting' THEN q.waiting_since
+                        ELSE q.queue_number
+                    END ASC,
+                    q.queue_number ASC
             `).all(today, today);
 
             return res.json(queueEntries);
@@ -5935,6 +6009,10 @@ app.get("/api/staff/queue", requireRole("staff"),
                         WHEN 'Skipped' THEN 4
                         ELSE 5
                     END,
+                    CASE
+                        WHEN q.status = 'Waiting' THEN q.waiting_since
+                        ELSE q.queue_number
+                    END ASC,
                     q.queue_number ASC
             `).all(today, today);
 
@@ -6041,32 +6119,6 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         throw new Error("APPOINTMENT_NOT_STARTED");
                     }
 
-                    // Prevent calling another patient when the same service already has a Called entry.
-                    const occupiedEntry = db.prepare(`
-                        SELECT q.queue_entry_id
-                        FROM Queue_Entry AS q
-
-                        INNER JOIN Appointment AS a
-                            ON q.appointment_id = a.appointment_id
-
-                        WHERE a.appointment_type = ?
-                          AND a.appointment_date = ?
-                          AND date(q.check_in_time, '+8 hours') = ?
-                          AND q.queue_entry_id != ?
-                          AND q.status = 'Called'
-
-                        LIMIT 1
-                    `).get(
-                        entry.appointment_type,
-                        today,
-                        today,
-                        queueEntryId
-                    );
-
-                    if (occupiedEntry) {
-                        throw new Error("SERVICE_OCCUPIED");
-                    }
-
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
                         SET status = 'Called'
@@ -6140,28 +6192,18 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         throw new Error("APPOINTMENT_NOT_CONFIRMED");
                     }
 
-                    // Update the queue status first.
+                    // Return the patient to the end of the waiting queue.
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
-                        SET status = 'Skipped'
+                        SET
+                            status = 'Waiting',
+                            waiting_since = CURRENT_TIMESTAMP
                         WHERE queue_entry_id = ?
                         AND status = 'Called'
                     `).run(queueEntryId);
 
                     if (queueUpdate.changes !== 1) {
                         throw new Error("QUEUE_UPDATE_FAILED");
-                    }
-
-                    // Update the associated appointment as missed.
-                    const appointmentUpdate = db.prepare(`
-                        UPDATE Appointment
-                        SET status = 'Missed'
-                        WHERE appointment_id = ?
-                        AND status = 'Confirmed'
-                    `).run(entry.appointment_id);
-
-                    if (appointmentUpdate.changes !== 1) {
-                        throw new Error("APPOINTMENT_UPDATE_FAILED");
                     }
                 }
 
@@ -6173,6 +6215,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                             q.appointment_id,
                             q.queue_number,
                             q.check_in_time,
+                            q.waiting_since,
                             q.status AS queue_status,
                             a.status AS appointment_status
                         FROM Queue_Entry AS q
@@ -6227,12 +6270,6 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
             if (error.message === "INVALID_STATUS_TRANSITION") {
                 return res.status(409).json({
                     message: "This queue entry cannot move to the requested status."
-                });
-            }
-
-            if (error.message === "SERVICE_OCCUPIED") {
-                return res.status(409).json({
-                    message: "Another patient is already called for this service. Please wait."
                 });
             }
 
