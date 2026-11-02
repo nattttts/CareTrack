@@ -3866,7 +3866,10 @@ app.get("/api/staff/available-slots", requireRole("staff"), (req, res) => {
             WHERE appointment_date = ?
                 AND start_time = ?
                 AND appointment_type = ?
-                AND appointment_id != ?
+                AND (
+                    ? IS NULL
+                    OR appointment_id != ?
+                )
         `);
 
         const availableSlots = allowedSlots.filter(slot => {
@@ -3874,12 +3877,13 @@ app.get("/api/staff/available-slots", requireRole("staff"), (req, res) => {
                 return false;
             }
 
-            const result = getAppointmentCount.get(
-                date,
-                slot,
-                appointmentType,
-                appointment_id
-            );
+        const result = getAppointmentCount.get(
+            date,
+            slot,
+            appointmentType,
+            appointment_id || null,
+            appointment_id || null
+        );
 
             return result.total < APPOINTMENT_CAPACITY;
         });

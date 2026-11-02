@@ -458,6 +458,98 @@ async function deleteRecord(recordId) {
     }
 }
 
+// Load available vaccination appointment time slots
+async function loadVaccinationTimeSlots() {
+    const dateInput = $("newDueDate");
+    const timeSelect = $("newStartTime");
+    const message = $("vaccinationTimeMessage");
+
+    timeSelect.disabled = true;
+    timeSelect.innerHTML =
+        '<option value="">Loading available slots...</option>';
+
+    message.textContent = "";
+
+    const selectedDate = dateInput.value;
+
+    if (!selectedChildId || !selectedDate) {
+        timeSelect.innerHTML =
+            '<option value="">Select a date first</option>';
+
+        message.textContent =
+            "Available time slots will appear after selecting a date.";
+
+        return;
+    }
+
+    try {
+        const params = new URLSearchParams({
+            user_id: selectedChildId,
+            date: selectedDate
+        });
+
+        const response = await fetch(
+            `/api/staff/available-slots?${params}`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to load available time slots."
+            );
+        }
+
+        timeSelect.innerHTML = "";
+
+        if (!result.slots || result.slots.length === 0) {
+            timeSelect.innerHTML =
+                '<option value="">No available slots</option>';
+
+            message.textContent =
+                "There are no available vaccination slots on this date.";
+
+            return;
+        }
+
+        timeSelect.add(
+            new Option("Select a time slot", "")
+        );
+
+        result.slots.forEach(slot => {
+            const [hour, minute] = slot.split(":").map(Number);
+
+            const period = hour >= 12 ? "PM" : "AM";
+            const displayHour = hour % 12 || 12;
+
+            const label =
+                `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+
+            timeSelect.add(
+                new Option(label, slot)
+            );
+        });
+
+        timeSelect.disabled = false;
+
+        message.textContent =
+            "Each time slot accommodates up to 4 child vaccination appointments.";
+
+    } catch (error) {
+        console.error("Error loading vaccination time slots:", error);
+
+        timeSelect.innerHTML =
+            '<option value="">Unable to load slots</option>';
+
+        message.textContent = error.message;
+
+        showToast(
+            error.message || "Unable to load available time slots.",
+            "error"
+        );
+    }
+}
+
 // Show the add-record form
 function addRecord() {
     if (!selectedChildId) {
@@ -470,13 +562,18 @@ function addRecord() {
 
     const today = new Date();
 
-    $("newDueDate").value = [
+    const todayString = [
         today.getFullYear(),
         String(today.getMonth() + 1).padStart(2, "0"),
         String(today.getDate()).padStart(2, "0")
     ].join("-");
 
+    $("newDueDate").min = todayString;
+    $("newDueDate").value = todayString;
+
     updateDoseOptions("new");
+
+    loadVaccinationTimeSlots();
 }
 
 // Hide the add-record form
@@ -502,18 +599,21 @@ function clearRecordForm() {
     }
 
     if ($("newStartTime")) {
-    $("newStartTime").value = "";
+        $("newStartTime").innerHTML =
+            '<option value="">Select a date first</option>';
+
+        $("newStartTime").disabled = true;
     }
 
-    if ($("newEndTime")) {
-        $("newEndTime").value = "";
+    if ($("vaccinationTimeMessage")) {
+        $("vaccinationTimeMessage").textContent =
+            "Available time slots will appear after selecting a date.";
     }
 
     updateDoseOptions("new");
 }
 
-
- // Add a vaccination record
+// Add a vaccination record
 async function confirmAddRecord() {
     if (!selectedChildId) {
         showToast("Please select a child first.", "error");
@@ -527,21 +627,24 @@ async function confirmAddRecord() {
 
     const dueDate = $("newDueDate").value;
     const startTime = $("newStartTime").value;
+    const status = $("newStatus").value;
 
-    if (!dueDate || !startTime) {
-        showToast(
-            "Please select the appointment date and start time.",
-            "error"
-        );
+    if (!dueDate) {
+        showToast("Please select a vaccination date.", "error");
+        return;
+    }
+
+    if (status === "Upcoming" && !startTime) {
+        showToast("Please select an available appointment time slot.", "error");
         return;
     }
 
     const payload = {
         vaccination_id: Number($("newVaccine").value),
         dose: $("newDose").value,
-        status: $("newStatus").value,
-        due_date: $("newDueDate").value,
-        start_time: $("newStartTime").value
+        status: status,
+        due_date: dueDate,
+        start_time: status === "Upcoming" ? startTime : null
     };
 
     try {
@@ -565,6 +668,7 @@ async function confirmAddRecord() {
         clearRecordForm();
 
         await loadData(selectedChildId);
+
     } catch (error) {
         console.error(
             "Error adding vaccination record and appointment:",
@@ -572,8 +676,7 @@ async function confirmAddRecord() {
         );
 
         showToast(
-            error.message ||
-                "Failed to add vaccination record and appointment.",
+            error.message || "Failed to add vaccination record and appointment.",
             "error"
         );
     }
@@ -688,6 +791,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     newVaccineSelect.addEventListener("change", () => {
         updateDoseOptions("new");
+    });
+
+    $("newDueDate").addEventListener("change", () => {
+        loadVaccinationTimeSlots();
     });
 
     $("childDetails").style.display = "none";

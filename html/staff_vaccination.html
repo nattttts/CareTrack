@@ -279,8 +279,14 @@
                                     </div>
 
                                     <div>
-                                        <label for="newStartTime">Appointment Start Time</label>
-                                        <input type="time" id="newStartTime" required>
+                                        <label for="newStartTime">Appointment Time Slot</label>
+                                        <select id="newStartTime" required disabled>
+                                            <option value="">Select a date first</option>
+                                        </select>
+
+                                        <small id="vaccinationTimeMessage" class="form-text text-muted">
+                                            Available time slots will appear after selecting a date.
+                                        </small>
                                     </div>
 
                                     <div>
