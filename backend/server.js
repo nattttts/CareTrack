@@ -5503,6 +5503,21 @@ function getClinicClosingTime(appointmentDate) {
     return "17:00";
 }
 
+// ================= QUEUE CONFIGURATION =================
+const SERVICE_CONFIG = {
+    "Maternal Follow-up": {
+        startingNumber: 1001,
+        maxCalled: 2,
+        estimatedDuration: 20
+    },
+
+    "Child Vaccination": {
+        startingNumber: 6001,
+        maxCalled: 1,
+        estimatedDuration: 15
+    }
+};
+
 // Update missed appointments
 function updateMissedAppointments() {
     try {
@@ -5609,14 +5624,20 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                         -- Called, Completed and Skipped patients have no waiting position
                         WHEN q.status IN ('Called', 'Completed', 'Skipped') THEN NULL
                         
-                        -- Count all Waiting patients across both services
+                        -- Count Waiting patients within the same service only
                         ELSE (
                             SELECT COUNT(*)
                             FROM Queue_Entry AS q2
 
+                            INNER JOIN Appointment AS a2
+                                ON q2.appointment_id = a2.appointment_id
+
                             WHERE date(q2.check_in_time, '+8 hours') = ?
                             AND q2.status = 'Waiting'
-                            
+
+                            -- Only count patients from the same service
+                            AND a2.appointment_type = a.appointment_type
+
                             -- Compare Waiting patients by waiting_since
                             AND (
                                 q2.waiting_since < q.waiting_since
@@ -5624,7 +5645,7 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                                     q2.waiting_since = q.waiting_since
                                     AND q2.queue_number <= q.queue_number
                                 )
-                            )   
+                            )
                         )
                     END AS queue_position
 
@@ -5774,18 +5795,32 @@ app.post(
                     throw new Error("CHECK_IN_NOT_OPEN");
                 }
 
-                // Find the largest queue number issued today.
-                // Both services share the same numbering sequence.
+                // Get the queue starting number for this service.
+                const serviceConfig = SERVICE_CONFIG[appointment.appointment_type];
+
+                if (!serviceConfig) {
+                    throw new Error("INVALID_SERVICE_CONFIG");
+                }
+
+                // Find the latest queue number for the same service today.
                 const latestEntry = db.prepare(`
                     SELECT MAX(queue_number) AS last_number
-                    FROM Queue_Entry
-                    WHERE date(check_in_time, '+8 hours') = ?
-                `).get(today);
 
-                const queueNumber =
-                    latestEntry.last_number == null
-                        ? 1001
-                        : latestEntry.last_number + 1;
+                    FROM Queue_Entry AS q
+
+                    INNER JOIN Appointment AS a
+                        ON q.appointment_id = a.appointment_id
+
+                    WHERE a.appointment_type = ?
+                    AND date(q.check_in_time, '+8 hours') = ?
+                `).get(appointment.appointment_type, today);
+
+                // Generate the next queue number.
+                const nextNumber = latestEntry.last_number == null
+                    ? serviceConfig.startingNumber
+                    : latestEntry.last_number + 1;
+
+                const queueNumber = nextNumber;
 
                 // Create the queue entry only after successful check-in.
                 const result = db.prepare(`
@@ -6077,6 +6112,37 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         throw new Error("APPOINTMENT_NOT_CONFIRMED");
                     }
 
+                    // Check the maximum number of patients who can be called for this service.
+                    const serviceConfig = SERVICE_CONFIG[entry.appointment_type];
+
+                    if (!serviceConfig) {
+                        throw new Error("INVALID_SERVICE_CONFIG");
+                    }
+
+                    // Count patients who are currently Called in the same service today.
+                    const activeCalledCount = db.prepare(`
+                        SELECT COUNT(*) AS total
+
+                        FROM Queue_Entry AS q
+
+                        INNER JOIN Appointment AS a
+                            ON q.appointment_id = a.appointment_id
+
+                        WHERE a.appointment_type = ?
+                        AND a.appointment_date = ?
+                        AND date(q.check_in_time, '+8 hours') = ?
+                        AND q.status = 'Called'
+                    `).get(
+                        entry.appointment_type,
+                        today,
+                        today
+                    ).total;
+
+                    // Prevent calling more patients than the service capacity.
+                    if (activeCalledCount >= serviceConfig.maxCalled) {
+                        throw new Error("SERVICE_CAPACITY_FULL");
+                    }
+
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
                         SET status = 'Called'
@@ -6234,6 +6300,18 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
             if (error.message === "APPOINTMENT_NOT_CONFIRMED") {
                 return res.status(409).json({
                     message: "The appointment is not confirmed."
+                });
+            }
+
+            if (error.message === "SERVICE_CAPACITY_FULL") {
+                return res.status(409).json({
+                    message: "The maximum number of patients called for this service has been reached."
+                });
+            }
+
+            if (error.message === "INVALID_SERVICE_CONFIG") {
+                return res.status(500).json({
+                    message: "Invalid service configuration."
                 });
             }
 
