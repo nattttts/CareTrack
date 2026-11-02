@@ -5601,6 +5601,102 @@ function updateMissedAppointments() {
     }
 }
 
+// ================= ESTIMATED WAITING TIME =================
+function calculateEstimatedWaitingTimes(today) {
+    // Get all active queue entries for today.
+    const queueEntries = db.prepare(`
+        SELECT
+            q.queue_entry_id,
+            q.queue_number,
+            q.waiting_since,
+            q.called_at,
+            q.status AS queue_status,
+            a.appointment_type
+
+        FROM Queue_Entry AS q
+
+        INNER JOIN Appointment AS a
+            ON q.appointment_id = a.appointment_id
+
+        WHERE a.appointment_date = ?
+        AND date(q.check_in_time, '+8 hours') = ?
+        AND q.status IN ('Waiting', 'Called')
+    `).all(today, today);
+
+    // Store estimated waiting times for Waiting patients.
+    const estimatedWaitingTimes = new Map();
+
+    // Calculate waiting time separately for each service.
+    for (const [serviceType, serviceConfig] of Object.entries(SERVICE_CONFIG)) {
+
+        const serviceEntries = queueEntries.filter(
+            entry => entry.appointment_type === serviceType
+        );
+
+        // Get patients who are currently Called.
+        const calledPatients = serviceEntries.filter(
+            entry => entry.queue_status === "Called"
+        );
+
+        // Get patients who are still Waiting.
+        const waitingPatients = serviceEntries
+            .filter(entry => entry.queue_status === "Waiting")
+            .sort((a, b) => {
+                return (
+                    a.waiting_since.localeCompare(b.waiting_since) ||
+                    a.queue_number - b.queue_number
+                );
+            });
+
+        // Calculate the remaining time for each Called patient.
+        const availableSlots = calledPatients.map(patient => {
+
+            // SQLite CURRENT_TIMESTAMP is stored in UTC.
+            const calledAt = new Date(
+                patient.called_at.replace(" ", "T") + "Z"
+            );
+
+            const elapsedMinutes =
+                (Date.now() - calledAt.getTime()) / 60000;
+
+            return Math.max(
+                0,
+                serviceConfig.estimatedDuration - elapsedMinutes
+            );
+        });
+
+        // Add unused service capacity as available slots.
+        const unusedSlots = Math.max(
+            0,
+            serviceConfig.maxCalled - calledPatients.length
+        );
+
+        for (let i = 0; i < unusedSlots; i++) {
+            availableSlots.push(0);
+        }
+
+        // Calculate the estimated waiting time for each patient.
+        for (const patient of waitingPatients) {
+
+            // Find the earliest available slot.
+            availableSlots.sort((a, b) => a - b);
+
+            const estimatedTime = availableSlots[0];
+
+            // Save the estimated waiting time in minutes.
+            estimatedWaitingTimes.set(
+                patient.queue_entry_id,
+                Math.ceil(estimatedTime)
+            );
+
+            // Update the slot after assigning this patient.
+            availableSlots[0] += serviceConfig.estimatedDuration;
+        }
+    }
+
+    return estimatedWaitingTimes;
+}
+
 // Patient queue: Get Today's Appointments
 app.get("/api/patient/queue", requireRole("mother", "child"),
     (req, res) => {
@@ -5665,7 +5761,20 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
                 ORDER BY a.start_time ASC, a.appointment_id ASC
             `).all(today, userId, today);
 
-            return res.json(appointments);
+            // Calculate estimated waiting times for today's queue.
+            const estimatedWaitingTimes = calculateEstimatedWaitingTimes(today);
+
+            // Add estimated waiting time to the patient's appointments.
+            const appointmentsWithWaitingTime = appointments.map(appointment => ({
+                ...appointment,
+
+                estimated_waiting_time:
+                    appointment.queue_status === "Waiting"
+                        ? estimatedWaitingTimes.get(appointment.queue_entry_id) ?? null
+                        : null
+            }));
+
+            return res.json(appointmentsWithWaitingTime);
 
         } catch (error) {
             console.error("Error loading patient queue:", error);
@@ -6147,9 +6256,12 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         throw new Error("SERVICE_CAPACITY_FULL");
                     }
 
+                    // Record the date and time when the patient is called.
                     const queueUpdate = db.prepare(`
                         UPDATE Queue_Entry
-                        SET status = 'Called'
+                        SET
+                            status = 'Called',
+                            called_at = CURRENT_TIMESTAMP
                         WHERE queue_entry_id = ?
                         AND status = 'Waiting'
                     `).run(queueEntryId);
@@ -6225,7 +6337,8 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                         UPDATE Queue_Entry
                         SET
                             status = 'Waiting',
-                            waiting_since = CURRENT_TIMESTAMP
+                            waiting_since = CURRENT_TIMESTAMP,
+                            called_at = NULL
                         WHERE queue_entry_id = ?
                         AND status = 'Called'
                     `).run(queueEntryId);
@@ -6244,6 +6357,7 @@ app.patch("/api/staff/queue/:queueEntryId/status", requireRole("staff"),
                             q.queue_number,
                             q.check_in_time,
                             q.waiting_since,
+                            q.called_at,
                             q.status AS queue_status,
                             a.status AS appointment_status
                         FROM Queue_Entry AS q

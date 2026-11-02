@@ -40,7 +40,6 @@ let queuePositionTimer = null;
 let currentAppointmentId = null;
 let currentAppointment = null;
 let checkInTimer = null;
-let waitingTimeTimer = null;
 
 // ================= GET CLINIC CLOSING TIME =================
 function getClinicClosingTime(appointmentDate) {
@@ -221,6 +220,9 @@ async function refreshQueuePosition() {
         // Update the current appointment data.
         currentAppointment = appointment;
 
+        // Update estimated waiting time.
+        updateWaitingTime(appointment);
+
         // Update appointment status.
         if (appointmentStatusText) {
             appointmentStatusText.textContent =
@@ -241,11 +243,11 @@ async function refreshQueuePosition() {
             queueNumber.textContent = appointment.queue_number ?? "—";
 
             queueStatusBadge.textContent = status;
-            queueStatusBadge.className =
-                `queue-status ${getQueueStatusClass(status)}`;
+            queueStatusBadge.className = `queue-status ${getQueueStatusClass(status)}`;
 
-            queuePosition.textContent =
-                appointment.queue_position ?? "—";
+            queuePosition.textContent = appointment.queue_position ?? "—";
+
+            queueAppointmentTime.textContent = formatTime(appointment.start_time);
         }
 
     } catch (error) {
@@ -434,12 +436,6 @@ function displayQueueStatus(appointment) {
             queuePositionTimer = null;
         }
 
-        // Stop updating the estimated waiting time
-        if (waitingTimeTimer) {
-            clearInterval(waitingTimeTimer);
-            waitingTimeTimer = null;
-        }
-
         // Stop refreshing the queue
         if (liveQueueTimer) {
             clearInterval(liveQueueTimer);
@@ -473,16 +469,6 @@ function displayQueueStatus(appointment) {
     queuePosition.textContent = appointment.queue_position ?? "—";
 
     updateWaitingTime(appointment);
-
-    if (waitingTimeTimer) {
-        clearInterval(waitingTimeTimer);
-    }
-
-    waitingTimeTimer = setInterval(() => {
-        if (currentAppointment) {
-            updateWaitingTime(currentAppointment);
-        }
-    }, 30000);
 
     // Refresh queue position every 10 seconds.
     if (!queuePositionTimer) {
@@ -572,42 +558,35 @@ async function loadLiveQueue() {
     }
 }
 
- // ================= UPDATE ESTIMATED WAITING TIME =================
+// ================= UPDATE ESTIMATED WAITING TIME =================
 function updateWaitingTime(appointment) {
-    if (!appointment.appointment_date || !appointment.start_time) {
+
+    // Only display estimated waiting time for Waiting patients.
+    if (appointment.queue_status !== "Waiting") {
+        waitingTime.textContent = "—";
+        return;
+    }
+
+    const estimatedMinutes = appointment.estimated_waiting_time;
+
+    // Handle unavailable estimated waiting time.
+    if (
+        estimatedMinutes === null ||
+        estimatedMinutes === undefined ||
+        !Number.isFinite(Number(estimatedMinutes))
+    ) {
         waitingTime.textContent = "Not available";
         return;
     }
 
-    // Interpret the appointment start time as Malaysia time (UTC+8).
-    const startTime = appointment.start_time.slice(0, 5);
+    const minutes = Number(estimatedMinutes);
 
-    const appointmentStart = Date.parse(
-        `${appointment.appointment_date}T${startTime}:00+08:00`
-    );
-
-    if (Number.isNaN(appointmentStart)) {
-        waitingTime.textContent = "Not available";
-        return;
-    }
-
-    // Calculate the time remaining until the appointment starts.
-    const remainingTime = appointmentStart - Date.now();
-
-    if (remainingTime <= 0) {
-        waitingTime.textContent = "Appointment time has arrived";
-        return;
-    }
-
-    // Round up so that a partial minute is not displayed as zero.
-    const remainingMinutes = Math.ceil(
-        remainingTime / (60 * 1000)
-    );
-
-    if (remainingMinutes === 1) {
+    if (minutes === 0) {
+        waitingTime.textContent = "Less than 1 minute";
+    } else if (minutes === 1) {
         waitingTime.textContent = "1 minute";
     } else {
-        waitingTime.textContent = `${remainingMinutes} minutes`;
+        waitingTime.textContent = `${minutes} minutes`;
     }
 }
 
@@ -641,11 +620,6 @@ function showNoAppointment() {
     if (queuePositionTimer) {
         clearInterval(queuePositionTimer);
         queuePositionTimer = null;
-    }
-
-    if (waitingTimeTimer) {
-        clearInterval(waitingTimeTimer);
-        waitingTimeTimer = null;
     }
 
     currentAppointment = null;
