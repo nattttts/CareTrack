@@ -235,6 +235,7 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
     queue_number INTEGER NOT NULL,
     check_in_time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     waiting_since TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    called_at TEXT,
     status TEXT NOT NULL DEFAULT 'Waiting'
         CHECK (
             status IN (
