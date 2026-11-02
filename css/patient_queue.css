@@ -464,33 +464,24 @@ img {
 }
 
 .queue-item {
-    display: grid;
-    grid-template-columns: 100px 1fr 120px;
+    display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: space-between;
 
     padding: 15px 20px;
-    border: 1px solid transparent;
     border-radius: 8px;
     background: #fafafa;
 }
 
 .queue-number {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     color: #142d58;
 }
 
-.queue-service {
-    font-size: 14px;
-    color: #50698a;
-}
-
 .queue-item-status {
-    justify-self: end;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    text-align: right;
 }
 
 .queue-item-status.waiting {
@@ -517,11 +508,6 @@ img {
 
 .queue-item.your-queue .queue-number {
     color: #e81f67;
-    font-weight: 600;
-}
-
-.queue-item.your-queue .queue-service {
-    color: #142d58;
     font-weight: 600;
 }
 
@@ -606,18 +592,11 @@ img {
     }
 
     .queue-item {
-        grid-template-columns: 65px minmax(0, 1fr) auto;
-        gap: 8px;
         padding: 14px 12px;
     }
 
     .queue-number {
         font-size: 13px;
-    }
-
-    .queue-service {
-        font-size: 12px;
-        overflow-wrap: anywhere;
     }
 
     .queue-item-status {

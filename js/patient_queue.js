@@ -553,14 +553,11 @@ async function loadLiveQueue() {
             // Create the queue item's HTML.
             item.innerHTML = `
                 <span class="queue-number"></span>
-                <span class="queue-service"></span>
                 <span class="queue-item-status"></span>
             `;
 
             // Display queue information.
             item.querySelector(".queue-number").textContent = `${entry.queue_number}`;
-
-            item.querySelector(".queue-service").textContent = entry.appointment_type;
 
             const status = item.querySelector(".queue-item-status");
             status.classList.add(getQueueStatusClass(entry.queue_status));
