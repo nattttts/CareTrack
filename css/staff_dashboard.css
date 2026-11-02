@@ -301,6 +301,16 @@ a {
     background: #fff2d6;
 }
 
+.status-completed {
+    color: #59687e;
+    background: #f0f2f5;
+}
+
+.status-missed {
+    color: #cf3a49;
+    background: #fff0f2;
+}
+
 /* ================= ACTIVE QUEUE ================= */
 /* Status Badges */
 .status-waiting {
@@ -311,11 +321,6 @@ a {
 .status-called {
     color: var(--caretrack-pink);
     background: var(--caretrack-pink-light);
-}
-
-.status-in-progress {
-    color: #2271b1;
-    background: #edf6ff;
 }
 
 /* ================= RESPONSIVE ================= */
