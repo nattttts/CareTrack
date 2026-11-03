@@ -271,8 +271,30 @@ function displayDashboardQueue(appointment) {
         appointment.queue_position
     );
 
-    // The API does not provide a true estimated queue waiting time
-    waitingTime.textContent = "Not available";
+    // Display estimated waiting time only for Waiting patients.
+    if (status !== "Waiting") {
+        waitingTime.textContent = "—";
+    } else {
+        const estimatedMinutes = appointment.estimated_waiting_time;
+
+        if (
+            estimatedMinutes === null ||
+            estimatedMinutes === undefined ||
+            !Number.isFinite(Number(estimatedMinutes))
+        ) {
+            waitingTime.textContent = "Not available";
+        } else {
+            const minutes = Number(estimatedMinutes);
+
+            if (minutes === 0) {
+                waitingTime.textContent = "Less than 1 minute";
+            } else if (minutes === 1) {
+                waitingTime.textContent = "1 minute";
+            } else {
+                waitingTime.textContent = `${minutes} minutes`;
+            }
+        }
+    }
 
     queueCheckedIn.classList.remove("d-none");
 }
@@ -327,13 +349,13 @@ function formatDashboardQueuePosition(position) {
         position === undefined ||
         position === ""
     ) {
-        return "";
+        return "—";
     }
 
     const number = Number(position);
 
     if (!Number.isInteger(number) || number < 1) {
-        return "";
+        return "—";
     }
 
     return number;
