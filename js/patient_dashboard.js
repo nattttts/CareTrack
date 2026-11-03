@@ -229,12 +229,15 @@ async function loadDashboardQueue() {
             return;
         }
 
-        // Prefer an appointment that already has a queue entry
+        // Prefer a missed appointment first
         const appointment =
+            appointments.find(item => item.appointment_status === "Missed") ||
             appointments.find(item => item.queue_entry_id) ||
             appointments[0];
 
-        if (appointment.queue_entry_id) {
+        if (appointment.appointment_status === "Missed") {
+            showDashboardMissed();
+        } else if (appointment.queue_entry_id) {
             displayDashboardQueue(appointment);
         } else {
             showDashboardNotCheckedIn();
@@ -315,6 +318,12 @@ function showDashboardNotCheckedIn() {
     section.classList.remove("d-none");
 }
 
+// Show checked in but missed appointment on queue
+function showDashboardMissed() {
+    hideDashboardQueueSections();
+    document.getElementById("queueMissed").classList.remove("d-none");
+}
+
 // Show no appointment on queue
 function showDashboardNoAppointment() {
     hideDashboardQueueSections();
@@ -338,6 +347,7 @@ function hideDashboardQueueSections() {
     document.getElementById("queueLoading").classList.add("d-none");
     document.getElementById("queueNotCheckedIn").classList.add("d-none");
     document.getElementById("queueCheckedIn").classList.add("d-none");
+    document.getElementById("queueMissed").classList.add("d-none");
     document.getElementById("queueNoAppointment").classList.add("d-none");
     document.getElementById("queueError").classList.add("d-none");
 }

@@ -446,7 +446,7 @@ function displayQueueStatus(appointment) {
 
         showMessage(
             "You Missed Your Appointment",
-            "You were called but did not arrive. Please contact clinic staff for assistance."
+            "Your appointment was marked as missed because you did not complete your visit before the clinic closed. Please contact clinic staff for assistance."
         );
 
         return;
