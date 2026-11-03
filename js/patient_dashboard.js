@@ -66,26 +66,9 @@ async function loadUpcomingAppointment() {
             String(now.getMinutes()).padStart(2, "0")
         ].join(":");
 
-        // Find the next confirmed appointment that hasn't started yet
+        // Find the next confirmed appointment, regardless of its scheduled time
         const upcomingAppointment = appointments
-            .filter(appointment => {
-                if (appointment.status !== "Confirmed") {
-                    return false;
-                }
-
-                if (appointment.appointment_date < today) {
-                    return false;
-                }
-
-                if (
-                    appointment.appointment_date === today &&
-                    appointment.start_time < currentTime
-                ) {
-                    return false;
-                }
-
-                return true;
-            })
+            .filter(appointment => appointment.status === "Confirmed")
             .sort((a, b) => {
                 const dateComparison = a.appointment_date.localeCompare(
                     b.appointment_date
