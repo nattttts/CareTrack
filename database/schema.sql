@@ -166,13 +166,11 @@ CREATE TABLE IF NOT EXISTS Appointment (
 CREATE TABLE IF NOT EXISTS Reschedule_Request (
     reschedule_request_id INTEGER PRIMARY KEY,
     appointment_id INTEGER NOT NULL,
-    appointment_date TEXT NOT NULL,
-    start_time TEXT NOT NULL,
+    reason TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'Pending'
         CHECK (
-            status IN ('Pending', 'Approved', 'Rejected')
+            status IN ('Pending', 'Approved')
         ), 
-    reject_reason TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (appointment_id)
