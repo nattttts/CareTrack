@@ -403,20 +403,8 @@ document.addEventListener("click", function (event) {
         "modalRescheduleStatus"
     );
 
-    const proposedDate = document.getElementById(
-        "modalProposedDate"
-    );
-
-    const proposedTime = document.getElementById(
-        "modalProposedTime"
-    );
-
-    const rejectReasonRow = document.getElementById(
-        "rescheduleRejectReasonRow"
-    );
-
-    const rejectReason = document.getElementById(
-        "modalRescheduleRejectReason"
+    const requestReason = document.getElementById(
+        "modalRescheduleReason"
     );
 
     if (appointment.reschedule_request_id) {
@@ -424,36 +412,12 @@ document.addEventListener("click", function (event) {
 
         requestStatus.textContent = appointment.reschedule_status;
 
-        const proposedDateObject = new Date(
-            `${appointment.proposed_date}T00:00:00`
-        );
-
-        proposedDate.textContent = proposedDateObject.toLocaleDateString(
-            "en-MY",
-            {
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-            }
-        );
-
-        proposedTime.textContent =
-            `${formatTime(appointment.proposed_start_time)}`;
-
-        if (
-            appointment.reschedule_status === "Rejected" &&
-            appointment.reschedule_reject_reason
-        ) {
-            rejectReasonRow.hidden = false;
-            rejectReason.textContent =
-                appointment.reschedule_reject_reason;
-        } else {
-            rejectReasonRow.hidden = true;
-            rejectReason.textContent = "";
-        }
+        requestReason.textContent = appointment.reschedule_reason;
     } else {
         requestDetails.hidden = true;
-        rejectReasonRow.hidden = true;
+
+        requestStatus.textContent = "";
+        requestReason.textContent = "";
     }
 
     // Open modal
@@ -469,6 +433,7 @@ const rescheduleForm = document.getElementById("rescheduleRequestForm");
 const rescheduleAppointmentId = document.getElementById("rescheduleAppointmentId");
 const rescheduleDate = document.getElementById("rescheduleDate");
 const rescheduleStartTime = document.getElementById("rescheduleStartTime");
+const rescheduleReason = document.getElementById("rescheduleReason");
 const rescheduleTimeMessage = document.getElementById("rescheduleTimeMessage");
 const rescheduleError = document.getElementById("rescheduleError");
 const submitRescheduleRequest = document.getElementById("submitRescheduleRequest");
@@ -576,32 +541,14 @@ document.addEventListener("click", function (event) {
 
     rescheduleForm.reset();
     clearRescheduleError();
-    resetRescheduleSlots();
 
     rescheduleAppointmentId.value = appointment.appointment_id;
-
-    // Use Malaysia's local date to set the earliest selectable date
-    const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Kuala_Lumpur",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    }).formatToParts(new Date());
-
-    const dateParts = Object.fromEntries(
-        parts.map(part => [part.type, part.value])
-    );
-
-    const today =
-        `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
-
-    rescheduleDate.min = today;
 
     bootstrap.Modal.getOrCreateInstance(rescheduleModal).show();
 });
 
 // Load slots whenever the date changes
-rescheduleDate.addEventListener("change", loadRescheduleSlots);
+// rescheduleDate.addEventListener("change", loadRescheduleSlots);
 
 // Submit a reschedule request
 rescheduleForm.addEventListener("submit", async function (event) {
@@ -610,26 +557,10 @@ rescheduleForm.addEventListener("submit", async function (event) {
     clearRescheduleError();
 
     const appointmentId = rescheduleAppointmentId.value;
-    const appointmentDate = rescheduleDate.value;
-    const startTime = rescheduleStartTime.value;
+    const reason = rescheduleReason.value.trim();
 
-    const originalAppointment = appointmentsData.find(
-        item => item.appointment_id === Number(appointmentId)
-    );
-
-    if (
-        originalAppointment &&
-        originalAppointment.appointment_date === appointmentDate &&
-        originalAppointment.start_time === startTime
-    ) {
-        showRescheduleError(
-            "The selected date and time are the same as your current appointment. Please choose a different slot."
-        );
-        return;
-    }
-
-    if (!appointmentDate || !startTime) {
-        showRescheduleError("Please select an appointment date and time slot.");
+    if (!reason) {
+        showRescheduleError("Please provide a reason for rescheduling.");
         return;
     }
 
@@ -643,10 +574,7 @@ rescheduleForm.addEventListener("submit", async function (event) {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    appointment_date: appointmentDate,
-                    start_time: startTime
-                })
+                body: JSON.stringify({ reason })
             }
         );
 

@@ -3118,10 +3118,9 @@ app.get("/api/patient/appointments", requireRole("mother", "child"), (req, res) 
                 a.status,
 
                 rr.reschedule_request_id,
-                rr.appointment_date AS proposed_date,
-                rr.start_time AS proposed_start_time,
+                rr.reason AS reschedule_reason,
                 rr.status AS reschedule_status,
-                rr.reject_reason AS reschedule_reject_reason
+                rr.created_at AS reschedule_created_at
 
             FROM Appointment AS a
             JOIN User AS u
@@ -3159,10 +3158,8 @@ app.get("/api/staff/reschedule-requests", requireRole("staff"), (req, res) => {
             SELECT
                 rr.reschedule_request_id,
                 rr.appointment_id,
-                rr.appointment_date AS proposed_date,
-                rr.start_time AS proposed_start_time,
+                rr.reason,
                 rr.status AS request_status,
-                rr.reject_reason,
                 rr.created_at,
 
                 a.user_id,
@@ -4337,6 +4334,24 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
 
         // Check capacity and update the appointment atomically
         const updateAppointmentTransaction = db.transaction(() => {
+
+            // Confirm that this appointment has a pending reschedule request
+            const pendingRequest = db.prepare(`
+                SELECT reschedule_request_id
+                FROM Reschedule_Request
+                WHERE appointment_id = ?
+                    AND status = 'Pending'
+            `).get(appointmentId);
+
+            if (!pendingRequest) {
+                const error = new Error(
+                    "This appointment does not have a pending reschedule request."
+                );
+                error.statusCode = 409;
+                throw error;
+            }
+
+            // Check appointment slot capacity
             const existingAppointments = db.prepare(`
                 SELECT COUNT(*) AS total
                 FROM Appointment
@@ -4359,6 +4374,7 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
                 throw error;
             }
 
+            // Update the appointment
             const result = db.prepare(`
                 UPDATE Appointment
                 SET appointment_date = ?,
@@ -4379,6 +4395,23 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
                 throw error;
             }
 
+            // Mark the pending reschedule request as Approved
+            const requestUpdate = db.prepare(`
+                UPDATE Reschedule_Request
+                SET status = 'Approved'
+                WHERE appointment_id = ?
+                    AND status = 'Pending'
+            `).run(appointmentId);
+
+            if (requestUpdate.changes !== 1) {
+                const error = new Error(
+                    "The reschedule request could not be updated."
+                );
+                error.statusCode = 409;
+                throw error;
+            }
+
+            // Create notification
             db.prepare(`
                 INSERT INTO Notification (user_id, title, message)
                 VALUES (?, ?, ?)
@@ -4766,12 +4799,14 @@ app.patch("/api/staff/reschedule-requests/:requestId/reject", requireRole("staff
 
 
 // Submit a reschedule request
-app.post("/api/patient/appointments/:appointmentId/reschedule-requests",
-    requireRole("mother", "child"), (req, res) => {
+app.post(
+    "/api/patient/appointments/:appointmentId/reschedule-requests",
+    requireRole("mother", "child"),
+    (req, res) => {
         try {
             const appointmentId = Number(req.params.appointmentId);
             const userId = req.session.user.userId;
-            const { appointment_date, start_time } = req.body;
+            const { reason } = req.body;
 
             if (!Number.isSafeInteger(appointmentId) || appointmentId <= 0) {
                 return res.status(400).json({
@@ -4780,63 +4815,24 @@ app.post("/api/patient/appointments/:appointmentId/reschedule-requests",
             }
 
             if (
-                typeof appointment_date !== "string" ||
-                !/^\d{4}-\d{2}-\d{2}$/.test(appointment_date) ||
-                typeof start_time !== "string" ||
-                !/^\d{2}:\d{2}$/.test(start_time)
+                typeof reason !== "string" ||
+                !reason.trim() ||
+                reason.trim().length > 500
             ) {
                 return res.status(400).json({
-                    message: "Please provide a valid appointment date and time slot."
+                    message: "Please provide a reason of no more than 500 characters."
                 });
             }
 
-            // Verify the date and time against the shared slot rules.
-            const allowedSlots = getAllowedTimeSlots(appointment_date);
-
-            if (allowedSlots === null) {
-                return res.status(400).json({
-                    message: "Please select a valid calendar date."
-                });
-            }
-
-            if (!allowedSlots.includes(start_time)) {
-                return res.status(400).json({
-                    message: "The selected time is not a valid appointment slot."
-                });
-            }
-
-            const { date: today, time: currentTime } =
-                getMalaysiaDateTime();
-
-            if (
-                appointment_date < today ||
-                (appointment_date === today && start_time <= currentTime)
-            ) {
-                return res.status(400).json({
-                    message: "The new appointment date and time must be in the future."
-                });
-            }
-
+            // Verify that the appointment belongs to the patient
             const appointment = db.prepare(`
                 SELECT
                     appointment_id,
-                    appointment_type,
-                    appointment_date,
-                    start_time,
                     status
                 FROM Appointment
                 WHERE appointment_id = ?
-                AND user_id = ?
+                    AND user_id = ?
             `).get(appointmentId, userId);
-
-            if (
-                appointment.appointment_date === appointment_date &&
-                appointment.start_time === start_time
-            ) {
-                return res.status(400).json({
-                    message: "The selected date and time are the same as your current appointment. Please choose a different slot."
-                });
-            }
 
             if (!appointment) {
                 return res.status(404).json({
@@ -4850,12 +4846,12 @@ app.post("/api/patient/appointments/:appointmentId/reschedule-requests",
                 });
             }
 
-            // Prevent multiple pending requests for the same appointment.
+            // Prevent multiple pending requests for the same appointment
             const pendingRequest = db.prepare(`
                 SELECT reschedule_request_id
                 FROM Reschedule_Request
                 WHERE appointment_id = ?
-                  AND status = 'Pending'
+                    AND status = 'Pending'
             `).get(appointmentId);
 
             if (pendingRequest) {
@@ -4864,40 +4860,17 @@ app.post("/api/patient/appointments/:appointmentId/reschedule-requests",
                 });
             }
 
-            // Check current capacity, excluding the original appointment.
-            const appointmentCount = db.prepare(`
-                SELECT COUNT(*) AS total
-                FROM Appointment
-                WHERE appointment_date = ?
-                  AND start_time = ?
-                  AND appointment_type = ?
-                  AND appointment_id != ?
-            `).get(
-                appointment_date,
-                start_time,
-                appointment.appointment_type,
-                appointmentId
-            );
-
-            if (appointmentCount.total >= APPOINTMENT_CAPACITY) {
-                return res.status(409).json({
-                    message: "This appointment slot is full. Please choose another slot."
-                });
-            }
-
-            // Save the request without changing the original appointment.
+            // Save the request without changing the original appointment
             const result = db.prepare(`
                 INSERT INTO Reschedule_Request (
                     appointment_id,
-                    appointment_date,
-                    start_time,
+                    reason,
                     status
                 )
-                VALUES (?, ?, ?, 'Pending')
+                VALUES (?, ?, 'Pending')
             `).run(
                 appointmentId,
-                appointment_date,
-                start_time
+                reason.trim()
             );
 
             return res.status(201).json({

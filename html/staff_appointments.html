@@ -736,101 +736,63 @@
                 <!-- Modal Body -->
                 <div class="modal-body">
 
-                    <div id="rescheduleRequestDetails" class="request-details">
+                    <div id="rescheduleRequestDetails" class="request-details" hidden>
 
                         <!-- Patient Information -->
                         <h6 class="mb-3">Patient Information</h6>
 
                         <div class="border rounded p-3 mb-4">
                             <div class="mb-2">
-                                <span class="text-muted small">
-                                    Patient Name
-                                </span>
+                                <span class="text-muted small">Patient Name</span>
                                 <div id="reschedulePatientName" class="fw-semibold"></div>
                             </div>
 
                             <div class="mb-2">
-                                <span class="text-muted small">
-                                    IC Number
-                                </span>
+                                <span class="text-muted small">IC Number</span>
                                 <div id="reschedulePatientIC"></div>
                             </div>
 
                             <div>
-                                <span class="text-muted small">
-                                    Appointment Type
-                                </span>
+                                <span class="text-muted small">Appointment Type</span>
                                 <div id="rescheduleAppointmentType"></div>
                             </div>
                         </div>
 
                         <!-- Original Appointment -->
-                        <h6 class="mb-3">Original Appointment</h6>
+                        <h6 class="mb-3">Current Appointment</h6>
 
                         <div class="border rounded p-3 mb-4">
                             <div class="mb-2">
-                                <span class="text-muted small">
-                                    Date
-                                </span>
+                                <span class="text-muted small">Date</span>
                                 <div id="rescheduleOriginalDate"></div>
                             </div>
 
                             <div>
-                                <span class="text-muted small">
-                                    Time
-                                </span>
+                                <span class="text-muted small">Time</span>
                                 <div id="rescheduleOriginalTime"></div>
                             </div>
                         </div>
 
-                        <!-- Requested Appointment -->
-                        <h6 class="mb-3">Requested New Schedule</h6>
+                        <!-- Patient's Reason -->
+                        <h6 class="mb-3">Reason for Rescheduling</h6>
 
                         <div class="border rounded p-3 mb-4">
-                            <div class="mb-2">
-                                <span class="text-muted small">
-                                    Proposed Date
-                                </span>
-                                <div id="rescheduleProposedDate" class="fw-semibold"></div>
-                            </div>
-
-                            <div>
-                                <span class="text-muted small">
-                                    Proposed Time
-                                </span>
-                                <div id="rescheduleProposedTime" class="fw-semibold"></div>
-                            </div>
+                            <p
+                                id="rescheduleReason"
+                                class="mb-0"
+                                style="white-space: pre-wrap;"
+                            ></p>
                         </div>
 
-                        <!-- Rejection Reason -->
-                        <div id="rescheduleRejectionSection" class="mb-3" hidden>
-                            <label
-                                for="rescheduleRejectReason"
-                                class="form-label"
-                            >
-                                Reason for Rejection
-                            </label>
-
-                            <textarea
-                                id="rescheduleRejectReason"
-                                class="form-control"
-                                rows="3"
-                                maxlength="500"
-                                placeholder="Enter the reason for rejecting this request"
-                            ></textarea>
-
-                            <button
-                                type="button"
-                                id="confirmRejectRescheduleButton"
-                                class="btn btn-danger mt-3"
-                            >
-                                Confirm Rejection
-                            </button>
+                        <!-- Request Submission Date -->
+                        <div>
+                            <span class="text-muted small">Request Submitted</span>
+                            <div id="rescheduleRequestCreatedAt"></div>
                         </div>
 
                     </div>
 
-                    <!-- Loading / Error / Result Message -->
+                    <!-- Loading / Error Message -->
                     <div
                         id="rescheduleRequestMessage"
                         class="mt-3"
@@ -848,32 +810,13 @@
                         data-bs-dismiss="modal"
                         id="closeRescheduleRequestButton"
                     >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        id="rejectRescheduleRequestButton"
-                    >
-                        <i class="bi bi-x-circle"></i>
-                        Reject
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-primary approve-modal-button"
-                        id="approveRescheduleRequestButton"
-                    >
-                        <i class="bi bi-check-circle"></i>
-                        Approve
+                        Close
                     </button>
                 </div>
 
             </div>
         </div>
     </div>
-
 
     <!-- Toast Notification -->
     <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">

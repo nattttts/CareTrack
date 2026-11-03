@@ -295,19 +295,10 @@
                             </div>
 
                             <div>
-                                <span>Proposed Date</span>
-                                <strong id="modalProposedDate"></strong>
+                                <span>Reason for Request</span>
+                                <strong id="modalRescheduleReason"></strong>
                             </div>
 
-                            <div>
-                                <span>Proposed Time</span>
-                                <strong id="modalProposedTime"></strong>
-                            </div>
-
-                            <div id="rescheduleRejectReasonRow" hidden>
-                                <span>Rejection Reason</span>
-                                <strong id="modalRescheduleRejectReason"></strong>
-                            </div>
                         </div>
                     </div>
 
@@ -359,8 +350,9 @@
                     <div class="modal-body">
 
                         <p>
-                            Select your preferred new appointment date and time.
-                            Your request will be reviewed by the clinic staff.
+                            Please provide a reason for requesting a reschedule.
+                            Your request will be reviewed by the clinic staff, 
+                            who will arrange a new appointment date and time.
                         </p>
 
                         <input
@@ -370,36 +362,23 @@
 
                         <div class="mb-3">
                             <label
-                                for="rescheduleDate"
+                                for="rescheduleReason"
                                 class="form-label fw-semibold"
                             >
-                                New Appointment Date
+                                Reason for Rescheduling
                             </label>
 
-                            <input
-                                type="date"
+                            <textarea
                                 class="form-control"
-                                id="rescheduleDate"
+                                id="rescheduleReason"
+                                rows="4"
+                                maxlength="500"
+                                placeholder="Please explain why you need to reschedule..."
                                 required
-                            >
-                        </div>
+                            ></textarea>
 
-                        <div class="mb-3">
-                            <label for="rescheduleStartTime" class="form-label fw-semibold">
-                                New Appointment Time Slot
-                            </label>
-
-                            <select
-                                class="form-select"
-                                id="rescheduleStartTime"
-                                required
-                                disabled
-                            >
-                                <option value="">Select a date first</option>
-                            </select>
-
-                            <div id="rescheduleTimeMessage" class="form-text">
-                                Available slots will appear after you select a date.
+                            <div class="form-text">
+                                Maximum 500 characters.
                             </div>
                         </div>
 
