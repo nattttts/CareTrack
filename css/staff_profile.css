@@ -574,6 +574,11 @@ a {
     font-size: 12px;
 }
 
+.account-icon img {
+    width: 15px;
+    height: 15px;
+}
+
 
 .account-row strong {
     color: #183153;
