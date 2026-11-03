@@ -123,18 +123,9 @@ function displayUpcomingAppointment(appointment) {
         appointment.start_time
     );
 
-    // A pending request does not change the original appointment time
-    const hasPendingRequest =
-        appointment.reschedule_status === "Pending";
-
-    const statusBadge = hasPendingRequest
-        ? `<span class="badge text-bg-warning">Pending Reschedule</span>`
-        : "";
-
     appointmentContent.innerHTML = `
         <div class="appointment-name">
             <h4>${escapeHtml(appointment.appointment_type)}</h4>
-            ${statusBadge}
         </div>
 
         <div class="appointment-detail row g-3 mt-1">
