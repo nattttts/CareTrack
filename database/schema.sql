@@ -186,6 +186,7 @@ CREATE TABLE IF NOT EXISTS Reschedule_Request (
 CREATE TABLE IF NOT EXISTS Child_Vaccination (
     child_vaccination_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
+    vaccination_id INTEGER NOT NULL,
     due_date TEXT NOT NULL,
     dose TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'Upcoming'
