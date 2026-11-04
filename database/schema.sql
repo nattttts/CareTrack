@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS Notification (
     type TEXT NOT NULL DEFAULT 'general',
     appointment_date TEXT,
     appointment_time TEXT,
-    note TEXT
+    note TEXT,
 
     title TEXT NOT NULL,
     message TEXT NOT NULL,
@@ -258,7 +258,7 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
    MATERNAL RECORDS TABLE
 ===================================================== */
 CREATE TABLE IF NOT EXISTS Maternal_Record (
-    maternal_record_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    maternal_record_id INTEGER PRIMARY KEY,
     appointment_id INTEGER NOT NULL UNIQUE,
     mother_id INTEGER NOT NULL,
     visit_number INTEGER NOT NULL,
