@@ -5161,14 +5161,11 @@ app.get("/api/patient/emergency-contact", (req, res) => {
         const guardian = db.prepare(`
             SELECT
                 Child.guardian_name,
-                Mother.phone_no,
+                Child.phone_no,
                 User.email
             FROM Child
-            LEFT JOIN User
-                ON LOWER(TRIM(User.full_name)) =
-                   LOWER(TRIM(Child.guardian_name))
-            LEFT JOIN Mother
-                ON Mother.user_id = User.user_id
+            INNER JOIN User
+                ON User.user_id = Child.user_id
             WHERE Child.user_id = ?
             LIMIT 1
         `).get(userId);
@@ -5180,7 +5177,7 @@ app.get("/api/patient/emergency-contact", (req, res) => {
         }
 
         return res.json({
-            guardian: {
+            mother: {
                 fullName: guardian.guardian_name || "",
                 phoneNo: guardian.phone_no || "",
                 email: guardian.email || "",
@@ -5189,7 +5186,10 @@ app.get("/api/patient/emergency-contact", (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error loading guardian contact:", error);
+        console.error(
+            "Error loading guardian emergency contact:",
+            error
+        );
 
         return res.status(500).json({
             message: "Unable to load guardian contact details."

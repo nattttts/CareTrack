@@ -342,7 +342,8 @@ async function loadChildEmergencyContact() {
             );
         }
 
-        const guardian = result.guardian || {};
+        // Backend returns the information under "mother".
+        const guardian = result.mother || {};
 
         setProfileField(
             "emergencyNameText",
