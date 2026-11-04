@@ -15,8 +15,6 @@
     <link rel="stylesheet" href="../css/patient_header.css">
     <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/staff_queue.css">
-
-    <script src="../js/staff_queue.js" defer></script>
 </head>
 
 <body>
@@ -418,7 +416,35 @@
     
     </div>
 
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+        <div
+            id="appToast"
+            class="toast align-items-center border-0"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+        >
+            <div class="d-flex">
+                <div id="appToastMessage" class="toast-body">
+                    Notification message
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close me-2 m-auto"
+                    data-bs-dismiss="toast"
+                    aria-label="Close"
+                ></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boostrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Staff Queue JavaScript -->
+    <script type="module" src="../js/staff_queue.js"></script>
 
     <!-- Header JavaScript -->
     <script src="../js/header.js"></script>

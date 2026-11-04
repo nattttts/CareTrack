@@ -1,3 +1,5 @@
+import { showToast } from "./popup_message.js";
+
 // ================= ELEMENTS =================
 const searchInput = document.getElementById("searchInput");
 const serviceFilter = document.getElementById("serviceFilter");
@@ -396,7 +398,11 @@ async function updateQueueStatus(row, newStatus) {
     } catch (error) {
 
         console.error("Error updating queue:", error);
-        alert(error.message || "Failed to update queue status.");
+
+        showToast(
+            error.message || "Failed to update queue status.",
+            "error"
+        );
 
         // Restore the latest saved state after an unsuccessful update.
         await loadQueue();
