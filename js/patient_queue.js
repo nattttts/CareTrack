@@ -49,7 +49,7 @@ function getClinicClosingTime(appointmentDate) {
     return date.getUTCDay() === 6 ? "13:00" : "17:00";
 }
 
-// ================= CHECK-IN TIME VALIDATION =================
+// ================= CHECK IN TIME VALIDATION =================
 function getCheckInTimeStatus(appointment) {
     const startTime = appointment.start_time?.slice(0, 5);
 
@@ -69,19 +69,18 @@ function getCheckInTimeStatus(appointment) {
     const checkInOpensAt = appointmentStart - 15 * 60 * 1000;
     const now = Date.now();
 
-    // Check whether the clinic has closed.
-    const currentTime = new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Asia/Kuala_Lumpur",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-    }).format(new Date());
-
+    // Check in closes 15 minutes before the clinic closes.
     const clinicClosingTime = getClinicClosingTime(
         appointment.appointment_date
     );
 
-    if (currentTime >= clinicClosingTime) {
+    const clinicClosingAt = Date.parse(
+        `${appointment.appointment_date}T${clinicClosingTime}:00+08:00`
+    );
+
+    const checkInClosesAt = clinicClosingAt - 15 * 60 * 1000;
+
+    if (now >= checkInClosesAt) {
         return { status: "closed" };
     }
 
@@ -95,7 +94,7 @@ function getCheckInTimeStatus(appointment) {
     return { status: "open" };
 }
 
-// ================= UPDATE CHECK-IN AVAILABILITY =================
+// ================= UPDATE CHECK IN AVAILABILITY =================
 function updateCheckInAvailability(appointment) {
     const result = getCheckInTimeStatus(appointment);
 
@@ -111,7 +110,13 @@ function updateCheckInAvailability(appointment) {
     }
 
     if (result.status === "closed") {
-        notCheckedIn.hidden = true;
+        checkInButton.disabled = true;
+
+        showMessage(
+            "Check-in Closed",
+            "Check-in is closed for today. Please contact clinic staff if you need assistance."
+        );
+
         return;
     }
 
@@ -125,7 +130,7 @@ function updateCheckInAvailability(appointment) {
         return;
     }
 
-    // The patient is within the allowed check-in period.
+    // The patient is within the allowed check in period.
     checkInButton.disabled = false;
 
     if (checkInMessage) {
@@ -161,9 +166,9 @@ async function loadTodayAppointment() {
         currentAppointment = appointment;
         displayAppointment(appointment);
 
-        // Show the relevant section based on check-in status.
+        // Show the relevant section based on check in status.
         if (appointment.queue_entry_id) {
-            // Stop checking the time after successful check-in.
+            // Stop checking the time after successful check in.
             if (checkInTimer) {
                 clearInterval(checkInTimer);
                 checkInTimer = null;
@@ -285,12 +290,12 @@ function displayAppointment(appointment) {
         appointmentStatus.classList.toggle("missed", isMissed);
     }
 
-    // Hide expected check-in time when the appointment is missed.
+    // Hide expected check in time when the appointment is missed.
     if (expectedCheckInSection) {
         expectedCheckInSection.hidden = isMissed;
     }
 
-    // Calculate expected check-in time.
+    // Calculate expected check in time.
     if (!isMissed && expectedCheckInTime && appointment.start_time) {
         const [hours, minutes] = appointment.start_time
             .split(":")
@@ -311,7 +316,7 @@ function displayAppointment(appointment) {
     }
 }
 
-// ================= SHOW CHECK-IN SECTION =================
+// ================= SHOW CHECK IN SECTION =================
 function showCheckInSection() {
     notCheckedIn.hidden = false;
     checkInMessage.hidden = true;
@@ -373,7 +378,7 @@ if (checkInButton) {
         if (!currentAppointmentId) {
             showMessage(
                 "No appointment available",
-                "There is no appointment available for check-in."
+                "There is no appointment available for check in."
             );
             return;
         }
@@ -395,18 +400,18 @@ if (checkInButton) {
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || "Check-in failed.");
+                throw new Error(result.message || "Check in failed.");
             } 
 
             // Reload the appointment to get the latest queue position.
             await loadTodayAppointment();
 
-            // Show the successful check-in message.
-            showMessage("Check-in successful!", result.message, true);
+            // Show the successful check in message.
+            showMessage("Check in successful!", result.message, true);
 
         } catch (error) {
-            console.error("Check-in error:", error);
-            showMessage("Check-in failed", error.message || "Please try again.");
+            console.error("Check in error:", error);
+            showMessage("Check in failed", error.message || "Please try again.");
 
             if (currentAppointment) {
                 updateCheckInAvailability(currentAppointment);
@@ -446,7 +451,7 @@ function displayQueueStatus(appointment) {
 
         showMessage(
             "You Missed Your Appointment",
-            "Your appointment was marked as missed because you did not complete your visit before the clinic closed." +
+            "Your appointment was marked as missed because you did not complete your visit before the clinic closed. " +
             "Please contact clinic staff for assistance."
         );
 
@@ -662,8 +667,9 @@ function showMessage(title, message, isSuccess = false) {
             checkInMessage.classList.add("success");
         } else if (
             title === "You Missed Your Appointment" ||
-            title === "Check-in failed" ||
-            title === "Clinic Closed"
+            title === "Check in failed" ||
+            title === "Clinic Closed" ||
+            title === "Check-in Closed"
         ) {
             checkInMessage.classList.add("warning");
         } else {

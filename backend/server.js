@@ -5862,12 +5862,12 @@ app.post(
                 // Get clinic closing time
                 const clinicClosingTime = getClinicClosingTime(appointment.appointment_date);
 
-                // Last check-in time = 10 minutes before clinic closing
+                // Last check-in time = 15 minutes before clinic closing
                 const clinicCloseAt = Date.parse(
                     `${appointment.appointment_date}T${clinicClosingTime}+08:00`
                 );
 
-                const checkInCloseAt = clinicCloseAt - 10 * 60 * 1000;
+                const checkInCloseAt = clinicCloseAt - 15 * 60 * 1000;
 
                 if (now >= checkInCloseAt) {
                     throw new Error("CLINIC_CLOSED");
