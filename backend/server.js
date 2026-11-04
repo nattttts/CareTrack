@@ -5137,9 +5137,8 @@ app.get(
 
 
 /* =========================================
-   CHILD PROFILE: GET MOTHER EMERGENCY CONTACT
+   CHILD PROFILE: GET GUARDIAN EMERGENCY CONTACT
 ========================================= */
-
 app.get("/api/patient/emergency-contact", (req, res) => {
     if (!req.session?.user) {
         return res.status(401).json({
@@ -5150,62 +5149,50 @@ app.get("/api/patient/emergency-contact", (req, res) => {
     const userId =
         req.session.user.userId || req.session.user.user_id;
 
-    if (String(req.session.user.role || "").toLowerCase() !== "child") {
+    if (
+        String(req.session.user.role || "").toLowerCase() !== "child"
+    ) {
         return res.status(403).json({
             message: "This endpoint is for child accounts only."
         });
     }
 
     try {
-        const child = db.prepare(`
-            SELECT guardian_name
+        const guardian = db.prepare(`
+            SELECT
+                Child.guardian_name,
+                Mother.phone_no,
+                User.email
             FROM Child
-            WHERE user_id = ?
+            LEFT JOIN User
+                ON LOWER(TRIM(User.full_name)) =
+                   LOWER(TRIM(Child.guardian_name))
+            LEFT JOIN Mother
+                ON Mother.user_id = User.user_id
+            WHERE Child.user_id = ?
+            LIMIT 1
         `).get(userId);
 
-        if (!child || !child.guardian_name?.trim()) {
+        if (!guardian) {
             return res.status(404).json({
-                message: "Guardian name is missing from the child record."
-            });
-        }
-
-        const mother = db.prepare(`
-            SELECT
-                User.full_name,
-                User.email,
-                Mother.phone_no
-            FROM User
-            INNER JOIN Mother
-                ON Mother.user_id = User.user_id
-            WHERE LOWER(TRIM(User.full_name)) =
-                LOWER(TRIM(?))
-            LIMIT 1
-        `).get(child.guardian_name);
-
-        if (!mother) {
-            console.error(
-                "Mother not found for guardian:",
-                child.guardian_name
-            );
-
-            return res.status(404).json({
-                message: "No matching mother account was found."
+                message: "Child profile not found."
             });
         }
 
         return res.json({
-            mother: {
-                fullName: mother.full_name,
-                phoneNo: mother.phone_no || "",
-                email: mother.email || "",
+            guardian: {
+                fullName: guardian.guardian_name || "",
+                phoneNo: guardian.phone_no || "",
+                email: guardian.email || "",
                 relationship: "Mother"
             }
         });
+
     } catch (error) {
-        console.error("Error loading mother's details:", error);
+        console.error("Error loading guardian contact:", error);
 
         return res.status(500).json({
-            message: "Unable to load mother's details."
+            message: "Unable to load guardian contact details."
         });
     }
 });

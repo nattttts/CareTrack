@@ -274,7 +274,7 @@ async function loadLoggedInProfile() {
             // Child sees the linked mother's contact details.
             if (emergencyDescription) {
                 emergencyDescription.textContent =
-                    "Your mother's emergency contact details";
+                    "Your registered guardian's contact details"
             }
 
             if (emergencyEditButton) {
@@ -286,7 +286,7 @@ async function loadLoggedInProfile() {
             if (emergencyEmailItem) emergencyEmailItem.style.display = "";
 
             if (emergencyNameLabel) {
-                emergencyNameLabel.textContent = "Mother's Name";
+                emergencyNameLabel.textContent = "Guardian Name";
             }
 
             setEmergencyInputsReadOnly(true);
@@ -334,48 +334,38 @@ async function loadChildEmergencyContact() {
             }
         );
 
-        const responseText = await response.text();
-        let result;
-
-        try {
-            result = JSON.parse(responseText);
-        } catch {
-            throw new Error(
-                `Emergency contact API returned invalid JSON (HTTP ${response.status}).`
-            );
-        }
+        const result = await response.json();
 
         if (!response.ok) {
             throw new Error(
-                result.message || "Unable to load mother's details."
+                result.message || "Unable to load guardian details."
             );
         }
 
-        const mother = result.mother || {};
+        const guardian = result.guardian || {};
 
         setProfileField(
             "emergencyNameText",
             "emergencyNameInput",
-            mother.fullName || ""
+            guardian.fullName
         );
 
         setProfileField(
             "emergencyPhoneText",
             "emergencyPhoneInput",
-            mother.phoneNo || ""
+            guardian.phoneNo
         );
 
         setProfileField(
             "emergencyEmailText",
             "emergencyEmailInput",
-            mother.email || ""
+            guardian.email
         );
 
-        // Relationship is not displayed for child accounts.
         setEmergencyInputsReadOnly(true);
 
     } catch (error) {
-        console.error("Child emergency contact error:", error);
+        console.error("Child guardian contact error:", error);
 
         setProfileField(
             "emergencyNameText",
