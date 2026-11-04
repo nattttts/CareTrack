@@ -210,6 +210,10 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
 CREATE TABLE IF NOT EXISTS Notification (
     notification_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'general',
+    appointment_date TEXT,
+    appointment_time TEXT,
+    note TEXT
 
     title TEXT NOT NULL,
     message TEXT NOT NULL,
@@ -264,6 +268,10 @@ CREATE TABLE IF NOT EXISTS Maternal_Record (
     doctor_remarks TEXT DEFAULT '',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    systolic INTEGER,
+    diastolic INTEGER,
+    urine_test TEXT,
+    blood_test TEXT,
 
     FOREIGN KEY (mother_id)
         REFERENCES Mother(mother_id)

@@ -159,68 +159,6 @@ function requireRole(...allowedRoles) {
 
 const PORT = 3000;
 
-/* =========================================
-   MATERNAL RECORDS - NEW MEDICAL FIELDS
-========================================= */
-function migrateMaternalRecordFields() {
-    const columns = db.prepare(
-        "PRAGMA table_info(Maternal_Record)"
-    ).all();
-
-    const existingColumns = new Set(
-        columns.map(column => column.name)
-    );
-
-    const newColumns = [
-        {
-            name: "systolic",
-            sql: "ALTER TABLE Maternal_Record ADD COLUMN systolic INTEGER"
-        },
-        {
-            name: "diastolic",
-            sql: "ALTER TABLE Maternal_Record ADD COLUMN diastolic INTEGER"
-        },
-        {
-            name: "urine_test",
-            sql: "ALTER TABLE Maternal_Record ADD COLUMN urine_test TEXT"
-        },
-        {
-            name: "blood_test",
-            sql: "ALTER TABLE Maternal_Record ADD COLUMN blood_test TEXT"
-        }
-    ];
-
-    for (const column of newColumns) {
-        if (!existingColumns.has(column.name)) {
-            db.exec(column.sql);
-            console.log(
-                `Maternal_Record: added ${column.name}`
-            );
-        }
-    }
-}
-
-migrateMaternalRecordFields();
-
-const appointmentColumns = db.prepare(`
-    PRAGMA table_info(Appointment)
-`).all();
-
-if (!appointmentColumns.some(column =>
-    column.name === "child_vaccination_id"
-)) {
-    db.exec(`
-        ALTER TABLE Appointment
-        ADD COLUMN child_vaccination_id INTEGER
-        REFERENCES Child_Vaccination(child_vaccination_id)
-    `);
-}
-
-db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_appointment_child_vaccination
-    ON Appointment(child_vaccination_id)
-`);
-
 app.get("/", (req, res) => {
     res.send("CareTrack backend is working!");
 });
@@ -6516,67 +6454,6 @@ app.patch(
         }
     }
 );
-
-/* =========================================
-   ENSURE NOTIFICATION TABLE HAS REQUIRED COLUMNS
-========================================= */
-try {
-    const tableExists = db.prepare(`
-        SELECT name
-        FROM sqlite_master
-        WHERE type = 'table'
-          AND name = 'Notification'
-    `).get();
-
-    if (!tableExists) {
-        console.error(
-            "Notification table does not exist in the connected database."
-        );
-    } else {
-        const columns = db
-            .prepare("PRAGMA table_info(Notification)")
-            .all();
-
-        const existingColumns = new Set(
-            columns.map(column => column.name)
-        );
-
-        const missingColumns = [
-            {
-                name: "type",
-                sql: "ALTER TABLE Notification ADD COLUMN type TEXT NOT NULL DEFAULT 'general'"
-            },
-            {
-                name: "appointment_date",
-                sql: "ALTER TABLE Notification ADD COLUMN appointment_date TEXT"
-            },
-            {
-                name: "appointment_time",
-                sql: "ALTER TABLE Notification ADD COLUMN appointment_time TEXT"
-            },
-            {
-                name: "note",
-                sql: "ALTER TABLE Notification ADD COLUMN note TEXT"
-            }
-        ];
-
-        for (const column of missingColumns) {
-            if (!existingColumns.has(column.name)) {
-                db.exec(column.sql);
-                console.log(
-                    `Added missing Notification column: ${column.name}`
-                );
-            }
-        }
-
-        console.log("Notification table schema check completed.");
-    }
-} catch (error) {
-    console.error(
-        "Notification schema migration failed:",
-        error.message
-    );
-}
 
 async function notifyVaccinationChange(childUserId, action, recordId) {
     // Find the child, vaccine and matching mother account.
