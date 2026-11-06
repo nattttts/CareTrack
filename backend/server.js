@@ -2823,16 +2823,14 @@ app.post(
                         user_id,
                         appointment_type,
                         appointment_date,
-                        start_time,
-                        child_vaccination_id
+                        start_time
                     )
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?)
                 `).run(
                     userId,
                     "Child Vaccination",
                     due_date,
                     start_time,
-                    Number(vaccinationResult.lastInsertRowid)
                 );
 
                 appointmentId = Number(appointmentResult.lastInsertRowid);
