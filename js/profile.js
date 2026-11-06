@@ -88,8 +88,8 @@ async function loadLoggedInProfile() {
         if (profileName) profileName.textContent = fullName;
 
         if (roleLabel) {
-            roleLabel.textContent =
-                role.charAt(0).toUpperCase() + role.slice(1);
+            roleLabel.textContent = isPregnantWoman
+                ? "Pregnant Woman" : "Child";
         }
 
         /* ========================================
