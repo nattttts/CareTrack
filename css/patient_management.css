@@ -84,9 +84,9 @@ a {
     font-size: 14px;
 }
 
-/* ================= MOTHER AND CHILD TAB ================= */
+/* ================= PREGNANT WOMAN AND CHILD TAB ================= */
 .patient-tabs {
-    width: 400px;
+    width: 300px;
     margin: 0 auto 18px;
     display: flex;
     background: var(--white);
@@ -96,7 +96,7 @@ a {
 }
 
 .patient-tab {
-    min-width: 200px;
+    min-width: 150px;
     padding: 12px 20px;
     display: flex;
     align-items: center;
@@ -127,7 +127,7 @@ a {
     font-weight: 600;
 }
 
-/* ================= MOTHER & CHILD PANEL ================= */
+/* ================= PREGNANT WOMAN & CHILD PANEL ================= */
 /* Section Heading */
 .section-heading {
     margin: 0 0 18px;
@@ -225,7 +225,7 @@ a {
     background: var(--caretrack-pink);
 }
 
-/* ================= MOTHER & CHILD TABLE ================= */
+/* ================= PREGNANT WOMAN & CHILD TABLE ================= */
 .table-card {
     max-width: 1250px;
     margin: 0 auto 24px;
@@ -286,7 +286,7 @@ a {
     background: #fffafd;
 }
 
-/* ================= MOTHER TABLE ================= */
+/* ================= PREGNANT WOMAN TABLE ================= */
 .mother-name, .child-name {
     color: var(--text-dark);
 }

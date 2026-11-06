@@ -101,25 +101,25 @@
                         
                         <div>
                             <h2>Patient Management</h2>
-                            <p>Manage mother and child information and account status.</p>
+                            <p>Manage pregnant woman and child information and account status.</p>
                         </div>
 
                     </div>
                 </section>
 
-                <!-- ================= MOTHER AND CHILD TAB ================= -->
+                <!-- ================= PREGNANT WOMAN AND CHILD TAB ================= -->
                 <div class="patient-tabs" role="tablist"
                     aria-label="Patient categories">
 
                     <button 
                         class="patient-tab active" 
-                        id="motherTab"
+                        id="pregnantWomanTab"
                         role="tab"
                         aria-selected="true"
-                        aria-controls="motherPanel"
-                        data-tab="mothers">
+                        aria-controls="pregnantWomanPanel"
+                        data-tab="pregnant-women">
 
-                        Mother Management
+                        Pregnant Woman
                     </button>
 
                     <button 
@@ -130,27 +130,27 @@
                         aria-controls="childPanel"
                         data-tab="children">
 
-                        Child Management
+                        Child
                     </button>
                 </div>
 
-                <!-- ================= MOTHER PANEL ================= -->
-                <section id="motherPanel" class="management-panel">
+                <!-- ================= PREGNANT WOMAN PANEL ================= -->
+                <section id="pregnantWomanPanel" class="management-panel">
 
                     <div class="section-heading">
                         <div>
-                            <h2>Mother Records</h2>
-                            <p>Manage registered mother information.</p>
+                            <h2>Pregnant Woman Records</h2>
+                            <p>Manage registered pregnant woman information.</p>
                         </div>
 
                         <button
                             type="button"
                             class="add-button"
                             data-bs-toggle="modal"
-                            data-bs-target="#addMotherModal"
+                            data-bs-target="#addPregnantWomanModal"
                         >
                             <i class="bi bi-plus-lg"></i>
-                            Add Mother
+                            Add Pregnant Woman
                         </button>
                     </div>
 
@@ -161,7 +161,7 @@
 
                             <!-- Search -->
                             <div class="col-12 col-lg-8">
-                                <label for="motherSearch" class="form-label">Search</label>
+                                <label for="pregnantWomanSearch" class="form-label">Search</label>
 
                                 <div class="input-group">
                                     <span class="input-group-text">
@@ -170,7 +170,7 @@
 
                                     <input
                                         type="text"
-                                        id="motherSearch"
+                                        id="pregnantWomanSearch"
                                         class="form-control"
                                         placeholder="Search by name, IC number, phone or email..."
                                     >
@@ -179,9 +179,9 @@
 
                             <!-- Status -->
                             <div class="col-12 col-md-6 col-lg-2">
-                                <label for="motherStatusFilter" class="form-label">Account Status</label>
+                                <label for="pregnantWomanStatusFilter" class="form-label">Account Status</label>
                                 
-                                <select id="motherStatusFilter" class="form-select">
+                                <select id="pregnantWomanStatusFilter" class="form-select">
                                     <option value="all">All</option>
                                     <option value="Active">Active</option>
                                     <option value="Inactive">Inactive</option>
@@ -192,7 +192,7 @@
                             <div class="col-12 col-lg-2">
                                 <button
                                     type="button"
-                                    id="motherResetFilters"
+                                    id="pregnantWomanResetFilters"
                                     class="btn reset-button w-100"
                                 >
                                     <i class="bi bi-arrow-counterclockwise"></i>
@@ -204,13 +204,13 @@
 
                     </section>
 
-                    <!-- ================= MOTHER TABLE ================= -->
+                    <!-- ================= PREGNANT WOMAN TABLE ================= -->
                     <div class="table-card">
                         <div class="table-responsive patient-table-container">
                             <table class="management-table">
                                 <thead>
                                     <tr>
-                                        <th>Mother Name</th>
+                                        <th>Name</th>
                                         <th>IC Number</th>
                                         <th>Email</th>
                                         <th>Phone.No</th>
@@ -220,22 +220,22 @@
                                     </tr>
                                 </thead>
 
-                                <tbody id="motherTableBody">
-                                    <!-- Mother records will be generated by JavaScript -->
+                                <tbody id="pregnantWomanTableBody">
+                                    <!-- Pregnant woman records will be generated by JavaScript -->
                                 </tbody>
                             </table>
                         </div>
 
                         <!-- NO RESULTS -->
-                        <div id="noMotherFound" class="no-results" hidden>
+                        <div id="noPregnantWomanFound" class="no-results" hidden>
                             <i class="bi bi-person-fill-x"></i>
-                            <h5>No mother records found</h5>
+                            <h5>No pregnant woman records found</h5>
                             <p>Try changing your search or filter options.</p>
                         </div>
 
                         <!-- ================= TABLE FOOTER ================= -->
                         <div class="table-footer">
-                            <span id="motherCount"></span>
+                            <span id="pregnantWomanCount"></span>
                         </div>
                     </div>
 
@@ -317,7 +317,7 @@
                             <table class="management-table">
                                 <thead>
                                     <tr>
-                                        <th>Child</th>
+                                        <th>Name</th>
                                         <th>MyKid Number</th>
                                         <th>Gender</th>
                                         <th>Guardian Name</th>
@@ -354,12 +354,12 @@
     
     </div>
 
-    <!-- ================= ADD MOTHER MODAL ================= -->
+    <!-- ================= ADD PREGNANT WOMAN MODAL ================= -->
     <div
         class="modal fade"
-        id="addMotherModal"
+        id="addPregnantWomanModal"
         tabindex="-1"
-        aria-labelledby="addMotherModalLabel"
+        aria-labelledby="addPregnantWomanModalLabel"
         aria-hidden="true"
     >
 
@@ -367,12 +367,12 @@
             <div class="modal-content form-modal-content">
                 <div class="modal-header">
                     <div>
-                        <h5 class="modal-title" id="addMotherModalLabel">
-                            Add Mother
+                        <h5 class="modal-title" id="addPregnantWomanModalLabel">
+                            Add Pregnant Woman
                         </h5>
 
                         <p class="modal-subtitle">
-                            Create a new authorised mother account.
+                            Create a new authorised pregnant woman account.
                         </p>
                     </div>
 
@@ -384,7 +384,7 @@
                     ></button>
                 </div>
 
-                <form id="addMotherForm">
+                <form id="addPregnantWomanForm">
                     <div class="modal-body">
 
                         <!-- ================= PERSONAL INFORMATION ================= -->
@@ -396,7 +396,7 @@
                                 <label class="form-label">Full Name</label>
                                 <input
                                     type="text"
-                                    id="addMotherName"
+                                    id="addPregnantWomanName"
                                     class="form-control"
                                     placeholder="Enter full name"
                                     required
@@ -408,7 +408,7 @@
                                 <label class="form-label">IC Number</label>
                                 <input
                                     type="text"
-                                    id="addMotherIC"
+                                    id="addPregnantWomanIC"
                                     class="form-control"
                                     placeholder="Enter IC number e.g. 920101-07-1234"
                                     required
@@ -420,7 +420,7 @@
                                 <label class="form-label">Date of Birth</label>
                                 <input
                                     type="date"
-                                    id="addMotherDOB"
+                                    id="addPregnantWomanDOB"
                                     class="form-control"
                                     required
                                 >
@@ -431,7 +431,7 @@
                                 <label class="form-label">Phone Number</label>
                                 <input
                                     type="tel"
-                                    id="addMotherPhoneNo"
+                                    id="addPregnantWomanPhoneNo"
                                     class="form-control"
                                     placeholder="Enter phone number e.g. 012-3456789"
                                     required
@@ -443,9 +443,9 @@
                                 <label class="form-label">Email Address</label>
                                 <input
                                     type="email"
-                                    id="addMotherEmail"
+                                    id="addPregnantWomanEmail"
                                     class="form-control"
-                                    placeholder="Enter email address e.g. mother@gmail.com"
+                                    placeholder="Enter email address e.g. example@gmail.com"
                                     required
                                 >
                             </div>
@@ -455,7 +455,7 @@
                                 <label class="form-label">Home Address</label>
                                 <input
                                     type="text"
-                                    id="addMotherAddress"
+                                    id="addPregnantWomanAddress"
                                     class="form-control"
                                     placeholder="Enter home address"
                                     required
@@ -473,7 +473,7 @@
                                 <label class="form-label">Emergency Contact Name</label>
                                 <input
                                     type="text"
-                                    id="addMotherEmergencyName"
+                                    id="addPregnantWomanEmergencyName"
                                     class="form-control"
                                     placeholder="Enter emergency contact name"
                                     required
@@ -485,9 +485,9 @@
                                 <label class="form-label">Relationship</label>
                                 <input
                                     type="text"
-                                    id="addMotherRelationship"
+                                    id="addPregnantWomanRelationship"
                                     class="form-control"
-                                    placeholder="Enter relationship e.g. Mother"
+                                    placeholder="Enter relationship e.g. Husband"
                                     required
                                 >
                             </div>
@@ -497,7 +497,7 @@
                                 <label class="form-label">Emergency Contact Phone Number</label>
                                 <input
                                     type="text"
-                                    id="addMotherEmergencyPhone"
+                                    id="addPregnantWomanEmergencyPhone"
                                     class="form-control"
                                     placeholder="Enter phone number e.g. 012-3456789"
                                     required
@@ -510,9 +510,9 @@
                                     <i class="bi bi-info-circle"></i>
                                     <span>
                                         <strong>System Role:</strong>
-                                        Mother
+                                        Pregnant Woman
                                         <small>
-                                            (applied to all mother accounts)
+                                            (applied to all pregnant woman accounts)
                                         </small>
                                     </span>
                                 </div>
@@ -535,7 +535,7 @@
                             type="submit"
                             class="btn btn-primary modal-add-button"
                         >
-                            Add Mother
+                            Add Pregnant Woman
                         </button>
                     </div>
 
@@ -547,20 +547,20 @@
 
     </div>
 
-    <!-- ================= VIEW MOTHER MODAL ================= -->
+    <!-- ================= VIEW PREGNANT WOMAN MODAL ================= -->
     <div
         class="modal fade"
-        id="viewMotherModal"
+        id="viewPregnantWomanModal"
         tabindex="-1"
-        aria-labelledby="viewMotherModalLabel"
+        aria-labelledby="viewPregnantWomanModalLabel"
         aria-hidden="true"
     >
 
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="viewMotherModalLabel">
-                        Mother Details
+                    <h5 class="modal-title" id="viewPregnantWomanModalLabel">
+                        Pregnant Woman Details
                     </h5>
                     <button
                         type="button"
@@ -572,11 +572,11 @@
 
                 <div class="modal-body">
                     <div class="view-profile">
-                        <h4 id="viewMotherProfileName"></h4>
+                        <h4 id="viewPregnantWomanProfileName"></h4>
 
-                        <span id="viewMotherProfileStatus" class="status-badge">
+                        <span id="viewPregnantWomanProfileStatus" class="status-badge">
                             <span class="status-dot"></span>
-                            <span id="viewMotherProfileStatusText"></span>
+                            <span id="viewPregnantWomanProfileStatusText"></span>
                         </span>
                     </div>
 
@@ -584,53 +584,53 @@
                         <h6>Personal Information</h6>
                         <div>
                             <span>Full Name</span>
-                            <strong id="viewMotherName"></strong>
+                            <strong id="viewPregnantWomanName"></strong>
                         </div>
 
                         <div>
                             <span>IC Number</span>
-                            <strong id="viewMotherICNumber"></strong>
+                            <strong id="viewPregnantWomanICNumber"></strong>
                         </div>
 
                         <div>
                             <span>Date of Birth</span>
-                            <strong id="viewMotherDOB"></strong>
+                            <strong id="viewPregnantWomanDOB"></strong>
                         </div>
 
                         <div>
                             <span>Phone Number</span>
-                            <strong id="viewMotherPhone"></strong>
+                            <strong id="viewPregnantWomanPhone"></strong>
                         </div>
 
                         <div>
                             <span>Email Address</span>
-                            <strong id="viewMotherEmail"></strong>
+                            <strong id="viewPregnantWomanEmail"></strong>
                         </div>
 
                         <div>
                             <span>Home Address</span>
-                            <strong id="viewMotherAddress"></strong>
+                            <strong id="viewPregnantWomanAddress"></strong>
                         </div>
 
                         <div>
                             <span>Date Created</span>
-                            <strong id="viewMotherDate"></strong>
+                            <strong id="viewPregnantWomanDate"></strong>
                         </div>
 
                         <h6>Emergency Contact</h6>
                         <div>
                             <span>Emergency Contact Name</span>
-                            <strong id="viewMotherContactName"></strong>
+                            <strong id="viewPregnantWomanContactName"></strong>
                         </div>
 
                         <div>
                             <span>Relationship</span>
-                            <strong id="viewMotherRelationship"></strong>
+                            <strong id="viewPregnantWomanRelationship"></strong>
                         </div>
 
                         <div>
                             <span>Emergency Contact Phone Number</span>
-                            <strong id="viewMotherContactPhone"></strong>
+                            <strong id="viewPregnantWomanContactPhone"></strong>
                         </div>
                     </div>
                 </div>
@@ -641,12 +641,12 @@
 
     </div>
 
-    <!-- ================= EDIT MOTHER MODAL ================= -->
+    <!-- ================= EDIT PREGNANT WOMAN MODAL ================= -->
     <div
         class="modal fade"
-        id="editMotherModal"
+        id="editPregnantWomanModal"
         tabindex="-1"
-        aria-labelledby="editMotherModalLabel"
+        aria-labelledby="editPregnantWomanModalLabel"
         aria-hidden="true"
     >
 
@@ -654,10 +654,10 @@
             <div class="modal-content form-modal-content">
                 <div class="modal-header">
                     <div>
-                        <h5 class="modal-title" id="editMotherModalLabel">
-                            Edit Mother
+                        <h5 class="modal-title" id="editPregnantWomanModalLabel">
+                            Edit Pregnant Woman
                         </h5>
-                        <p class="modal-subtitle">Update the mother's account information.</p>
+                        <p class="modal-subtitle">Update the pregnant woman's account information.</p>
                     </div>
 
                     <button
@@ -668,10 +668,10 @@
                     ></button>
                 </div>
 
-                <form id="editMotherForm">
+                <form id="editPregnantWomanForm">
                     <div class="modal-body">
 
-                        <input type="hidden" id="editMotherId">
+                        <input type="hidden" id="editPregnantWomanId">
 
                         <!-- Personal Information -->
                         <h6>Personal Information</h6>
@@ -680,7 +680,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Full Name</label>
                                 <input
-                                    type="text" id="editMotherName"
+                                    type="text" id="editPregnantWomanName"
                                     class="form-control" required
                                 >
                             </div>
@@ -688,7 +688,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">IC Number</label>
                                 <input
-                                    type="text" id="editMotherICNumber"
+                                    type="text" id="editPregnantWomanICNumber"
                                     class="form-control" required
                                 >
                             </div>
@@ -696,7 +696,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Date of Birth</label>
                                 <input
-                                    type="date" id="editMotherDOB"
+                                    type="date" id="editPregnantWomanDOB"
                                     class="form-control" required
                                 >
                             </div>
@@ -704,7 +704,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Phone Number</label>
                                 <input
-                                    type="tel" id="editMotherPhone"
+                                    type="tel" id="editPregnantWomanPhone"
                                     class="form-control" required
                                 >
                             </div>
@@ -712,7 +712,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Email Address</label>
                                 <input
-                                    type="email" id="editMotherEmail"
+                                    type="email" id="editPregnantWomanEmail"
                                     class="form-control" required
                                 >
                             </div>
@@ -720,7 +720,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Home Address</label>
                                 <input
-                                    type="text" id="editMotherAddress"
+                                    type="text" id="editPregnantWomanAddress"
                                     class="form-control" required
                                 >
                             </div>
@@ -733,7 +733,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Emergency Contact Name</label>
                                 <input
-                                    type="text" id="editMotherEmergencyName"
+                                    type="text" id="editPregnantWomanEmergencyName"
                                     class="form-control" required
                                 >
                             </div>
@@ -741,7 +741,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Relationship</label>
                                 <input
-                                    type="text" id="editMotherRelationship"
+                                    type="text" id="editPregnantWomanRelationship"
                                     class="form-control" required
                                 >
                             </div>
@@ -749,7 +749,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Emergency Contact Phone Number</label>
                                 <input
-                                    type="tel" id="editMotherEmergencyPhone"
+                                    type="tel" id="editPregnantWomanEmergencyPhone"
                                     class="form-control" required
                                 >
                             </div>
@@ -759,9 +759,9 @@
                                     <i class="bi bi-info-circle"></i>
                                     <span>
                                         <strong>System Role:</strong>
-                                        Mother
+                                        Pregnant Woman
                                         <small>
-                                            Mother account role cannot be changed here.
+                                            Pregnant woman account role cannot be changed here.
                                         </small>
                                     </span>
                                 </div>
@@ -794,12 +794,12 @@
 
     </div>
 
-    <!-- ================= MOTHER DEACTIVATE CONFIRMATION MODAL ================= -->
+    <!-- ================= PREGNANT WOMAN DEACTIVATE CONFIRMATION MODAL ================= -->
     <div
         class="modal fade"
-        id="deactivateMotherModal"
+        id="deactivatePregnantWomanModal"
         tabindex="-1"
-        aria-labelledby="deactivateMotherModalLabel"
+        aria-labelledby="deactivatePregnantWomanModalLabel"
         aria-hidden="true"
     >
 
@@ -810,16 +810,16 @@
                         <i class="bi bi-person-x"></i>
                     </div>
 
-                    <h4 id="deactivateMotherModalLabel">
-                        Deactivate Mother Account?
+                    <h4 id="deactivatePregnantWomanModalLabel">
+                        Deactivate Pregnant Woman Account?
                     </h4>
                     <p>
                         Are you sure you want to
-                        <span id="motherStatusAction"></span>
-                        <strong id="statusMotherName"></strong>'s account?
+                        <span id="pregnantWomanStatusAction"></span>
+                        <strong id="statusPregnantWomanName"></strong>'s account?
                     </p>
-                    <p class="warning-text" id="motherStatusWarning">
-                        The mother member will no longer be able to log in to the system.
+                    <p class="warning-text" id="pregnantWomanStatusWarning">
+                        The pregnant woman will no longer be able to log in to the system.
                     </p>
 
                     <div class="confirmation-buttons">
@@ -834,7 +834,7 @@
                         <button
                             type="button"
                             class="btn btn-danger"
-                            id="confirmMotherStatusButton"
+                            id="confirmPregnantWomanStatusButton"
                         >
                             <i class="bi bi-person-x"></i>
                             Deactivate
@@ -964,7 +964,7 @@
                                     type="email"
                                     id="addChildGuardianEmail"
                                     class="form-control"
-                                    placeholder="Enter email address e.g. mother@gmail.com"
+                                    placeholder="Enter email address e.g. example@gmail.com"
                                     required
                                 >
                             </div>

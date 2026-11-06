@@ -1,78 +1,78 @@
 import { showToast } from "./popup_message.js";
 
-let allMother = [];
+let allPregnantWomen = [];
 let allChild = [];
 
-// ================= LOAD MOTHER =================
-async function loadMother() {
-    const tableBody = document.getElementById("motherTableBody");
+// ================= LOAD PREGNANT WOMEN =================
+async function loadPregnantWomen() {
+    const tableBody = document.getElementById("pregnantWomanTableBody");
 
     try {
-        const response = await fetch("http://localhost:3000/api/mothers");
+        const response = await fetch("http://localhost:3000/api/pregnant-women");
 
         if (!response.ok) {
-            throw new Error("Failed to retrieve mother records.");
+            throw new Error("Failed to retrieve pregnant woman records.");
         }
 
-        const motherList = await response.json();
+        const pregnantWomanList = await response.json();
         
-        allMother = motherList;
+        allPregnantWomen = pregnantWomanList;
 
-        // Remove old rows, but keep the "no matching mother" message
-        tableBody.querySelectorAll(".mother-row").forEach(row => row.remove());
+        // Remove old rows, but keep the "no matching pregnant woman" message
+        tableBody.querySelectorAll(".pregnant-woman-row").forEach(row => row.remove());
 
-        motherList.forEach(mother => {
+        pregnantWomanList.forEach(pregnantWoman => {
             const row = document.createElement("tr");
-            row.classList.add("mother-row");
+            row.classList.add("pregnant-woman-row");
 
             row.dataset.search = [
-                mother.full_name,
-                mother.user_id,
-                mother.email,
-                mother.phone_no
+                pregnantWoman.full_name,
+                pregnantWoman.user_id,
+                pregnantWoman.email,
+                pregnantWoman.phone_no
             ].join(" ").toLowerCase();
 
-            row.dataset.status = mother.account_status;
+            row.dataset.status = pregnantWoman.account_status;
 
             row.innerHTML = `
                 <td>
-                    <strong>${mother.full_name}</strong>
+                    <strong>${pregnantWoman.full_name}</strong>
                 </td>
 
-                <td>${mother.user_id}</td>
-                <td>${mother.email}</td>
-                <td>${mother.phone_no}</td>
+                <td>${pregnantWoman.user_id}</td>
+                <td>${pregnantWoman.email}</td>
+                <td>${pregnantWoman.phone_no}</td>
                 <td>
                     <div class="account-status-group">
                         <span class="status-badge ${
-                            mother.account_status === "Active"
+                            pregnantWoman.account_status === "Active"
                                 ? "active-status"
                                 : "inactive-status"
                         }">
                             <span class="status-dot"></span>
-                            ${mother.account_status}
+                            ${pregnantWoman.account_status}
                         </span>
 
                         <span class="password-status ${
-                            Number(mother.password_set) === 1
+                            Number(pregnantWoman.password_set) === 1
                                 ? "password-set"
                                 : "password-not-set"
                         }">
                             <i class="bi ${
-                                Number(mother.password_set) === 1
+                                Number(pregnantWoman.password_set) === 1
                                     ? "bi-check-circle"
                                     : "bi-clock"
                             }"></i>
 
                             ${
-                                Number(mother.password_set) === 1
+                                Number(pregnantWoman.password_set) === 1
                                     ? "Password set"
                                     : "Password not set"
                             }
                         </span>
                     </div>
                 </td>
-                <td>${new Date(mother.created_at).toLocaleDateString("en-GB", {
+                <td>${new Date(pregnantWoman.created_at).toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric"
@@ -92,18 +92,18 @@ async function loadMother() {
                         <button
                             type="button"
                             class="action-button ${
-                                mother.account_status === "Active"
+                                pregnantWoman.account_status === "Active"
                                     ? "deactivate-button"
                                     : "activate-button"
                             }"
                         >
                             <i class="bi ${
-                                mother.account_status === "Active"
+                                pregnantWoman.account_status === "Active"
                                     ? "bi-person-x"
                                     : "bi-person-check"
                             }"></i>
                             <span>${
-                                mother.account_status === "Active"
+                                pregnantWoman.account_status === "Active"
                                     ? "Deactivate"
                                     : "Activate"
                             }</span>
@@ -111,12 +111,12 @@ async function loadMother() {
                     </div>
 
                     ${
-                        Number(mother.password_set) !== 1
+                        Number(pregnantWoman.password_set) !== 1
                             ? `
                                 <button
                                     type="button"
                                     class="action-button resend-invitation-button"
-                                    data-mother-id="${mother.mother_id}"
+                                    data-pregnant-woman-id="${pregnantWoman.pregnant_woman_id}"
                                 >
                                     <i class="bi bi-envelope"></i>
                                     <span>Resend Invitation</span>
@@ -127,37 +127,37 @@ async function loadMother() {
                 </td>
             `;
 
-            row.dataset.motherId = mother.mother_id;
+            row.dataset.pregnantWomanId = pregnantWoman.pregnant_woman_id;
 
             tableBody.appendChild(row);
         });
 
-        applyMotherFilters();
+        applyPregnantWomanFilters();
 
     } catch (error) {
-        console.error("Error loading mothers:", error);
+        console.error("Error loading pregnant women:", error);
         tableBody.innerHTML = `
             <tr>
                 <td colspan="7" class="text-center">
-                    Unable to load mother records.
+                    Unable to load pregnant woman records.
                 </td>
             </tr>
         `;
     }
 }
 
-// ================= MOTHER SEARCH & FILTER =================
-function applyMotherFilters() {
+// ================= PREGNANT WOMEN SEARCH & FILTER =================
+function applyPregnantWomanFilters() {
     const searchInput = document
-        .getElementById("motherSearch")
+        .getElementById("pregnantWomanSearch")
         .value
         .toLowerCase()
         .trim();
 
-    const selectedStatus = document.getElementById("motherStatusFilter").value;
+    const selectedStatus = document.getElementById("pregnantWomanStatusFilter").value;
 
     const rows = document.querySelectorAll(
-        "#motherTableBody .mother-row"
+        "#pregnantWomanTableBody .pregnant-woman-row"
     );
 
     let visibleCount = 0;
@@ -179,24 +179,24 @@ function applyMotherFilters() {
         }
     });
 
-    const noMotherFound = document.getElementById("noMotherFound");
+    const noPregnantWomanFound = document.getElementById("noPregnantWomanFound");
 
-    if (noMotherFound) {
-        noMotherFound.hidden = visibleCount > 0;
+    if (noPregnantWomanFound) {
+        noPregnantWomanFound.hidden = visibleCount > 0;
     }
 
-    document.getElementById("motherCount").textContent =
-        `Showing ${visibleCount} of ${allMother.length} mother`;
+    document.getElementById("pregnantWomanCount").textContent =
+        `Showing ${visibleCount} of ${allPregnantWomen.length} pregnant women`;
 }
 
-// ================= RESET MOTHER FILTERS =================
-function resetMotherFilters() {
-    document.getElementById("motherSearch").value = "";
-    document.getElementById("motherStatusFilter").value = "all";
-    applyMotherFilters();
+// ================= RESET PREGNANT WOMEN FILTERS =================
+function resetPregnantWomanFilters() {
+    document.getElementById("pregnantWomanSearch").value = "";
+    document.getElementById("pregnantWomanStatusFilter").value = "all";
+    applyPregnantWomanFilters();
 }
 
-async function resendMotherInvitation(motherId, button) {
+async function resendPregnantWomanInvitation(pregnantWomanId, button) {
     const originalText = button.innerHTML;
 
     try {
@@ -206,7 +206,7 @@ async function resendMotherInvitation(motherId, button) {
 
         // Ask the backend to generate a new invitation
         const response = await fetch(
-            `http://localhost:3000/api/mother/${motherId}/resend-invitation`,
+            `http://localhost:3000/api/pregnant-woman/${pregnantWomanId}/resend-invitation`,
             {
                 method: "POST"
             }
@@ -232,14 +232,14 @@ async function resendMotherInvitation(motherId, button) {
             );
         }
 
-        // Refresh the mother table to reflect the latest account data
-        await loadMother();
+        // Refresh the pregnant woman table to reflect the latest account data
+        await loadPregnantWomen();
 
     } catch (error) {
         console.error("Error resending invitation:", error);
         showToast(error.message || "Failed to resend invitation.", "error");
     } finally {
-        // The original button may have been removed by loadMother()
+        // The original button may have been removed by loadPregnantWomen()
         // Restore it only if it is still present on the page
         if (button.isConnected) {
             button.disabled = false;
@@ -248,136 +248,136 @@ async function resendMotherInvitation(motherId, button) {
     }
 }
 
-// ================= HANDLE MOTHER ACTION BUTTONS =================
-const motherTableBody = document.getElementById("motherTableBody");
+// ================= HANDLE PREGNANT WOMEN ACTION BUTTONS =================
+const pregnantWomanTableBody = document.getElementById("pregnantWomanTableBody");
 
-let selectedMother = null;
-let requestedMotherStatus = null;
+let selectedPregnantWoman = null;
+let requestedPregnantWomanStatus = null;
 
-motherTableBody.addEventListener("click", function (event) {
+pregnantWomanTableBody.addEventListener("click", function (event) {
     const button = event.target.closest("button");
 
-    if (!button || !motherTableBody.contains(button)) {
+    if (!button || !pregnantWomanTableBody.contains(button)) {
         return;
     }
 
-    const row = button.closest(".mother-row");
+    const row = button.closest(".pregnant-woman-row");
 
     if (!row) {
         return;
     }
 
-    const mother = allMother.find(
-        item => String(item.mother_id) === row.dataset.motherId
+    const pregnantWoman = allPregnantWomen.find(
+        item => String(item.pregnant_woman_id) === row.dataset.pregnantWomanId
     );
 
-    if (!mother) {
+    if (!pregnantWoman) {
         return;
     }
 
-    selectedMother = mother;
+    selectedPregnantWoman = pregnantWoman;
 
-    // VIEW MOTHER
+    // VIEW PREGNANT WOMEN
     if (button.classList.contains("view-button")) {
-        document.getElementById("viewMotherProfileName").textContent =
-            mother.full_name;
+        document.getElementById("viewPregnantWomanProfileName").textContent =
+            pregnantWoman.full_name;
                 
-        document.getElementById("viewMotherName").textContent =
-            mother.full_name;
+        document.getElementById("viewPregnantWomanName").textContent =
+            pregnantWoman.full_name;
         
-        document.getElementById("viewMotherICNumber").textContent =
-            mother.user_id;
+        document.getElementById("viewPregnantWomanICNumber").textContent =
+            pregnantWoman.user_id;
         
-        document.getElementById("viewMotherDOB").textContent =
-            new Date(`${mother.date_of_birth}T00:00:00`).toLocaleDateString("en-GB", {
+        document.getElementById("viewPregnantWomanDOB").textContent =
+            new Date(`${pregnantWoman.date_of_birth}T00:00:00`).toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric"
             });
 
-        document.getElementById("viewMotherPhone").textContent =
-            mother.phone_no || "—";
+        document.getElementById("viewPregnantWomanPhone").textContent =
+            pregnantWoman.phone_no || "—";
 
-        document.getElementById("viewMotherEmail").textContent =
-            mother.email;
+        document.getElementById("viewPregnantWomanEmail").textContent =
+            pregnantWoman.email;
 
-        document.getElementById("viewMotherAddress").textContent =
-            mother.address;
+        document.getElementById("viewPregnantWomanAddress").textContent =
+            pregnantWoman.address;
 
-        document.getElementById("viewMotherContactName").textContent =
-            mother.contact_name;
+        document.getElementById("viewPregnantWomanContactName").textContent =
+            pregnantWoman.contact_name;
         
-        document.getElementById("viewMotherRelationship").textContent =
-            mother.relationship;
+        document.getElementById("viewPregnantWomanRelationship").textContent =
+            pregnantWoman.relationship;
         
-        document.getElementById("viewMotherContactPhone").textContent =
-            mother.contact_phone_no || "—";
+        document.getElementById("viewPregnantWomanContactPhone").textContent =
+            pregnantWoman.contact_phone_no || "—";
 
-        document.getElementById("viewMotherDate").textContent =
-            new Date(mother.created_at).toLocaleDateString("en-GB", {
+        document.getElementById("viewPregnantWomanDate").textContent =
+            new Date(pregnantWoman.created_at).toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric"
             });
 
         const statusBadge =
-            document.getElementById("viewMotherProfileStatus");
+            document.getElementById("viewPregnantWomanProfileStatus");
 
         statusBadge.classList.toggle(
             "active-status",
-            mother.account_status === "Active"
+            pregnantWoman.account_status === "Active"
         );
 
         statusBadge.classList.toggle(
             "inactive-status",
-            mother.account_status === "Inactive"
+            pregnantWoman.account_status === "Inactive"
         );
 
-        document.getElementById("viewMotherProfileStatusText").textContent =
-            mother.account_status;
+        document.getElementById("viewPregnantWomanProfileStatusText").textContent =
+            pregnantWoman.account_status;
 
         bootstrap.Modal
             .getOrCreateInstance(
-                document.getElementById("viewMotherModal")
+                document.getElementById("viewPregnantWomanModal")
             )
             .show();
     }
 
-    // EDIT MOTHER
+    // EDIT PREGNANT WOMEN
     else if (button.classList.contains("edit-button")) {
-        document.getElementById("editMotherId").value =
-            mother.mother_id;
+        document.getElementById("editPregnantWomanId").value =
+            pregnantWoman.pregnant_woman_id;
 
-        document.getElementById("editMotherName").value =
-            mother.full_name;
+        document.getElementById("editPregnantWomanName").value =
+            pregnantWoman.full_name;
 
-        document.getElementById("editMotherICNumber").value =
-            mother.user_id;
+        document.getElementById("editPregnantWomanICNumber").value =
+            pregnantWoman.user_id;
 
-         document.getElementById("editMotherDOB").value =
-            mother.date_of_birth;
+         document.getElementById("editPregnantWomanDOB").value =
+            pregnantWoman.date_of_birth;
 
-         document.getElementById("editMotherPhone").value =
-            mother.phone_no || "";
+         document.getElementById("editPregnantWomanPhone").value =
+            pregnantWoman.phone_no || "";
 
-        document.getElementById("editMotherEmail").value =
-            mother.email;
+        document.getElementById("editPregnantWomanEmail").value =
+            pregnantWoman.email;
 
-        document.getElementById("editMotherAddress").value =
-            mother.address;
+        document.getElementById("editPregnantWomanAddress").value =
+            pregnantWoman.address;
 
-        document.getElementById("editMotherEmergencyName").value =
-            mother.contact_name;
+        document.getElementById("editPregnantWomanEmergencyName").value =
+            pregnantWoman.contact_name;
 
-        document.getElementById("editMotherRelationship").value =
-            mother.relationship;
+        document.getElementById("editPregnantWomanRelationship").value =
+            pregnantWoman.relationship;
 
-        document.getElementById("editMotherEmergencyPhone").value =
-            mother.contact_phone_no;
+        document.getElementById("editPregnantWomanEmergencyPhone").value =
+            pregnantWoman.contact_phone_no;
 
         bootstrap.Modal
             .getOrCreateInstance(
-                document.getElementById("editMotherModal")
+                document.getElementById("editPregnantWomanModal")
             )
             .show();
     }
@@ -387,26 +387,26 @@ motherTableBody.addEventListener("click", function (event) {
         button.classList.contains("activate-button") ||
         button.classList.contains("deactivate-button")
     ) {
-        const isActive = mother.account_status === "Active";
-        requestedMotherStatus = isActive ? "Inactive" : "Active";
+        const isActive = pregnantWoman.account_status === "Active";
+        requestedPregnantWomanStatus = isActive ? "Inactive" : "Active";
 
-        document.getElementById("deactivateMotherModalLabel").textContent =
+        document.getElementById("deactivatePregnantWomanModalLabel").textContent =
             isActive
-                ? "Deactivate Mother Account?"
-                : "Activate Mother Account?";
+                ? "Deactivate Pregnant Woman account?"
+                : "Activate Pregnant Woman account?";
 
-        document.getElementById("statusMotherName").textContent = mother.full_name;
+        document.getElementById("statusPregnantWomanName").textContent = pregnantWoman.full_name;
 
-        document.getElementById("motherStatusAction").textContent =
+        document.getElementById("pregnantWomanStatusAction").textContent =
             isActive ? "deactivate" : "activate";
 
-        document.getElementById("motherStatusWarning").textContent =
+        document.getElementById("pregnantWomanStatusWarning").textContent =
             isActive
-                ? "The mother member will no longer be able to log in to the system."
-                : "The mother member will be able to log in to the system again.";
+                ? "The pregnant woman will no longer be able to log in to the system."
+                : "The pregnant woman will be able to log in to the system again.";
 
         const confirmButton = document.getElementById(
-            "confirmMotherStatusButton"
+            "confirmPregnantWomanStatusButton"
         );
 
         confirmButton.className = isActive
@@ -419,20 +419,20 @@ motherTableBody.addEventListener("click", function (event) {
 
         bootstrap.Modal
             .getOrCreateInstance(
-                document.getElementById("deactivateMotherModal")
+                document.getElementById("deactivatePregnantWomanModal")
             )
             .show();
     }
 
     // RESEND INVITATION
     else if (button.classList.contains("resend-invitation-button")) {
-        resendMotherInvitation(mother.mother_id, button);
+        resendPregnantWomanInvitation(pregnantWoman.pregnant_woman_id, button);
     }
 });
 
-// Add new mother
+// Add new pregnant woman
 document
-    .getElementById("addMotherForm")
+    .getElementById("addPregnantWomanForm")
     .addEventListener("submit", async function (event) {
         event.preventDefault();
 
@@ -443,60 +443,60 @@ document
         submitButton.disabled = true;
         submitButton.textContent = "Adding...";
 
-        const motherData = {
-            full_name: document.getElementById("addMotherName").value,
-            user_id: document.getElementById("addMotherIC").value,
-            date_of_birth: document.getElementById("addMotherDOB").value,
-            phone_no: document.getElementById("addMotherPhoneNo").value,
-            email: document.getElementById("addMotherEmail").value,
-            address: document.getElementById("addMotherAddress").value,
-            contact_name: document.getElementById("addMotherEmergencyName").value,
-            relationship: document.getElementById("addMotherRelationship").value,
-            contact_phone_no: document.getElementById("addMotherEmergencyPhone").value
+        const pregnantWomanData = {
+            full_name: document.getElementById("addPregnantWomanName").value,
+            user_id: document.getElementById("addPregnantWomanIC").value,
+            date_of_birth: document.getElementById("addPregnantWomanDOB").value,
+            phone_no: document.getElementById("addPregnantWomanPhoneNo").value,
+            email: document.getElementById("addPregnantWomanEmail").value,
+            address: document.getElementById("addPregnantWomanAddress").value,
+            contact_name: document.getElementById("addPregnantWomanEmergencyName").value,
+            relationship: document.getElementById("addPregnantWomanRelationship").value,
+            contact_phone_no: document.getElementById("addPregnantWomanEmergencyPhone").value
         };
 
         try {
-            const response = await fetch("http://localhost:3000/api/mother", {
+            const response = await fetch("http://localhost:3000/api/pregnant-woman", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(motherData)
+                body: JSON.stringify(pregnantWomanData)
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || "Failed to add mother.");
+                throw new Error(result.message || "Failed to add pregnant woman.");
             }
 
             // Close the modal and clear the form
             bootstrap.Modal
                 .getOrCreateInstance(
-                    document.getElementById("addMotherModal")
+                    document.getElementById("addPregnantWomanModal")
                 )
                 .hide();
 
             this.reset();
 
-            // Refresh the mother table
-            await loadMother();
+            // Refresh the pregnant woman table
+            await loadPregnantWomen();
 
-            showToast("Mother added successfully!", "success");
+            showToast("Pregnant woman added successfully!", "success");
 
         } catch (error) {
-            console.error("Error adding mother:", error);
+            console.error("Error adding pregnant woman:", error);
             showToast(error.message, "error");
             
 
         } finally {
             submitButton.disabled = false;
-            submitButton.textContent = "Add Mother";
+            submitButton.textContent = "Add Pregnant Woman";
         }
     });
 
-// ================= UPDATE MOTHER DETAILS =================
-document.getElementById("editMotherForm").addEventListener(
+// ================= UPDATE PREGNANT WOMEN DETAILS =================
+document.getElementById("editPregnantWomanForm").addEventListener(
     "submit",
     async function (event) {
         event.preventDefault();
@@ -506,45 +506,45 @@ document.getElementById("editMotherForm").addEventListener(
             'button[type="submit"]'
         );
 
-        const motherId = document.getElementById(
-            "editMotherId"
+        const pregnantWomanId = document.getElementById(
+            "editPregnantWomanId"
         ).value;
 
-        const motherData = {
+        const pregnantWomanData = {
             user_id: document.getElementById(
-                "editMotherICNumber"
+                "editPregnantWomanICNumber"
             ).value.trim(),
 
             full_name: document.getElementById(
-                "editMotherName"
+                "editPregnantWomanName"
             ).value.trim(),
 
             date_of_birth: document.getElementById(
-                "editMotherDOB"
+                "editPregnantWomanDOB"
             ).value.trim(),
 
             phone_no: document.getElementById(
-                "editMotherPhone"
+                "editPregnantWomanPhone"
             ).value.trim(),
 
             email: document.getElementById(
-                "editMotherEmail"
+                "editPregnantWomanEmail"
             ).value.trim(),
 
             address: document.getElementById(
-                "editMotherAddress"
+                "editPregnantWomanAddress"
             ).value.trim(),
 
             contact_name: document.getElementById(
-                "editMotherEmergencyName"
+                "editPregnantWomanEmergencyName"
             ).value.trim(),
 
             relationship: document.getElementById(
-                "editMotherRelationship"
+                "editPregnantWomanRelationship"
             ).value.trim(),
 
             contact_phone_no: document.getElementById(
-                "editMotherEmergencyPhone"
+                "editPregnantWomanEmergencyPhone"
             ).value.trim(),
         };
 
@@ -553,13 +553,13 @@ document.getElementById("editMotherForm").addEventListener(
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/mother/${motherId}`,
+                `http://localhost:3000/api/pregnant-woman/${pregnantWomanId}`,
                 {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(motherData)
+                    body: JSON.stringify(pregnantWomanData)
                 }
             );
 
@@ -568,20 +568,20 @@ document.getElementById("editMotherForm").addEventListener(
             if (!response.ok) {
                 throw new Error(
                     result.message ||
-                    "Failed to update mother details."
+                    "Failed to update pregnant woman details."
                 );
             }
 
             bootstrap.Modal.getOrCreateInstance(
-                document.getElementById("editMotherModal")
+                document.getElementById("editPregnantWomanModal")
             ).hide();
 
-            await loadMother();
+            await loadPregnantWomen();
 
             showToast(result.message, "success");
 
         } catch (error) {
-            console.error("Error updating mother:", error);
+            console.error("Error updating pregnant woman:", error);
             showToast(error.message, "error");
 
         } finally {
@@ -591,11 +591,11 @@ document.getElementById("editMotherForm").addEventListener(
     }
 );
 
-// ================= CONFIRM ACTIVATION OR DEACTIVATION FOR MOTHER =================
+// ================= CONFIRM ACTIVATION OR DEACTIVATION FOR PREGNANT WOMEN =================
 document
-    .getElementById("confirmMotherStatusButton")
+    .getElementById("confirmPregnantWomanStatusButton")
     .addEventListener("click", async function () {
-        if (!selectedMother || !requestedMotherStatus) {
+        if (!selectedPregnantWoman || !requestedPregnantWomanStatus) {
             return;
         }
 
@@ -605,14 +605,14 @@ document
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/mother/${selectedMother.mother_id}/status`,
+                `http://localhost:3000/api/pregnant-woman/${selectedPregnantWoman.pregnant_woman_id}/status`,
                 {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        account_status: requestedMotherStatus
+                        account_status: requestedPregnantWomanStatus
                     })
                 }
             );
@@ -621,29 +621,29 @@ document
 
             if (!response.ok) {
                 throw new Error(
-                    result.message || "Failed to update mother status."
+                    result.message || "Failed to update pregnant woman status."
                 );
             }
 
             // Close the confirmation modal
             bootstrap.Modal
                 .getOrCreateInstance(
-                    document.getElementById("deactivateMotherModal")
+                    document.getElementById("deactivatePregnantWomanModal")
                 )
                 .hide();
 
             // Refresh the table using the latest database records
-            await loadMother();
+            await loadPregnantWomen();
 
             // Display a success toast
             showToast(result.message, "success");
 
             // Clear the selection
-            selectedMother = null;
-            requestedMotherStatus = null;
+            selectedPregnantWoman = null;
+            requestedPregnantWomanStatus = null;
 
         } catch (error) {
-            console.error("Error updating mother status:", error);
+            console.error("Error updating pregnant woman status:", error);
             showToast(error.message, "error");
 
         } finally {
@@ -1292,8 +1292,8 @@ function setupTabs() {
             tab.classList.add("active");
             tab.setAttribute("aria-selected", "true");
 
-            document.getElementById("motherPanel").hidden =
-                tab.dataset.tab !== "mothers";
+            document.getElementById("pregnantWomanPanel").hidden =
+                tab.dataset.tab !== "pregnant-women";
 
             document.getElementById("childPanel").hidden =
                 tab.dataset.tab !== "children";
@@ -1303,24 +1303,24 @@ function setupTabs() {
 
 // ================= INITIALISE PAGE =================
 document.addEventListener("DOMContentLoaded", () => {
-    loadMother();
+    loadPregnantWomen();
     loadChild();
     setupTabs();
 
     // Disable future dates in birth date pickers
-    const motherDOB = document.getElementById("addMotherDOB");
-    const editMotherDOB = document.getElementById("editMotherDOB");
+    const pregnantWomanDOB = document.getElementById("addPregnantWomanDOB");
+    const editPregnantWomanDOB = document.getElementById("editPregnantWomanDOB");
     const childDOB = document.getElementById("addChildDOB");
     const editChildDOB = document.getElementById("editChildDOB");
 
     const today = new Date().toLocaleDateString("sv-SE");
 
-    if (motherDOB) {
-        motherDOB.max = today;
+    if (pregnantWomanDOB) {
+        pregnantWomanDOB.max = today;
     }
 
-    if (editMotherDOB) {
-        editMotherDOB.max = today;
+    if (editPregnantWomanDOB) {
+        editPregnantWomanDOB.max = today;
     }
 
     if (childDOB) {
@@ -1331,9 +1331,9 @@ document.addEventListener("DOMContentLoaded", () => {
         editChildDOB.max = today;
     }
 
-    document.getElementById("motherSearch").addEventListener("input", applyMotherFilters);
-    document.getElementById("motherStatusFilter").addEventListener("change", applyMotherFilters);
-    document.getElementById("motherResetFilters").addEventListener("click", resetMotherFilters);
+    document.getElementById("pregnantWomanSearch").addEventListener("input", applyPregnantWomanFilters);
+    document.getElementById("pregnantWomanStatusFilter").addEventListener("change", applyPregnantWomanFilters);
+    document.getElementById("pregnantWomanResetFilters").addEventListener("click", resetPregnantWomanFilters);
 
     document.getElementById("childSearch").addEventListener("input", applyChildFilters);
     document.getElementById("childStatusFilter").addEventListener("change", applyChildFilters);
