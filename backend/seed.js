@@ -29,9 +29,9 @@ const insert = {
         VALUES (?, ?, ?)
     `),
 
-    mother: db.prepare(`
-        INSERT INTO Mother
-            (mother_id, user_id, date_of_birth, address, phone_no, contact_name, relationship, contact_phone_no)
+    pregnantWoman: db.prepare(`
+        INSERT INTO Pregnant_Woman
+            (pregnant_woman_id, user_id, date_of_birth, address, phone_no, contact_name, relationship, contact_phone_no)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `),
 
@@ -92,10 +92,10 @@ async function main() {
             ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
             ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
             ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Inactive", "2025-11-01 12:00:00", 1],
-            ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-02 12:00:00", 1],
-            ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Active", "2026-09-03 12:00:00", 1],
-            ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-11-10 12:00:00", 1],
-            ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "mother", "Inactive", "2025-12-10 12:00:00", 1],
+            ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Active", "2026-09-02 12:00:00", 1],
+            ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Active", "2026-09-03 12:00:00", 1],
+            ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Inactive", "2025-11-10 12:00:00", 1],
+            ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Inactive", "2025-12-10 12:00:00", 1],
             ["260801-07-0007", "Ali bin Ahmad", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-08-02 12:00:00", 1],
             ["260902-07-0003", "Tan Yi Xing", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-09-03 12:00:00", 1]
         ];
@@ -114,16 +114,16 @@ async function main() {
         staff.forEach(row => insert.staff.run(...row));
 
         // =========================================
-        // 3. MOTHERS
+        // 3. PREGNANT WOMEN
         // =========================================
-        const mothers = [
+        const pregnantWomen = [
             [1, "970107-07-0010", "1997-01-07", "30 Demo Road, Penang", "012-4001003", "Ahmad bin Mohammad", "Husband", "012-5001001"],
             [2, "980108-07-0012", "1998-01-08", "40 Red Street, Penang", "012-4001004", "Miguel Liew", "Husband", "012-5001002"],
             [3, "950105-07-0006", "1995-01-05", "10 Example Street, Penang", "012-4001001", "Chew Jia Hao", "Husband", "012-5001003"],
             [4, "960106-07-0008", "1996-01-06", "20 Sample Avenue, Penang", "012-4001002", "Aaron Lim", "Husband", "012-5001004"]
         ];
 
-        mothers.forEach(row => insert.mother.run(...row));
+        pregnantWomen.forEach(row => insert.pregnantWoman.run(...row));
 
         // =========================================
         // 4. CHILDREN
@@ -245,16 +245,16 @@ async function main() {
         console.log("Sample data inserted successfully!");
         console.log("Admin: admin@gmail.com");
         console.log("Staff: staff1@gmail.com, staff2@gmail.com, staff3@gmail.com");
-        console.log("Mothers: mother1@gmail.com, mother2@gmail.com, mother3@gmail.com, mother4@gmail.com");
+        console.log("Pregnant women: mother1@gmail.com, mother2@gmail.com, mother3@gmail.com, mother4@gmail.com");
         console.log("Children: mother3@gmail.com, mother4@gmail.com");
         console.log("Admin password: Admin@123456");
-        console.log("Staff, Mother, and Child accounts do not have usable passwords yet.");
+        console.log("Staff, Pregnant Woman, and Child accounts do not have usable passwords yet.");
 
         const counts = db.prepare(`
             SELECT
                 (SELECT COUNT(*) FROM User) AS users,
                 (SELECT COUNT(*) FROM Staff) AS staff,
-                (SELECT COUNT(*) FROM Mother) AS mothers,
+                (SELECT COUNT(*) FROM Pregnant_Woman) AS pregnant_women,
                 (SELECT COUNT(*) FROM Child) AS children,
                 (SELECT COUNT(*) FROM Appointment) AS appointments,
                 (SELECT COUNT(*) FROM Notification) AS notifications

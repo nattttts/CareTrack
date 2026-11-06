@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS User (
     email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL
-        CHECK (role IN ('mother', 'child', 'staff', 'admin')),
+        CHECK (role IN ('pregnant_woman', 'child', 'staff', 'admin')),
     account_status TEXT NOT NULL DEFAULT 'Active',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     password_set INTEGER NOT NULL DEFAULT 0
@@ -70,11 +70,11 @@ CREATE TABLE IF NOT EXISTS Password_Reset_Token (
 );
 
 -- =========================================
--- 5. MOTHER
--- Mother/patient profile
+-- 5. PREGNANT WOMAN
+-- Pregnant woman profile
 -- =========================================
-CREATE TABLE IF NOT EXISTS Mother (
-    mother_id INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Pregnant_Woman (
+    pregnant_woman_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL UNIQUE,
     date_of_birth TEXT NOT NULL,
     address TEXT NOT NULL,
@@ -260,7 +260,7 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
 CREATE TABLE IF NOT EXISTS Maternal_Record (
     maternal_record_id INTEGER PRIMARY KEY,
     appointment_id INTEGER NOT NULL UNIQUE,
-    mother_id INTEGER NOT NULL,
+    pregnant_woman_id INTEGER NOT NULL,
     visit_number INTEGER NOT NULL,
     visit_date TEXT NOT NULL,
     height REAL,
@@ -273,11 +273,11 @@ CREATE TABLE IF NOT EXISTS Maternal_Record (
     urine_test TEXT,
     blood_test TEXT,
 
-    FOREIGN KEY (mother_id)
-        REFERENCES Mother(mother_id)
+    FOREIGN KEY (pregnant_woman_id)
+        REFERENCES Pregnant_Woman(pregnant_woman_id)
         ON DELETE CASCADE,
 
-    UNIQUE (mother_id, visit_number),
+    UNIQUE (pregnant_woman_id, visit_number),
 
     CHECK (visit_number > 0),
     CHECK (height IS NULL OR (height > 0 AND height <= 300)),
