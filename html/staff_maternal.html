@@ -104,19 +104,19 @@
                     <div>
                         <h2>Maternal Records</h2>
                         <p>
-                            Manage mothers' maternal follow-up visits and medical records.
+                            Manage pregnant women's maternal follow-up visits and medical records.
                         </p>
                     </div>
                 </div>
 
             </div>
 
-            <!-- Search Mother -->
+            <!-- Search Pregnant Woman -->
             <section class="filter-card">
                     <div class="row g-3 align-items-end">
                         <div class="col-lg-9">
-                            <label for="motherSearch" class="form-label">
-                                Search Mother
+                            <label for="pregnantWomanSearch" class="form-label">
+                                Search Pregnant Woman
                             </label>
 
                             <div class="input-group">
@@ -126,15 +126,15 @@
 
                                 <input
                                     type="search"
-                                    id="motherSearch"
+                                    id="pregnantWomanSearch"
                                     class="form-control"
-                                    placeholder="Enter mother's name or IC number"
+                                    placeholder="Enter pregnant woman's name or IC number"
                                     autocomplete="off"
                                 >
 
                                 <button
                                     type="button"
-                                    id="searchMotherButton"
+                                    id="searchPregnantWomanButton"
                                     class="btn search-button"
                                 >
                                     Search
@@ -142,7 +142,7 @@
                             </div>
 
                             <div class="form-text">
-                                Search for a registered mother to view her maternal visit history.
+                                Search for a registered pregnant woman to view her maternal visit history.
                             </div>
                         </div>
                     </div>
@@ -157,18 +157,18 @@
             ></div>
             </section>
 
-            <!-- Selected Mother -->
-            <section id="motherDetailsCard" class="content-card" hidden>
+            <!-- Selected Pregnant Woman -->
+            <section id="pregnantWomanDetailsCard" class="content-card" hidden>
 
                 <div class="content-card-header">
-                <div class="mother-heading">
-                    <div class="mother-icon">
+                <div class="pregnant-woman-heading">
+                    <div class="pregnant-woman-icon">
                         <i class="bi bi-person"></i>
                     </div>
 
                     <div>
-                        <h3 id="motherName">Mother's Name</h3>
-                        <p id="motherIC">IC Number: -</p>
+                        <h3 id="pregnantWomanName">Pregnant Woman's Name</h3>
+                        <p id="pregnantWomanIC">IC Number: -</p>
                     </div>
                 </div>
 
@@ -182,7 +182,7 @@
                 <div class="section-heading">
                     <div>
                         <h4>Maternal Visit History</h4>
-                        <p>View and update the mother's recorded visits.</p>
+                        <p>View and update the pregnant woman's recorded visits.</p>
                     </div>
                 </div>
 
@@ -209,7 +209,7 @@
                 <div id="noMaternalRecords" class="no-results" hidden>
                     <i class="bi bi-clipboard2-heart"></i>
                     <h5>No maternal visits recorded</h5>
-                    <p>Select Add Visit to record the mother's first visit.</p>
+                    <p>Select Add Visit to record the pregnant woman's first visit.</p>
                 </div>
 
                 <div class="table-footer">
@@ -238,7 +238,7 @@
                             Add Maternal Visit
                         </h5>
                         <p class="modal-subtitle" id="visitModalSubtitle">
-                            Enter the mother's visit information.
+                            Enter the pregnant woman's visit information.
                         </p>
                     </div>
 
@@ -254,11 +254,11 @@
 
                     <form id="maternalVisitForm">
 
-                        <div class="selected-mother-summary">
+                        <div class="selected-pregnant-woman-summary">
                             <i class="bi bi-person-check"></i>
                             <div>
-                                <span>Selected Mother</span>
-                                <strong id="formMotherName">-</strong>
+                                <span>Selected Pregnant Woman</span>
+                                <strong id="formPregnantWomanName">-</strong>
                             </div>
                         </div>
 

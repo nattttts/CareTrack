@@ -4,7 +4,7 @@ const API_BASE = "http://localhost:3000/api/maternal-records";
 
 const $ = (id) => document.getElementById(id);
 
-let selectedMother = null;
+let selectedPregnantWoman = null;
 let maternalRecords = [];
 let visitModal = null;
 
@@ -81,8 +81,8 @@ function getList(result, keys) {
     return [];
 }
 
-function getMotherId(mother) {
-    return mother?.mother_id ?? mother?.user_id ?? mother?.id;
+function getPregnantWomanId(pregnantWoman) {
+    return pregnantWoman?.pregnant_woman_id ?? pregnantWoman?.user_id ?? pregnantWoman?.id;
 }
 
 function getRecordId(record) {
@@ -167,18 +167,18 @@ async function apiRequest(url, options = {}) {
 
 
 /* =====================================================
-   SEARCH MOTHER
+   SEARCH PREGNANT WOMAN
 ===================================================== */
-async function searchMother() {
+async function searchPregnantWoman() {
     clearMessage();
 
-    const searchInput = $("motherSearch");
-    const searchButton = $("searchMotherButton");
+    const searchInput = $("pregnantWomanSearch");
+    const searchButton = $("searchPregnantWomanButton");
     const keyword = searchInput.value.trim();
 
     if (!keyword) {
         showMessage(
-            "Please enter the mother's name or IC number.",
+            "Please enter the pregnant woman's name or IC number.",
             "error"
         );
         searchInput.focus();
@@ -189,8 +189,8 @@ async function searchMother() {
     searchButton.innerHTML =
         '<span class="spinner-border spinner-border-sm me-2"></span>Searching...';
 
-    $("motherDetailsCard").hidden = true;
-    selectedMother = null;
+    $("pregnantWomanDetailsCard").hidden = true;
+    selectedPregnantWoman = null;
     maternalRecords = [];
 
     const normalize = value =>
@@ -200,36 +200,36 @@ async function searchMother() {
 
     try {
         const response = await apiRequest(
-            `${API_BASE}/mothers?search=${encodeURIComponent(keyword)}`
+            `${API_BASE}/pregnant-women?search=${encodeURIComponent(keyword)}`
         );
 
         // Support different API response formats.
-        let mothers = Array.isArray(response)
+        let pregnantWomen = Array.isArray(response)
             ? response
-            : response.mothers ??
+            : response.pregnantWomen ??
               response.results ??
               response.data ??
               [];
 
         // If the API returns an object containing another array.
-        if (!Array.isArray(mothers)) {
-            mothers = mothers.mothers ?? mothers.results ?? [];
+        if (!Array.isArray(pregnantWomen)) {
+            pregnantWomen = pregnantWomen.pregnantWomen ?? pregnantWomen.results ?? [];
         }
 
         const searchName = keyword.toLowerCase();
         const searchIC = normalize(keyword);
 
         // Filter locally as well, so partial name and IC searches work.
-        const matches = mothers.filter(mother => {
+        const matches = pregnantWomen.filter(pregnantWoman => {
             const name = String(
-                mother.full_name ?? mother.name ?? ""
+                pregnantWoman.full_name ?? pregnantWoman.name ?? ""
             ).toLowerCase();
 
             const ic = normalize(
-                mother.user_id ??
-                mother.ic_number ??
-                mother.ic ??
-                mother.identification_number ??
+                pregnantWoman.user_id ??
+                pregnantWoman.ic_number ??
+                pregnantWoman.ic ??
+                pregnantWoman.identification_number ??
                 ""
             );
 
@@ -239,7 +239,7 @@ async function searchMother() {
 
         if (matches.length === 0) {
             showMessage(
-                "No mother found. Please check the name or IC number.",
+                "No pregnant woman found. Please check the name or IC number.",
                 "error"
             );
             return;
@@ -247,19 +247,19 @@ async function searchMother() {
 
         if (matches.length > 1) {
             showMessage(
-                "Multiple mothers found. Please enter a more specific name or IC number.",
+                "Multiple pregnant women found. Please enter a more specific name or IC number.",
                 "error"
             );
             return;
         }
 
-        await selectMother(matches[0]);
+        await selectPregnantWoman(matches[0]);
 
     } catch (error) {
-        console.error("Search mother error:", error);
+        console.error("Search pregnant woman error:", error);
 
         showMessage(
-            error.message || "Unable to search for the mother. Please try again.",
+            error.message || "Unable to search for the pregnant woman. Please try again.",
             "error"
         );
 
@@ -271,39 +271,39 @@ async function searchMother() {
 }
 
 /* =====================================================
-   SELECT MOTHER
+   SELECT PREGNANT WOMAN
 ===================================================== */
-async function selectMother(mother) {
-    const motherId = getMotherId(mother);
+async function selectPregnantWoman(pregnantWoman) {
+    const pregnantWomanId = getPregnantWomanId(pregnantWoman);
 
-    if (motherId == null) {
+    if (pregnantWomanId == null) {
         showMessage(
-            "The mother information returned by the server is missing an ID.",
+            "The pregnant woman information returned by the server is missing an ID.",
             "error"
         );
         return;
     }
 
-    selectedMother = mother;
+    selectedPregnantWoman = pregnantWoman;
 
-    $("motherName").textContent =
-        mother.full_name ?? mother.name ?? "Mother";
+    $("pregnantWomanName").textContent =
+        pregnantWoman.full_name ?? pregnantWoman.name ?? "Pregnant Woman";
 
-    $("motherIC").textContent =
-    `IC Number: ${mother.user_id ?? "Not provided"}`;
+    $("pregnantWomanIC").textContent =
+    `IC Number: ${pregnantWoman.user_id ?? "Not provided"}`;
 
-    $("formMotherName").textContent =
-        mother.full_name ?? mother.name ?? "Mother";
+    $("formPregnantWomanName").textContent =
+        pregnantWoman.full_name ?? pregnantWoman.name ?? "Pregnant Woman";
 
-    $("motherDetailsCard").hidden = false;
+    $("pregnantWomanDetailsCard").hidden = false;
 
-    await loadMaternalRecords(motherId);
+    await loadMaternalRecords(pregnantWomanId);
 }
 
 /* =====================================================
    LOAD MATERNAL RECORDS
 ===================================================== */
-async function loadMaternalRecords(motherId) {
+async function loadMaternalRecords(pregnantWomanId) {
     const tbody = $("maternalRecordsTableBody");
 
     tbody.innerHTML = `
@@ -319,7 +319,7 @@ async function loadMaternalRecords(motherId) {
 
     try {
         const result = await apiRequest(
-            `${API_BASE}/mothers/${encodeURIComponent(motherId)}/visits`
+            `${API_BASE}/pregnant-women/${encodeURIComponent(pregnantWomanId)}/visits`
         );
 
         maternalRecords = getList(result, [
@@ -433,8 +433,8 @@ function renderMaternalRecords() {
    OPEN ADD VISIT MODAL
 ===================================================== */
 function openAddVisitModal() {
-    if (!selectedMother) {
-        showMessage("Please search for a mother first.", "error");
+    if (!selectedPregnantWoman) {
+        showMessage("Please search for a pregnant woman first.", "error");
         return;
     }
 
@@ -442,13 +442,13 @@ function openAddVisitModal() {
 
     $("maternalVisitModalLabel").textContent = "Add Maternal Visit";
     $("visitModalSubtitle").textContent =
-        "Enter the mother's visit information.";
+        "Enter the pregnant woman's visit information.";
 
     $("saveVisitButton").innerHTML =
         '<i class="bi bi-check-circle"></i> Save Visit';
 
-    $("formMotherName").textContent =
-        selectedMother.full_name ?? selectedMother.name ?? "Mother";
+    $("formPregnantWomanName").textContent =
+        selectedPregnantWoman.full_name ?? selectedPregnantWoman.name ?? "Pregnant Woman";
 
     const latestVisitNumber = maternalRecords.reduce((max, record) => {
         return Math.max(max, Number(getVisitNumber(record)) || 0);
@@ -484,8 +484,8 @@ function openEditVisitModal(recordId) {
     $("saveVisitButton").innerHTML =
         '<i class="bi bi-check-circle"></i> Save Changes';
 
-    $("formMotherName").textContent =
-        selectedMother.full_name ?? selectedMother.name ?? "Mother";
+    $("formPregnantWomanName").textContent =
+        selectedPregnantWoman.full_name ?? selectedPregnantWoman.name ?? "Pregnant Woman";
 
     $("visitNumber").value = getVisitNumber(record);
 
@@ -527,12 +527,12 @@ async function saveMaternalVisit(event) {
     event.preventDefault();
     clearFormMessage();
 
-    if (!selectedMother) {
-        showFormMessage("Please select a mother first.");
+    if (!selectedPregnantWoman) {
+        showFormMessage("Please select a pregnant woman first.");
         return;
     }
 
-    const motherId = getMotherId(selectedMother);
+    const pregnantWomanId = getPregnantWomanId(selectedPregnantWoman);
     const form = $("maternalVisitForm");
     const recordId = form.dataset.recordId || "";
 
@@ -576,7 +576,7 @@ async function saveMaternalVisit(event) {
         return;
     }
 
-    // Prevent duplicate visit numbers within this mother's history.
+    // Prevent duplicate visit numbers within this pregnant woman's history.
     const duplicateVisit = maternalRecords.some(record => {
         const sameNumber = Number(getVisitNumber(record)) === visitNumber;
         const sameRecord = recordId &&
@@ -593,7 +593,7 @@ async function saveMaternalVisit(event) {
     }
 
     const payload = {
-        mother_id: motherId,
+        pregnant_woman_id: pregnantWomanId,
         visit_number: visitNumber,
         visit_date: visitDate,
         height,
@@ -634,7 +634,7 @@ async function saveMaternalVisit(event) {
 
         visitModal.hide();
 
-        await loadMaternalRecords(motherId);
+        await loadMaternalRecords(pregnantWomanId);
 
         showToastMessage(
             recordId
@@ -658,8 +658,8 @@ async function saveMaternalVisit(event) {
    EVENT LISTENERS
 ===================================================== */
 function initializeMaternalRecordPage() {
-    const searchButton = $("searchMotherButton");
-    const motherSearch = $("motherSearch");
+    const searchButton = $("searchPregnantWomanButton");
+    const pregnantWomanSearch = $("pregnantWomanSearch");
     const form = $("maternalVisitForm");
     const recordsBody = $("maternalRecordsTableBody");
     const modalElement = $("maternalVisitModal");
@@ -681,7 +681,7 @@ function initializeMaternalRecordPage() {
     visitModal = bootstrap.Modal.getOrCreateInstance(modalElement);
 
     if (searchButton) {
-        searchButton.addEventListener("click", searchMother);
+        searchButton.addEventListener("click", searchPregnantWoman);
     }
 
     const addVisitButton = $("addVisitButton");
@@ -690,11 +690,11 @@ function initializeMaternalRecordPage() {
         addVisitButton.addEventListener("click", openAddVisitModal);
     }
 
-    if (motherSearch) {
-        motherSearch.addEventListener("keydown", event => {
+    if (pregnantWomanSearch) {
+        pregnantWomanSearch.addEventListener("keydown", event => {
             if (event.key === "Enter") {
                 event.preventDefault();
-                searchMother();
+                searchPregnantWoman();
             }
         });
     }

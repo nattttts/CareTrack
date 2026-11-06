@@ -253,13 +253,13 @@ a {
     border-bottom: 1px solid #f3e5eb;
 }
 
-.mother-heading {
+.pregnant-woman-heading {
     display: flex;
     align-items: center;
     gap: 13px;
 }
 
-.mother-icon {
+.pregnant-woman-icon {
     width: 48px;
     height: 48px;
     flex-shrink: 0;
@@ -273,11 +273,11 @@ a {
     color: var(--caretrack-pink);
 }
 
-.mother-icon i {
+.pregnant-woman-icon i {
     font-size: 23px;
 }
 
-.mother-heading h3 {
+.pregnant-woman-heading h3 {
     margin: 0 0 5px;
     color: var(--text-dark);
     font-size: 18px;
@@ -285,7 +285,7 @@ a {
     overflow-wrap: anywhere;
 }
 
-.mother-heading p {
+.pregnant-woman-heading p {
     margin: 0;
     color: var(--text-medium);
     font-size: 12px;
@@ -500,7 +500,7 @@ a {
     border-top: 1px solid #f0e2e8;
 }
 
-.selected-mother-summary {
+.selected-pregnant-woman-summary {
     padding: 13px 15px;
 
     display: flex;
@@ -512,23 +512,23 @@ a {
     background: #fff7fa;
 }
 
-.selected-mother-summary > i {
+.selected-pregnant-woman-summary > i {
     color: var(--caretrack-pink);
     font-size: 22px;
 }
 
-.selected-mother-summary span,
-.selected-mother-summary strong {
+.selected-pregnant-woman-summary span,
+.selected-pregnant-woman-summary strong {
     display: block;
 }
 
-.selected-mother-summary span {
+.selected-pregnant-woman-summary span {
     margin-bottom: 4px;
     color: #718096;
     font-size: 10px;
 }
 
-.selected-mother-summary strong {
+.selected-pregnant-woman-summary strong {
     color: var(--text-dark);
     font-size: 13px;
     overflow-wrap: anywhere;
