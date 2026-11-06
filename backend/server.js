@@ -71,18 +71,18 @@ const pageRoles = {
     "followup_management.html": ["staff"],
     "staff_profile.html": ["staff"],
 
-    "patient_dashboard.html": ["mother", "child"],
-    "patient_appointments.html": ["mother", "child"],
+    "patient_dashboard.html": ["pregnant_woman", "child"],
+    "patient_appointments.html": ["pregnant_woman", "child"],
 
     // Only child accounts can access vaccination records
     "child_vaccination.html": ["child"],
 
-    // Only mother accounts can access maternal records
-    "mother_maternal.html": ["mother"],
+    // Only pregnant woman accounts can access maternal records
+    "mother_maternal.html": ["pregnant_woman"],
 
-    "queue.html": ["mother", "child"],
-    "notification.html": ["mother", "child"],
-    "patient_profile.html": ["mother", "child"]
+    "queue.html": ["pregnant_woman", "child"],
+    "notification.html": ["pregnant_woman", "child"],
+    "patient_profile.html": ["pregnant_woman", "child"]
 };
 
 const APPOINTMENT_CAPACITY = 4;
@@ -657,9 +657,9 @@ app.get("/api/me", (req, res) => {
             });
         }
 
-        // Get Mother profile.
-        if (user.role === "mother") {
-            const mother = db.prepare(`
+        // Get Pregnant Woman profile.
+        if (user.role === "pregnant_woman") {
+            const pregnantWoman = db.prepare(`
                 SELECT
                     date_of_birth,
                     address,
@@ -667,24 +667,24 @@ app.get("/api/me", (req, res) => {
                     contact_name,
                     relationship,
                     contact_phone_no
-                FROM Mother
+                FROM Pregnant_Woman
                 WHERE user_id = ?
             `).get(userId);
 
-            if (!mother) {
+            if (!pregnantWoman) {
                 return res.status(404).json({
-                    message: "Mother profile not found."
+                    message: "Pregnant woman profile not found."
                 });
             }
 
             return res.json({
                 ...userInfo,
-                dateOfBirth: mother.date_of_birth,
-                address: mother.address,
-                phoneNo: mother.phone_no,
-                contactName: mother.contact_name,
-                relationship: mother.relationship,
-                contactPhoneNo: mother.contact_phone_no
+                dateOfBirth: pregnantWoman.date_of_birth,
+                address: pregnantWoman.address,
+                phoneNo: pregnantWoman.phone_no,
+                contactName: pregnantWoman.contact_name,
+                relationship: pregnantWoman.relationship,
+                contactPhoneNo: pregnantWoman.contact_phone_no
             });
         }
 
@@ -1216,43 +1216,43 @@ app.patch("/api/staff/:staffId/status", requireRole("admin"), (req, res) => {
     }
 });
 
-// Get all mothers
-app.get("/api/mothers", requireRole("staff"), (req, res) => {
+// Get all pregnant women
+app.get("/api/pregnant-women", requireRole("staff"), (req, res) => {
     try {
-        const mothers = db.prepare(`
+        const pregnantWomen = db.prepare(`
             SELECT
-                Mother.mother_id,
+                Pregnant_Woman.pregnant_woman_id,
                 User.user_id,
                 User.full_name,
                 User.email,
                 User.account_status,
                 User.created_at,
-                Mother.date_of_birth,
-                Mother.phone_no,
-                Mother.address,
-                Mother.contact_name,
-                Mother.relationship,
-                Mother.contact_phone_no,
+                Pregnant_Woman.date_of_birth,
+                Pregnant_Woman.phone_no,
+                Pregnant_Woman.address,
+                Pregnant_Woman.contact_name,
+                Pregnant_Woman.relationship,
+                Pregnant_Woman.contact_phone_no,
                 User.password_set
-            FROM Mother
+            FROM Pregnant_Woman
             INNER JOIN User
-                ON Mother.user_id = User.user_id
+                ON Pregnant_Woman.user_id = User.user_id
             ORDER BY User.account_status, User.full_name
         `).all();
             
-        res.json(mothers);
+        res.json(pregnantWomen);
 
     } catch (error) {
-        console.error("Error retrieving mothers:", error);
+        console.error("Error retrieving pregnant women:", error);
 
         res.status(500).json({
-            message: "Failed to retrieve mother records."
+            message: "Failed to retrieve pregnant women records."
         });
     }
 });
 
-// Add a new mother
-app.post("/api/mother", requireRole("staff"), async (req, res) => {
+// Add a new pregnant woman
+app.post("/api/pregnant-woman", requireRole("staff"), async (req, res) => {
     const { full_name, user_id, email, date_of_birth, phone_no, address, contact_name, relationship, contact_phone_no } = req.body;
 
     // Validate required fields
@@ -1268,28 +1268,28 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
         typeof contact_phone_no !== "string"
     ) {
         return res.status(400).json({
-            message: "Please provide all required mother details."
+            message: "Please provide all required pregnant woman details."
         });
     }
 
     const name = full_name.trim();
     const icNumber = user_id.trim();
-    const motherEmail = email.trim().toLowerCase();
+    const pregnantWomanEmail = email.trim().toLowerCase();
     const dob = date_of_birth.trim();
     const phone = phone_no.trim();
-    const motherAddress = address.trim();
+    const pregnantWomanAddress = address.trim();
     const contactName = contact_name.trim();
-    const motherRelationship = relationship.trim();
+    const pregnantWomanRelationship = relationship.trim();
     const contactPhoneNo = contact_phone_no.trim();
 
-    if (!name || !icNumber || !motherEmail || !dob || !phone || 
-        !motherAddress || !contactName || !motherRelationship || !contactPhoneNo) {
+    if (!name || !icNumber || !pregnantWomanEmail || !dob || !phone || 
+        !pregnantWomanAddress || !contactName || !pregnantWomanRelationship || !contactPhoneNo) {
         return res.status(400).json({
             message: "All fields are required."
         });
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(motherEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pregnantWomanEmail)) {
         return res.status(400).json({
             message: "Please enter a valid email address."
         });
@@ -1315,7 +1315,7 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
         });
     }
 
-    // Validate Malaysian mobile number format for mother
+    // Validate Malaysian mobile number format
     if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
         return res.status(400).json({
             message: "Please enter a valid phone number e.g. 012-3456789"
@@ -1349,7 +1349,7 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
             FROM User
             WHERE LOWER(TRIM(email)) = LOWER(?)
             AND role != 'child'
-        `).get(motherEmail);
+        `).get(pregnantWomanEmail);
 
         if (duplicateEmail) {
             return res.status(409).json({
@@ -1361,9 +1361,9 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
         // The login route must reject accounts where password_set = 0
         const passwordHash = "TEMP_HASH_REPLACE_BEFORE_AUTH";
 
-        // Create the user, mother profile and invitation together
+        // Create the user, pregnant woman profile and invitation together
         // If any database operation fails, the transaction rolls back
-        const createMother = db.transaction(() => {
+        const createPregnantWoman = db.transaction(() => {
             db.prepare(`
                 INSERT INTO User (
                     user_id,
@@ -1374,16 +1374,16 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
                     account_status,
                     password_set
                 )
-                VALUES (?, ?, ?, ?, 'mother', 'Active', 0)
+                VALUES (?, ?, ?, ?, 'pregnant_woman', 'Active', 0)
             `).run(
                 icNumber,
                 name,
-                motherEmail,
+                pregnantWomanEmail,
                 passwordHash
             );
 
             const result = db.prepare(`
-                INSERT INTO Mother (
+                INSERT INTO Pregnant_Woman (
                     user_id,
                     date_of_birth,
                     phone_no,
@@ -1397,24 +1397,24 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
                 icNumber,
                 dob,
                 phone,
-                motherAddress,
+                pregnantWomanAddress,
                 contactName,
-                motherRelationship,
+                pregnantWomanRelationship,
                 contactPhoneNo
             );
  
-            // Create an invitation for the newly created mother account.
+            // Create an invitation for the newly created pregnant woman account.
             // createInvitation() uses a nested transaction, which
             // better-sqlite3 supports through a savepoint
             const token = createInvitation(icNumber);
 
             return {
-                motherId: result.lastInsertRowid,
+                pregnantWomanId: result.lastInsertRowid,
                 token
             };
         });
 
-        const { motherId, token } = createMother();
+        const { pregnantWomanId, token } = createPregnantWoman();
 
         // Construct the invitation URL for local testing
         const baseUrl = (
@@ -1427,73 +1427,73 @@ app.post("/api/mother", requireRole("staff"), async (req, res) => {
         let emailError = false;
 
         try {
-            await sendInvitationEmail(motherEmail, invitationUrl);
+            await sendInvitationEmail(pregnantWomanEmail, invitationUrl);
         } catch (error) {
             emailError = true;
-            console.error("Failed to send mother invitation email:", error);
+            console.error("Failed to send pregnant woman invitation email:", error);
         }
 
         const response = {
             message: emailError
-                ? "Mother account created, but the invitation email could not be sent. Please resend it."
-                : "Mother account created and invitation email sent.",
-            mother_id: motherId
+                ? "Pregnant woman account created, but the invitation email could not be sent. Please resend it."
+                : "Pregnant woman account created and invitation email sent.",
+            pregnant_woman_id: pregnantWomanId
         };
 
         return res.status(201).json(response);
 
     } catch (error) {
-        console.error("Error creating mother:", error);
+        console.error("Error creating pregnant woman:", error);
 
         if (
             error.code === "SQLITE_CONSTRAINT_PRIMARYKEY" ||
             error.code === "SQLITE_CONSTRAINT_UNIQUE"
         ) {
             return res.status(409).json({
-                message: "A mother account with these details already exists."
+                message: "A pregnant woman account with these details already exists."
             });
         }
 
         return res.status(500).json({
-            message: "Failed to create mother account."
+            message: "Failed to create pregnant woman account."
         });
     }
 });
 
 // Resend invitation link for password setup
-app.post("/api/mother/:motherId/resend-invitation", requireRole("staff"), async (req, res) => {
+app.post("/api/pregnant-woman/:pregnantWomanId/resend-invitation", requireRole("staff"), async (req, res) => {
     try {
-        const mother = db.prepare(`
+        const pregnantWoman = db.prepare(`
             SELECT
-                Mother.user_id,
+                Pregnant_Woman.user_id,
                 User.email,
                 User.password_set,
                 User.account_status
-            FROM Mother
+            FROM Pregnant_Woman
             INNER JOIN User
-                ON Mother.user_id = User.user_id
-            WHERE Mother.mother_id = ?
-        `).get(req.params.motherId);
+                ON Pregnant_Woman.user_id = User.user_id
+            WHERE Pregnant_Woman.pregnant_woman_id = ?
+        `).get(req.params.pregnantWomanId);
 
-        if (!mother) {
+        if (!pregnantWoman) {
             return res.status(404).json({
-                message: "Mother account not found."
+                message: "Pregnant woman account not found."
             });
         }
 
-        if (Number(mother.password_set) === 1) {
+        if (Number(pregnantWoman.password_set) === 1) {
             return res.status(409).json({
-                message: "This mother member has already set their password."
+                message: "This pregnant woman member has already set their password."
             });
         }
 
-        if (mother.account_status !== "Active") {
+        if (pregnantWoman.account_status !== "Active") {
             return res.status(409).json({
-                message: "Activate this mother account before sending an invitation."
+                message: "Activate this pregnant woman account before sending an invitation."
             });
         }
 
-        const token = createInvitation(mother.user_id);
+        const token = createInvitation(pregnantWoman.user_id);
 
         const baseUrl =
             process.env.APP_BASE_URL || `http://localhost:${PORT}`;
@@ -1502,14 +1502,14 @@ app.post("/api/mother/:motherId/resend-invitation", requireRole("staff"), async 
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
 
         try {
-            await sendInvitationEmail(mother.email, invitationUrl);
+            await sendInvitationEmail(pregnantWoman.email, invitationUrl);
 
             return res.status(200).json({
                 message: "Invitation email sent successfully."
             });
 
         } catch (error) {
-            console.error("Failed to resend mother invitation:", error);
+            console.error("Failed to resend pregnant woman invitation:", error);
 
             return res.status(500).json({
                 message: "The new invitation was created, but the email could not be sent. Please try resending it."
@@ -1517,17 +1517,17 @@ app.post("/api/mother/:motherId/resend-invitation", requireRole("staff"), async 
         }
 
     } catch (error) {
-        console.error("Error creating mother invitation:", error);
+        console.error("Error creating pregnant woman invitation:", error);
 
         return res.status(500).json({
-            message: "Failed to create the mother invitation."
+            message: "Failed to create the pregnant woman invitation."
         });
     }
 });
 
-// Update mother details
-app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
-    const motherId = Number(req.params.motherId);
+// Update pregnant woman details
+app.patch("/api/pregnant-woman/:pregnantWomanId", requireRole("staff"), (req, res) => {
+    const pregnantWomanId = Number(req.params.pregnantWomanId);
 
     const {
         user_id,
@@ -1541,10 +1541,10 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
         contact_phone_no
     } = req.body;
 
-    // Validate mother ID
-    if (!Number.isInteger(motherId) || motherId <= 0) {
+    // Validate pregnant woman ID
+    if (!Number.isInteger(pregnantWomanId) || pregnantWomanId <= 0) {
         return res.status(400).json({
-            message: "Invalid mother ID."
+            message: "Invalid pregnant woman ID."
         });
     }
 
@@ -1561,7 +1561,7 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
         typeof contact_phone_no !== "string"
     ) {
         return res.status(400).json({
-            message: "Please provide all required mother details."
+            message: "Please provide all required pregnant woman details."
         });
     }
 
@@ -1608,7 +1608,7 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
         });
     }
 
-    // Validate Malaysian mobile number format for mother
+    // Validate Malaysian mobile number format
     if (!/^01[0-9]-[0-9]{7,8}$/.test(phone)) {
         return res.status(400).json({
             message: "Please enter a valid phone number e.g. 012-3456789"
@@ -1623,16 +1623,16 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
     }
 
     try {
-        // Find the existing mother account
-        const existingMother = db.prepare(`
-            SELECT Mother.user_id
-            FROM Mother
-            WHERE Mother.mother_id = ?
-        `).get(motherId);
+        // Find the existing pregnant woman account
+        const existingPregnantWoman = db.prepare(`
+            SELECT Pregnant_Woman.user_id
+            FROM Pregnant_Woman
+            WHERE Pregnant_Woman.pregnant_woman_id = ?
+        `).get(pregnantWomanId);
 
-        if (!existingMother) {
+        if (!existingPregnantWoman) {
             return res.status(404).json({
-                message: "Mother member not found."
+                message: "Pregnant woman member not found."
             });
         }
 
@@ -1642,7 +1642,7 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
             FROM User
             WHERE user_id = ?
             AND user_id != ?
-        `).get(newIC, existingMother.user_id);
+        `).get(newIC, existingPregnantWoman.user_id);
 
         if (duplicateIC) {
             return res.status(409).json({
@@ -1657,7 +1657,7 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
             WHERE LOWER(TRIM(email)) = LOWER(?)
             AND user_id != ?
             AND role != 'child'
-        `).get(normalizedEmail, existingMother.user_id);
+        `).get(normalizedEmail, existingPregnantWoman.user_id);
 
         if (duplicateEmail) {
             return res.status(409).json({
@@ -1666,7 +1666,7 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
         }
 
         // Update everything in one transaction
-        const updateMother = db.transaction(() => {
+        const updatePregnantWoman = db.transaction(() => {
             db.prepare(`
                 UPDATE User
                 SET user_id = ?,
@@ -1677,18 +1677,18 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
                 newIC,
                 name,
                 normalizedEmail,
-                existingMother.user_id
+                existingPregnantWoman.user_id
             );
 
             db.prepare(`
-                UPDATE Mother
+                UPDATE Pregnant_Woman
                 SET date_of_birth = ?,
                     phone_no = ?,
                     address = ?,
                     contact_name = ?,
                     relationship = ?,
                     contact_phone_no = ?
-                WHERE mother_id = ?
+                WHERE pregnant_woman_id = ?
             `).run(
                 dob, 
                 phone, 
@@ -1696,34 +1696,34 @@ app.patch("/api/mother/:motherId", requireRole("staff"), (req, res) => {
                 contactName, 
                 newRelationship, 
                 contactPhoneNo, 
-                motherId
+                pregnantWomanId
             );
         });
 
-        updateMother();
+        updatePregnantWoman();
 
         return res.status(200).json({
-            message: "Mother details updated successfully."
+            message: "Pregnant woman details updated successfully."
         });
 
     } catch (error) {
-        console.error("Error updating mother:", error);
+        console.error("Error updating pregnant woman:", error);
 
         return res.status(500).json({
-            message: "Failed to update mother details."
+            message: "Failed to update pregnant woman details."
         });
     }
 });
 
-// Update a mother account's status (Active or Inactive)
-app.patch("/api/mother/:motherId/status", requireRole("staff"), (req, res) => {
-    const motherId = Number(req.params.motherId);
+// Update a pregnant woman's account status (Active or Inactive)
+app.patch("/api/pregnant-woman/:pregnantWomanId/status", requireRole("staff"), (req, res) => {
+    const pregnantWomanId = Number(req.params.pregnantWomanId);
     const { account_status } = req.body;
 
-    // Validate the mother ID
-    if (!Number.isInteger(motherId) || motherId <= 0) {
+    // Validate the pregnant woman ID
+    if (!Number.isInteger(pregnantWomanId) || pregnantWomanId <= 0) {
         return res.status(400).json({
-            message: "Invalid mother ID."
+            message: "Invalid pregnant woman ID."
         });
     }
 
@@ -1735,16 +1735,16 @@ app.patch("/api/mother/:motherId/status", requireRole("staff"), (req, res) => {
     }
 
     try {
-        // Check that the mother account exists
-        const mother = db.prepare(`
+        // Check that the pregnant woman account exists
+        const pregnantWoman = db.prepare(`
             SELECT user_id
-            FROM Mother
-            WHERE mother_id = ?
-        `).get(motherId);
+            FROM Pregnant_Woman
+            WHERE pregnant_woman_id = ?
+        `).get(pregnantWomanId);
 
-        if (!mother) {
+        if (!pregnantWoman) {
             return res.status(404).json({
-                message: "Mother account not found."
+                message: "Pregnant woman account not found."
             });
         }
 
@@ -1753,22 +1753,22 @@ app.patch("/api/mother/:motherId/status", requireRole("staff"), (req, res) => {
             UPDATE User
             SET account_status = ?
             WHERE user_id = ?
-        `).run(account_status, mother.user_id);
+        `).run(account_status, pregnantWoman.user_id);
 
         const action = account_status === "Inactive"
             ? "deactivated"
             : "activated";
 
         return res.status(200).json({
-            message: `Mother account ${action} successfully.`,
+            message: `Pregnant woman account ${action} successfully.`,
             account_status
         });
 
     } catch (error) {
-        console.error("Error updating mother status:", error);
+        console.error("Error updating pregnant woman status:", error);
 
         return res.status(500).json({
-            message: "Failed to update mother account status."
+            message: "Failed to update pregnant woman account status."
         });
     }
 });
@@ -3038,7 +3038,7 @@ app.get("/api/staff/appointments", requireRole("staff"), (req, res) => {
 
 
 // Get appointments for the logged-in patient
-app.get("/api/patient/appointments", requireRole("mother", "child"), (req, res) => {
+app.get("/api/patient/appointments", requireRole("pregnant_woman", "child"), (req, res) => {
     try {
         const userId = req.session.user.userId;
 
@@ -3154,7 +3154,7 @@ app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
                 full_name,
                 role
             FROM User
-            WHERE role IN ('mother', 'child')
+            WHERE role IN ('pregnant_woman', 'child')
               AND account_status = 'Active'
               AND (
                   user_id LIKE ?
@@ -3180,41 +3180,41 @@ app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
 ===================================================== */
 
 /* =====================================================
-   MOTHER: VIEW OWN MATERNAL VISIT HISTORY
+   PREGNANT WOMAN: VIEW OWN MATERNAL VISIT HISTORY
 ===================================================== */
 app.get(
     "/api/maternal-records/my-visits",
-    requireRole("mother"),
+    requireRole("pregnant_woman"),
     (req, res) => {
         try {
             const userId = req.session.user.userId;
 
-            // Find the Mother profile linked to this account.
-            const mother = db.prepare(`
-                SELECT mother_id
-                FROM Mother
+            // Find the Pregnant Woman profile linked to this account.
+            const pregnantWoman = db.prepare(`
+                SELECT pregnant_woman_id
+                FROM Pregnant_Woman
                 WHERE user_id = ?
             `).get(userId);
 
-            if (!mother) {
+            if (!pregnantWoman) {
                 return res.status(404).json({
-                    message: "Mother profile not found."
+                    message: "Pregnant woman profile not found."
                 });
             }
 
-            // Return only this mother's visit records.
+            // Return only this Pregnant woman's visit records.
             const visits = db.prepare(`
                 SELECT *
                 FROM Maternal_Record
-                WHERE mother_id = ?
+                WHERE pregnant_woman_id = ?
                 ORDER BY visit_number
-            `).all(mother.mother_id);
+            `).all(pregnantWoman.pregnant_woman_id);
 
             return res.json({ visits });
 
         } catch (error) {
             console.error(
-                "Mother maternal visit history error:",
+                "Pregnant woman maternal visit history error:",
                 error
             );
 
@@ -3225,30 +3225,30 @@ app.get(
     }
 );
 
-// Search registered mothers by name or user ID / IC number.
+// Search registered pregnant women by name or user ID / IC number.
 app.get(
-    "/api/maternal-records/mothers",
+    "/api/maternal-records/pregnant-women",
     requireRole("staff"),
     (req, res) => {
         const search = String(req.query.search || "").trim();
 
         if (!search) {
             return res.status(400).json({
-                message: "Please enter a mother's name or IC number."
+                message: "Please enter a pregnant woman's name or IC number."
             });
         }
 
         try {
-            const mothers = db.prepare(`
+            const pregnantWomen = db.prepare(`
                 SELECT
-                    Mother.mother_id,
+                    Pregnant_Woman.pregnant_woman_id,
                     User.user_id,
                     User.full_name,
                     User.email
-                FROM Mother
+                FROM Pregnant_Woman
                 INNER JOIN User
-                    ON User.user_id = Mother.user_id
-                WHERE User.role = 'mother'
+                    ON User.user_id = Pregnant_Woman.user_id
+                WHERE User.role = 'pregnant_woman'
                   AND (
                       User.full_name LIKE ?
                       OR User.user_id LIKE ?
@@ -3257,49 +3257,49 @@ app.get(
                 LIMIT 50
             `).all(`%${search}%`, `%${search}%`);
 
-            return res.json({ mothers });
+            return res.json({ pregnantWomen });
         } catch (error) {
-            console.error("Maternal mother search error:", error);
+            console.error("Pregnant woman search error:", error);
 
             return res.status(500).json({
-                message: "Unable to search for mothers."
+                message: "Unable to search for pregnant women."
             });
         }
     }
 );
 
-// Get a mother's maternal visit history.
+// Get a pregnant woman's maternal visit history.
 app.get(
-    "/api/maternal-records/mothers/:motherId/visits",
+    "/api/maternal-records/pregnant-women/:pregnantWomanId/visits",
     requireRole("staff"),
     (req, res) => {
-        const motherId = Number(req.params.motherId);
+        const pregnantWomanId = Number(req.params.pregnantWomanId);
 
-        if (!Number.isInteger(motherId) || motherId <= 0) {
+        if (!Number.isInteger(pregnantWomanId) || pregnantWomanId <= 0) {
             return res.status(400).json({
-                message: "Invalid mother ID."
+                message: "Invalid pregnant woman ID."
             });
         }
 
         try {
-            const mother = db.prepare(`
-                SELECT mother_id
-                FROM Mother
-                WHERE mother_id = ?
-            `).get(motherId);
+            const pregnantWoman = db.prepare(`
+                SELECT pregnant_woman_id
+                FROM Pregnant_Woman
+                WHERE pregnant_woman_id = ?
+            `).get(pregnantWomanId);
 
-            if (!mother) {
+            if (!pregnantWoman) {
                 return res.status(404).json({
-                    message: "Mother not found."
+                    message: "Pregnant woman not found."
                 });
             }
 
             const visits = db.prepare(`
                 SELECT *
                 FROM Maternal_Record
-                WHERE mother_id = ?
+                WHERE pregnant_woman_id = ?
                 ORDER BY visit_number
-            `).all(motherId);
+            `).all(pregnantWomanId);
 
             return res.json({ visits });
         } catch (error) {
@@ -3318,7 +3318,7 @@ app.post(
     requireRole("staff"),
     (req, res) => {
         const {
-            mother_id,
+            pregnant_woman_id,
             visit_number,
             visit_date,
             height,
@@ -3330,20 +3330,20 @@ app.post(
             doctor_remarks
         } = req.body;
 
-        const motherId = Number(mother_id);
+        const pregnantWomanId = Number(pregnant_woman_id);
         const visitNumber = Number(visit_number);
 
         // Validate required fields.
         if (
-            !Number.isInteger(motherId) ||
-            motherId <= 0 ||
+            !Number.isInteger(pregnantWomanId) ||
+            pregnantWomanId <= 0 ||
             !Number.isInteger(visitNumber) ||
             visitNumber <= 0 ||
             typeof visit_date !== "string" ||
             !/^\d{4}-\d{2}-\d{2}$/.test(visit_date)
         ) {
             return res.status(400).json({
-                message: "Please provide a valid mother, visit number and date."
+                message: "Please provide a valid pregnant woman, visit number and date."
             });
         }
 
@@ -3447,21 +3447,21 @@ app.post(
         }
 
         try {
-            const mother = db.prepare(`
-                SELECT mother_id
-                FROM Mother
-                WHERE mother_id = ?
-            `).get(motherId);
+            const pregnantWoman = db.prepare(`
+                SELECT pregnant_woman_id
+                FROM Pregnant_Woman
+                WHERE pregnant_woman_id = ?
+            `).get(pregnantWomanId);
 
-            if (!mother) {
+            if (!pregnantWoman) {
                 return res.status(404).json({
-                    message: "Mother not found."
+                    message: "Pregnant woman not found."
                 });
             }
 
             const result = db.prepare(`
                 INSERT INTO Maternal_Record (
-                    mother_id,
+                    pregnant_woman_id,
                     visit_number,
                     visit_date,
                     height,
@@ -3474,7 +3474,7 @@ app.post(
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).run(
-                motherId,
+                pregnantWomanId,
                 visitNumber,
                 visit_date,
                 height ?? null,
@@ -3515,7 +3515,7 @@ app.put(
         const recordId = Number(req.params.recordId);
 
         const {
-            mother_id,
+            pregnant_woman_id,
             visit_number,
             visit_date,
             height,
@@ -3527,14 +3527,14 @@ app.put(
             doctor_remarks
         } = req.body;
 
-        const motherId = Number(mother_id);
+        const pregnantWomanId = Number(pregnant_woman_id);
         const visitNumber = Number(visit_number);
 
         if (
             !Number.isInteger(recordId) ||
             recordId <= 0 ||
-            !Number.isInteger(motherId) ||
-            motherId <= 0 ||
+            !Number.isInteger(pregnantWomanId) ||
+            pregnantWomanId <= 0 ||
             !Number.isInteger(visitNumber) ||
             visitNumber <= 0 ||
             typeof visit_date !== "string" ||
@@ -3642,12 +3642,12 @@ app.put(
                 SELECT maternal_record_id
                 FROM Maternal_Record
                 WHERE maternal_record_id = ?
-                  AND mother_id = ?
-            `).get(recordId, motherId);
+                  AND pregnant_woman_id = ?
+            `).get(recordId, pregnantWomanId);
 
             if (!existing) {
                 return res.status(404).json({
-                    message: "Maternal visit not found for this mother."
+                    message: "Maternal visit not found for this pregnant woman."
                 });
             }
 
@@ -3664,7 +3664,7 @@ app.put(
                     doctor_remarks = ?,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE maternal_record_id = ?
-                  AND mother_id = ?
+                  AND pregnant_woman_id = ?
             `).run(
                 visitNumber,
                 visit_date,
@@ -3676,7 +3676,7 @@ app.put(
                 String(blood_test ?? "").trim(),
                 String(doctor_remarks ?? "").trim(),
                 recordId,
-                motherId
+                pregnantWomanId
             );
 
             return res.json({
@@ -3763,7 +3763,7 @@ app.get("/api/staff/available-slots", requireRole("staff"), (req, res) => {
             SELECT user_id, role
             FROM User
             WHERE user_id = ?
-                AND role IN ('mother', 'child')
+                AND role IN ('pregnant_woman', 'child')
                 AND account_status = 'Active'
         `).get(user_id);
 
@@ -3834,7 +3834,7 @@ app.get("/api/staff/available-slots", requireRole("staff"), (req, res) => {
 
 // Get available reschedule slots for a patient's appointment
 app.get("/api/patient/appointments/:appointmentId/available-reschedule-slots",
-    requireRole("mother", "child"), (req, res) => {
+    requireRole("pregnant_woman", "child"), (req, res) => {
         try {
             const appointmentId = Number(req.params.appointmentId);
             const userId = req.session.user.userId;
@@ -3974,7 +3974,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
             SELECT user_id, role, full_name, email
             FROM User
             WHERE user_id = ?
-                AND role IN ('mother', 'child')
+                AND role IN ('pregnant_woman', 'child')
                 AND account_status = 'Active'
         `).get(user_id);
 
@@ -4071,30 +4071,30 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
             // Automatically create a maternal record for maternal appointments only.
             // Child vaccination appointments are not affected.
             if (appointmentType === "Maternal Follow-up") {
-                const mother = db.prepare(`
-                    SELECT mother_id
-                    FROM Mother
+                const pregnantWoman = db.prepare(`
+                    SELECT pregnant_woman_id
+                    FROM Pregnant_Woman
                     WHERE user_id = ?
                 `).get(user_id);
 
-                if (!mother) {
+                if (!pregnantWoman) {
                     throw new Error(
-                        "Mother profile not found. The appointment was not saved."
+                        "Pregnant woman profile not found. The appointment was not saved."
                     );
                 }
 
-                // Assign the next visit number for this mother.
+                // Assign the next visit number for this pregnant woman.
                 const nextVisit = db.prepare(`
                     SELECT COALESCE(MAX(visit_number), 0) + 1 AS next_visit_number
                     FROM Maternal_Record
-                    WHERE mother_id = ?
-                `).get(mother.mother_id);
+                    WHERE pregnant_woman_id = ?
+                `).get(pregnantWoman.pregnant_woman_id);
 
                 // Create the record using the appointment date.
                 // Height, weight and remarks remain blank until staff updates them.
                 db.prepare(`
                     INSERT INTO Maternal_Record (
-                        mother_id,
+                        pregnant_woman_id,
                         appointment_id,
                         visit_number,
                         visit_date,
@@ -4104,7 +4104,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                     )
                     VALUES (?, ?, ?, ?, NULL, NULL, '')
                 `).run(
-                    mother.mother_id,
+                    pregnantWoman.pregnant_woman_id,
                     appointmentId,
                     nextVisit.next_visit_number,
                     appointment_date
@@ -4404,7 +4404,7 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
 // Submit a reschedule request
 app.post(
     "/api/patient/appointments/:appointmentId/reschedule-requests",
-    requireRole("mother", "child"),
+    requireRole("pregnant_woman", "child"),
     (req, res) => {
         try {
             const appointmentId = Number(req.params.appointmentId);
@@ -4497,7 +4497,7 @@ app.post(
 // =========================================
 app.get(
     "/api/notifications",
-    requireRole("mother", "child"),
+    requireRole("pregnant_woman", "child"),
     (req, res) => {
         try {
             const userId = req.session.user.userId;
@@ -4534,7 +4534,7 @@ app.get(
 // =========================================
 app.patch(
     "/api/notifications/:id/read",
-    requireRole("mother", "child"),
+    requireRole("pregnant_woman", "child"),
     (req, res) => {
         const notificationId = Number(req.params.id);
         const userId = req.session.user.userId;
@@ -4584,7 +4584,7 @@ app.patch(
 // Get children the logged-in user is allowed to view.
 app.get(
     "/api/patient/vaccination-children",
-    requireRole("mother", "child"),
+    requireRole("pregnant_woman", "child"),
     (req, res) => {
         try {
             const { userId, role } = req.session.user;
@@ -4606,8 +4606,8 @@ app.get(
                       AND User.role = 'child'
                 `).all(userId);
             } else {
-                // A mother can see children whose guardian name
-                // matches the logged-in mother's full name.
+                // A pregnant woman can see children whose guardian name
+                // matches the logged-in pregnant woman's full name.
                 children = db.prepare(`
                     SELECT
                         Child.user_id,
@@ -4622,7 +4622,7 @@ app.get(
                           SELECT LOWER(TRIM(full_name))
                           FROM User
                           WHERE user_id = ?
-                            AND role = 'mother'
+                            AND role = 'pregnant_woman'
                       )
                     ORDER BY User.full_name
                 `).all(userId);
@@ -4645,7 +4645,7 @@ app.get(
 // Get vaccination records for an authorised child.
 app.get(
     "/api/patient/vaccinations/:userId",
-    requireRole("mother", "child"),
+    requireRole("pregnant_woman", "child"),
     (req, res) => {
         try {
             const loggedInUserId = req.session.user.userId;
@@ -4675,7 +4675,7 @@ app.get(
                       AND User.role = 'child'
                 `).get(loggedInUserId);
             } else {
-                // Verify the child belongs to this mother using the
+                // Verify the child belongs to this pregnant woman using the
                 // guardian-name relationship before returning records.
                 child = db.prepare(`
                     SELECT
@@ -4692,7 +4692,7 @@ app.get(
                           SELECT LOWER(TRIM(full_name))
                           FROM User
                           WHERE user_id = ?
-                            AND role = 'mother'
+                            AND role = 'pregnant_woman'
                       )
                 `).get(requestedChildId, loggedInUserId);
             }
@@ -4800,7 +4800,7 @@ app.get("/api/patient/emergency-contact", (req, res) => {
     }
 });
 
-app.put("/api/mother/emergency-contact", (req, res) => {
+app.put("/api/pregnant-woman/emergency-contact", (req, res) => {
     try {
         // Check login session
         if (!req.session || !req.session.user) {
@@ -4814,10 +4814,10 @@ app.put("/api/mother/emergency-contact", (req, res) => {
         const userId = user.userId || user.user_id;
         const role = String(user.role || "").trim().toLowerCase();
 
-        // Only mother accounts can edit their emergency contact
-        if (role !== "mother") {
+        // Only pregnant woman accounts can edit their emergency contact
+        if (role !== "pregnant_woman") {
             return res.status(403).json({
-                message: "Only mother accounts can edit emergency contacts."
+                message: "Only pregnant woman accounts can edit emergency contacts."
             });
         }
 
@@ -4845,9 +4845,9 @@ app.put("/api/mother/emergency-contact", (req, res) => {
             });
         }
 
-        // Save to the existing Mother table
+        // Save to the existing Pregnant_Woman table
         const result = db.prepare(`
-            UPDATE Mother
+            UPDATE Pregnant_Woman
             SET contact_name = ?,
                 relationship = ?,
                 contact_phone_no = ?
@@ -4861,7 +4861,7 @@ app.put("/api/mother/emergency-contact", (req, res) => {
 
         if (result.changes === 0) {
             return res.status(404).json({
-                message: "Mother profile not found in the database."
+                message: "Pregnant woman profile not found in the database."
             });
         }
 
@@ -4944,9 +4944,9 @@ app.put("/api/me", (req, res) => {
                 WHERE user_id = ?
             `).run(newFullName, newEmail, userId);
 
-            // Only synchronize children when a mother changes her name.
+            // Only synchronize children when a pregnant woman changes her name.
             if (
-                role === "mother" &&
+                role === "pregnant_woman" &&
                 oldFullName &&
                 oldFullName.trim().toLowerCase() !==
                     newFullName.toLowerCase()
@@ -4983,7 +4983,7 @@ app.put("/api/me", (req, res) => {
     }
 });
 
-app.put("/api/mother/emergency-contact", (req, res) => {
+app.put("/api/pregnant-woman/emergency-contact", (req, res) => {
     if (!req.session?.user) {
         return res.status(401).json({
             message: "Please log in to continue."
@@ -4994,10 +4994,10 @@ app.put("/api/mother/emergency-contact", (req, res) => {
         req.session.user.userId || req.session.user.user_id;
 
     if (
-        String(req.session.user.role || "").toLowerCase() !== "mother"
+        String(req.session.user.role || "").toLowerCase() !== "pregnant_woman"
     ) {
         return res.status(403).json({
-            message: "Only mother accounts can update emergency contacts."
+            message: "Only pregnant woman accounts can update emergency contacts."
         });
     }
 
@@ -5013,7 +5013,7 @@ app.put("/api/mother/emergency-contact", (req, res) => {
 
     try {
         const result = db.prepare(`
-            UPDATE Mother
+            UPDATE Pregnant_Woman
             SET
                 contact_name = ?,
                 relationship = ?,
@@ -5028,7 +5028,7 @@ app.put("/api/mother/emergency-contact", (req, res) => {
 
         if (result.changes === 0) {
             return res.status(404).json({
-                message: "Mother profile not found."
+                message: "Pregnant woman profile not found."
             });
         }
 
@@ -5261,7 +5261,7 @@ function calculateEstimatedWaitingTimes(today) {
 }
 
 // Patient queue: Get Today's Appointments
-app.get("/api/patient/queue", requireRole("mother", "child"),
+app.get("/api/patient/queue", requireRole("pregnant_woman", "child"),
     (req, res) => {
         try {
             const userId = req.session.user.userId;
@@ -5351,7 +5351,7 @@ app.get("/api/patient/queue", requireRole("mother", "child"),
 
 // Patient queue: Check in
 app.post(
-    "/api/patient/queue/:appointmentId/check-in", requireRole("mother", "child"),
+    "/api/patient/queue/:appointmentId/check-in", requireRole("pregnant_woman", "child"),
     (req, res) => {
         const appointmentId = Number(req.params.appointmentId);
         const userId = req.session.user.userId;
@@ -5397,7 +5397,7 @@ app.post(
 
                 // Ensure the appointment type matches the account role.
                 const correctType =
-                    (role === "mother" &&
+                    (role === "pregnant_woman" &&
                         appointment.appointment_type === "Maternal Follow-up") ||
                     (role === "child" &&
                         appointment.appointment_type === "Child Vaccination");
@@ -5600,7 +5600,7 @@ app.post(
 );
 
 // Patient live queue
-app.get("/api/patient/live-queue", requireRole("mother", "child"),
+app.get("/api/patient/live-queue", requireRole("pregnant_woman", "child"),
     (req, res) => {
         try {
             const today = getMalaysiaDate();
@@ -6121,7 +6121,7 @@ app.patch(
 );
 
 async function notifyVaccinationChange(childUserId, action, recordId) {
-    // Find the child, vaccine and matching mother account.
+    // Find the child, vaccine and matching pregnant woman account.
     const child = db.prepare(`
         SELECT
             childUser.user_id AS child_user_id,
@@ -6132,9 +6132,9 @@ async function notifyVaccinationChange(childUserId, action, recordId) {
             cv.status,
             cv.due_date,
             Vaccination.vaccine_name,
-            motherUser.user_id AS mother_user_id,
-            motherUser.full_name AS mother_name,
-            motherUser.email AS mother_email
+            pregnantWomanUser.user_id AS pregnant_woman_user_id,
+            pregnantWomanUser.full_name AS pregnant_woman_name,
+            pregnantWomanUser.email AS pregnant_woman_email
         FROM Child
         INNER JOIN User AS childUser
             ON childUser.user_id = Child.user_id
@@ -6142,10 +6142,10 @@ async function notifyVaccinationChange(childUserId, action, recordId) {
             ON cv.user_id = Child.user_id
         INNER JOIN Vaccination
             ON Vaccination.vaccination_id = cv.vaccination_id
-        LEFT JOIN User AS motherUser
-            ON LOWER(TRIM(motherUser.full_name)) =
+        LEFT JOIN User AS pregnantWomanUser
+            ON LOWER(TRIM(pregnantWomanUser.full_name)) =
                LOWER(TRIM(Child.guardian_name))
-           AND motherUser.role = 'mother'
+           AND pregnantWomanUser.role = 'pregnant_woman'
         WHERE Child.user_id = ?
         AND cv.child_vaccination_id = ?
         LIMIT 1
@@ -6174,12 +6174,12 @@ async function notifyVaccinationChange(childUserId, action, recordId) {
         }
     ];
 
-    // Only include a matching mother account if one exists.
-    if (child.mother_user_id) {
+    // Only include a matching pregnant woman account if one exists.
+    if (child.pregnant_woman_user_id) {
         recipients.push({
-            userId: child.mother_user_id,
-            name: child.mother_name,
-            email: child.mother_email
+            userId: child.pregnant_woman_user_id,
+            name: child.pregnant_woman_name,
+            email: child.pregnant_woman_email
         });
     }
 
@@ -6236,7 +6236,7 @@ async function notifyVaccinationChange(childUserId, action, recordId) {
 // Get latest 3 notifications for dashboard
 app.get(
     "/api/patient/dashboard/notifications",
-    requireRole("mother", "child"),
+    requireRole("pregnant_woman", "child"),
     (req, res) => {
         try {
             const userId = req.session.user.userId;
