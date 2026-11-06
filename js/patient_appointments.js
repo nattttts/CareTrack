@@ -427,14 +427,10 @@ document.addEventListener("click", function (event) {
 });
 
 
-
 const rescheduleModal = document.getElementById("requestRescheduleModal");
 const rescheduleForm = document.getElementById("rescheduleRequestForm");
 const rescheduleAppointmentId = document.getElementById("rescheduleAppointmentId");
-const rescheduleDate = document.getElementById("rescheduleDate");
-const rescheduleStartTime = document.getElementById("rescheduleStartTime");
 const rescheduleReason = document.getElementById("rescheduleReason");
-const rescheduleTimeMessage = document.getElementById("rescheduleTimeMessage");
 const rescheduleError = document.getElementById("rescheduleError");
 const submitRescheduleRequest = document.getElementById("submitRescheduleRequest");
 
@@ -446,79 +442,6 @@ function showRescheduleError(message) {
 function clearRescheduleError() {
     rescheduleError.textContent = "";
     rescheduleError.hidden = true;
-}
-
-function resetRescheduleSlots(message = "Available slots will appear after you select a date.") {
-    rescheduleStartTime.innerHTML = '<option value="">Select a date first</option>';
-    rescheduleStartTime.disabled = true;
-    rescheduleTimeMessage.textContent = message;
-}
-
-// Load available slots when the patient selects a date.
-async function loadRescheduleSlots() {
-    clearRescheduleError();
-
-    const appointmentId = rescheduleAppointmentId.value;
-    const date = rescheduleDate.value;
-
-    if (!appointmentId || !date) {
-        resetRescheduleSlots();
-        return;
-    }
-
-    rescheduleStartTime.disabled = true;
-    rescheduleStartTime.innerHTML = '<option value="">Loading slots...</option>';
-    rescheduleTimeMessage.textContent = "Checking available slots...";
-
-    try {
-        const response = await fetch(
-            `/api/patient/appointments/${appointmentId}/available-reschedule-slots?date=${encodeURIComponent(date)}`
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.message || "Unable to load available slots."
-            );
-        }
-
-        rescheduleStartTime.innerHTML = "";
-
-        if (result.slots.length === 0) {
-            rescheduleStartTime.innerHTML =
-                '<option value="">No slots available</option>';
-
-            rescheduleTimeMessage.textContent =
-                "No available slots for this date. Please choose another date.";
-
-            return;
-        }
-
-        rescheduleStartTime.add(new Option("Select a time slot", ""));
-
-        result.slots.forEach(slot => {
-            const [hour, minute] = slot.split(":").map(Number);
-            const period = hour >= 12 ? "PM" : "AM";
-            const displayHour = hour % 12 || 12;
-
-            rescheduleStartTime.add(
-                new Option(
-                    `${displayHour}:${String(minute).padStart(2, "0")} ${period}`,
-                    slot
-                )
-            );
-        });
-
-        rescheduleStartTime.disabled = false;
-        rescheduleTimeMessage.textContent =
-            "Select one of the available time slots.";
-
-    } catch (error) {
-        resetRescheduleSlots("Unable to load available slots.");
-
-        showRescheduleError(error.message);
-    }
 }
 
 
@@ -547,8 +470,6 @@ document.addEventListener("click", function (event) {
     bootstrap.Modal.getOrCreateInstance(rescheduleModal).show();
 });
 
-// Load slots whenever the date changes
-// rescheduleDate.addEventListener("change", loadRescheduleSlots);
 
 // Submit a reschedule request
 rescheduleForm.addEventListener("submit", async function (event) {

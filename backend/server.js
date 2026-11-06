@@ -11,8 +11,6 @@ const {
     sendPasswordResetEmail,
     sendAppointmentScheduledEmail,
     sendAppointmentUpdatedEmail,
-    sendRescheduleApprovedEmail,
-    sendRescheduleRejectedEmail,
     sendVaccinationNotificationEmail,
     sendQueueCalledEmail
 } = require("./email");
