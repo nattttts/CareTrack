@@ -252,7 +252,7 @@ async function loadAppointments() {
                         Edit
                     </button>
                 `;
-            } else if (displayStatus === "Completed" && appointment.role === "mother") {
+            } else if (displayStatus === "Completed" && appointment.role === "pregnant_woman") {
                 if (appointment.account_status === "Active") {
                     actionButtons += `
                         <button
@@ -464,7 +464,7 @@ patientSearchInput.addEventListener("input", () => {
                 details.className = "small text-muted";
                 details.textContent =
                     `IC: ${patient.user_id} | Role: ${
-                        patient.role === "mother" ? "Mother" : "Child"
+                        patient.role === "pregnant_woman" ? "Pregnant Woman" : "Child"
                     }`;
 
                 resultButton.append(name, details);
@@ -497,7 +497,7 @@ function selectPatient(patient) {
         `IC Number: ${patient.user_id}`;
 
     document.getElementById("selectedPatientRole").textContent =
-        `Role: ${patient.role === "mother" ? "Mother" : "Child"}`;
+        `Role: ${patient.role === "pregnant_woman" ? "Pregnant Woman" : "Child"}`;
 
     appointmentTypeInput.value =
         patient.role === "child"

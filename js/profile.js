@@ -51,9 +51,9 @@ async function loadLoggedInProfile() {
             .toLowerCase();
 
         const isChild = role === "child";
-        const isMother = role === "mother";
+        const isPregnantWoman = role === "pregnant_woman";
 
-        if (!isChild && !isMother) {
+        if (!isChild && !isPregnantWoman) {
             throw new Error("Unsupported account role.");
         }
 
@@ -110,7 +110,7 @@ async function loadLoggedInProfile() {
         }
 
         // Hide the personal phone number for child accounts.
-        // The mother's phone number is displayed in Emergency Contact.
+        // The pregnant woman's phone number is displayed in Emergency Contact.
         const phoneItem = document.getElementById("phoneItem");
 
         if (phoneItem) {
@@ -166,7 +166,7 @@ async function loadLoggedInProfile() {
                 resetPasswordButton.style.display = "";
             }
         } else {
-            // Mother profile displays Address instead of Gender.
+            // Pregnant woman profile displays Address instead of Gender.
             if (addressLabel) {
                 addressLabel.textContent = "Address";
             }
@@ -222,13 +222,13 @@ async function loadLoggedInProfile() {
             emergencyCard.style.display = "block";
         }
 
-        if (isMother) {
+        if (isPregnantWoman) {
             if (emergencyDescription) {
                 emergencyDescription.textContent =
                     "Person to contact in case of emergency";
             }
 
-            // Keep the mother's existing emergency contact fields.
+            // Keep the pregnant woman's existing emergency contact fields.
             if (relationshipItem) relationshipItem.style.display = "";
             if (emergencyEmailItem) emergencyEmailItem.style.display = "none";
 
@@ -271,7 +271,7 @@ async function loadLoggedInProfile() {
             setEmergencyInputsReadOnly(false);
 
         } else {
-            // Child sees the linked mother's contact details.
+            // Child sees the linked pregnant woman's contact details.
             if (emergencyDescription) {
                 emergencyDescription.textContent =
                     "Your registered guardian's contact details"
@@ -281,7 +281,7 @@ async function loadLoggedInProfile() {
                 emergencyEditButton.style.display = "none";
             }
 
-            // Child sees the mother's name, phone number and email only.
+            // Child sees the  guardian's name, phone number and email only.
             if (relationshipItem) relationshipItem.style.display = "none";
             if (emergencyEmailItem) emergencyEmailItem.style.display = "";
 
@@ -319,7 +319,7 @@ async function loadLoggedInProfile() {
 }
 
 /* ========================================
-   LOAD CHILD'S MOTHER EMERGENCY CONTACT
+   LOAD CHILD'S GUARDIAN EMERGENCY CONTACT
 ======================================== */
 async function loadChildEmergencyContact() {
     try {
@@ -642,7 +642,7 @@ async function editEmergency() {
         button.disabled = true;
         button.textContent = "Saving...";
         
-        const response = await fetch("/api/mother/emergency-contact", {
+        const response = await fetch("/api/pregnant-woman/emergency-contact", {
             method: "PUT",
             credentials: "same-origin",
             headers: {

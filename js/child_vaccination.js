@@ -84,15 +84,15 @@ async function initialisePage() {
 
             await loadVaccinationRecords(selectedChildId);
 
-        } else if (role === "mother") {
-            // Mother accounts can select one of their children.
-            await loadMotherChildren();
+        } else if (role === "pregnant_woman") {
+            // Pregnant woman accounts can select one of their children.
+            await loadPregnantWomanChildren();
 
         } else {
             setChildSelectorVisible(false);
 
             showMessage(
-                "This page is available to mother and child accounts only."
+                "This page is available to pregnant women and child accounts only."
             );
 
             tableBody.innerHTML = emptyRow(
@@ -150,9 +150,9 @@ function setChildSelectorVisible(visible) {
 }
 
 // =====================================================
-// LOAD CHILDREN FOR MOTHER ACCOUNT
+// LOAD CHILDREN FOR PREGNANT WOMAN ACCOUNT
 // =====================================================
-async function loadMotherChildren() {
+async function loadPregnantWomanChildren() {
     const selectorCard = $("childSelectorCard");
     const selector = $("childSelect");
 
@@ -187,7 +187,7 @@ async function loadMotherChildren() {
         return;
     }
 
-    // Only show the selector for a mother account.
+    // Only show the selector for a pregnant woman account.
     selector.innerHTML = children.map((child) => {
         const childId = escapeHTML(child.user_id);
         const childName = escapeHTML(child.full_name || "Child");

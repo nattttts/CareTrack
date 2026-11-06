@@ -77,10 +77,10 @@ async function apiRequest(url) {
 
 /* ================= LOAD USER PROFILE ================= */
 
-async function loadMotherProfile() {
+async function loadPregnantWomanProfile() {
     const user = await apiRequest(`${API_BASE}/me`);
 
-    if (user.role !== "mother") {
+    if (user.role !== "pregnant_woman") {
         if (user.role === "child") {
             window.location.replace("child_vaccination.html");
         } else if (user.role === "staff") {
@@ -95,7 +95,7 @@ async function loadMotherProfile() {
     }
 
     $("headerProfileName").textContent =
-        user.fullName || "Mother";
+        user.fullName || "Pregnant Woman";
 
     return true;
 }
@@ -166,11 +166,11 @@ async function loadMaternalRecords() {
     refreshButton.disabled = true;
 
     try {
-        const isMother = await loadMotherProfile();
+        const isPregnantWoman = await loadPregnantWomanProfile();
 
-        if (!isMother) return;
+        if (!isPregnantWoman) return;
 
-        // The server identifies the mother using the login session.
+        // The server identifies the pregnant woman using the login session.
         const result = await apiRequest(
             `${API_BASE}/maternal-records/my-visits`
         );

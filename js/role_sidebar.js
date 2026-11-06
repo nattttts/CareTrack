@@ -26,9 +26,9 @@ async function setupRoleSidebar() {
             vaccinationLink.hidden = user.role !== "child";
         }
 
-        // Only mother accounts can see Maternal Records
+        // Only pregnant woman accounts can see Maternal Records
         if (maternalLink) {
-            maternalLink.hidden = user.role !== "mother";
+            maternalLink.hidden = user.role !== "pregnant_woman";
         }
 
     } catch (error) {

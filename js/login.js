@@ -34,7 +34,7 @@ loginForm.addEventListener("submit", async (event) => {
         const dashboardPages = {
             admin: "staff_management.html",
             staff: "staff_dashboard.html",
-            mother: "patient_dashboard.html",
+            pregnant_woman: "patient_dashboard.html",
             child: "patient_dashboard.html"
         };
 
