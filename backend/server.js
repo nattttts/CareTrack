@@ -4924,8 +4924,8 @@ app.put("/api/me", (req, res) => {
         const sessionUser = req.session?.user;
 
         const userId =
-            sessionUser?.user_id ||
             sessionUser?.userId ||
+            sessionUser?.user_id ||
             sessionUser?.id;
 
         if (!userId) {
@@ -4933,6 +4933,8 @@ app.put("/api/me", (req, res) => {
                 message: "Please log in again."
             });
         }
+
+        const role = String(sessionUser.role || "").toLowerCase();
 
         const {
             fullName,
@@ -4942,16 +4944,49 @@ app.put("/api/me", (req, res) => {
             address
         } = req.body;
 
-        if (!fullName?.trim() || !email?.trim()) {
+        // Only staff and pregnant women can edit their profiles.
+        if (!["staff", "pregnant_woman"].includes(role)) {
+            return res.status(403).json({
+                message: "You are not allowed to edit this profile."
+            });
+        }
+
+        if (
+            typeof fullName !== "string" ||
+            !fullName.trim() ||
+            typeof email !== "string" ||
+            !email.trim() ||
+            typeof phoneNo !== "string" ||
+            !phoneNo.trim()
+        ) {
             return res.status(400).json({
-                message: "Name and email are required."
+                message: "Name, email and phone number are required."
             });
         }
 
         const newFullName = fullName.trim();
-        const newEmail = email.trim();
+        const newEmail = email.trim().toLowerCase();
+        const newPhone = phoneNo.trim();
 
-        // Get the user's existing name and role before updating.
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+            return res.status(400).json({
+                message: "Please enter a valid email address."
+            });
+        }
+
+        if (role === "pregnant_woman") {
+            if (
+                typeof dateOfBirth !== "string" ||
+                !dateOfBirth.trim() ||
+                typeof address !== "string" ||
+                !address.trim()
+            ) {
+                return res.status(400).json({
+                    message: "Date of birth and address are required."
+                });
+            }
+        }
+
         const existingUser = db.prepare(`
             SELECT full_name, role
             FROM User
@@ -4965,46 +5000,101 @@ app.put("/api/me", (req, res) => {
         }
 
         const oldFullName = existingUser.full_name;
-        const role = String(existingUser.role || "").toLowerCase();
 
-        // Update the User table and synchronize child guardian names
-        // in one transaction so both changes succeed together.
+        // Check whether another account already uses this email.
+        const duplicateEmail = db.prepare(`
+            SELECT user_id
+            FROM User
+            WHERE LOWER(TRIM(email)) = ?
+            AND user_id != ?
+        `).get(newEmail, userId);
+
+        if (duplicateEmail) {
+            return res.status(409).json({
+                message: "This email is already used by another account."
+            });
+        }
+
+        // Save all profile information in one transaction.
         const updateProfile = db.transaction(() => {
+
+            // Update common account information.
             db.prepare(`
                 UPDATE User
                 SET full_name = ?,
                     email = ?
                 WHERE user_id = ?
-            `).run(newFullName, newEmail, userId);
+            `).run(
+                newFullName,
+                newEmail,
+                userId
+            );
 
-            // Only synchronize children when a pregnant woman changes her name.
-            if (
-                role === "pregnant_woman" &&
-                oldFullName &&
-                oldFullName.trim().toLowerCase() !==
+            if (role === "staff") {
+
+                // Update staff phone number.
+                const result = db.prepare(`
+                    UPDATE Staff
+                    SET phone_no = ?
+                    WHERE user_id = ?
+                `).run(
+                    newPhone,
+                    userId
+                );
+
+                if (result.changes === 0) {
+                    throw new Error("Staff profile not found.");
+                }
+            }
+
+            if (role === "pregnant_woman") {
+
+                // Update pregnant woman's personal information.
+                const result = db.prepare(`
+                    UPDATE Pregnant_Woman
+                    SET phone_no = ?,
+                        date_of_birth = ?,
+                        address = ?
+                    WHERE user_id = ?
+                `).run(
+                    newPhone,
+                    dateOfBirth.trim(),
+                    address.trim(),
+                    userId
+                );
+
+                if (result.changes === 0) {
+                    throw new Error("Pregnant woman profile not found.");
+                }
+
+                // Synchronise guardian names if the mother changes her name.
+                if (
+                    oldFullName &&
+                    oldFullName.trim().toLowerCase() !==
                     newFullName.toLowerCase()
-            ) {
-                db.prepare(`
-                    UPDATE Child
-                    SET guardian_name = ?
-                    WHERE LOWER(TRIM(guardian_name)) =
-                          LOWER(TRIM(?))
-                `).run(newFullName, oldFullName);
+                ) {
+                    db.prepare(`
+                        UPDATE Child
+                        SET guardian_name = ?
+                        WHERE LOWER(TRIM(guardian_name)) =
+                              LOWER(TRIM(?))
+                    `).run(
+                        newFullName,
+                        oldFullName
+                    );
+                }
             }
         });
 
         updateProfile();
 
-        // Keep the session name current if it is stored there.
-        if (sessionUser) {
-            sessionUser.fullName = newFullName;
-            sessionUser.full_name = newFullName;
-        }
-
         return res.json({
             message: "Profile updated successfully.",
             fullName: newFullName,
-            email: newEmail
+            email: newEmail,
+            phoneNo: newPhone,
+            dateOfBirth: dateOfBirth || null,
+            address: address || null
         });
 
     } catch (error) {
