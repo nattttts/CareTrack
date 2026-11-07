@@ -2830,7 +2830,7 @@ app.post(
                     userId,
                     "Child Vaccination",
                     due_date,
-                    start_time,
+                    start_time
                 );
 
                 appointmentId = Number(appointmentResult.lastInsertRowid);
