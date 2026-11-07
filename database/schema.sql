@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS Vaccination (
 CREATE TABLE IF NOT EXISTS Appointment (
     appointment_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
+    child_vaccination_id INTEGER,
     appointment_type TEXT NOT NULL 
         CHECK (
             appointment_type IN (
@@ -157,6 +158,9 @@ CREATE TABLE IF NOT EXISTS Appointment (
     FOREIGN KEY (user_id)
         REFERENCES User(user_id)
         ON UPDATE CASCADE
+    
+    FOREIGN KEY (child_vaccination_id)
+        REFERENCES Child_Vaccination(child_vaccination_id)
 );
 
 -- =========================================
@@ -276,6 +280,9 @@ CREATE TABLE IF NOT EXISTS Maternal_Record (
     FOREIGN KEY (pregnant_woman_id)
         REFERENCES Pregnant_Woman(pregnant_woman_id)
         ON DELETE CASCADE,
+
+    FOREIGN KEY (appointment_id)
+        REFERENCES Appointment(appointment_id),
 
     UNIQUE (pregnant_woman_id, visit_number),
 

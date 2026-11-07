@@ -2389,7 +2389,6 @@ app.get("/api/vaccination-management/vaccines", requireRole("staff"), (req, res)
     }
 });
 
-
 // PATCH: Update a child's details.
 app.patch(
     "/api/vaccination-management/children/:userId", requireRole("staff"),
@@ -2905,25 +2904,26 @@ app.delete(
 
         try {
             const deleteVaccination = db.transaction(() => {
-            
-            const record = db.prepare(`
-                SELECT child_vaccination_id, user_id, due_date
-                FROM Child_Vaccination
-                WHERE child_vaccination_id = ?
-            `).get(recordId);
+
+                const record = db.prepare(`
+                    SELECT child_vaccination_id, user_id, due_date
+                    FROM Child_Vaccination
+                    WHERE child_vaccination_id = ?
+                `).get(recordId);
 
                 if (!record) {
                     return false;
                 }
 
+                // Find appointments linked to this vaccination record.
                 let appointments = db.prepare(`
                     SELECT appointment_id
                     FROM Appointment
                     WHERE child_vaccination_id = ?
                 `).all(recordId);
 
-                // If this is an older record without a link,
-                // find its appointment using the child's ID and vaccination date.
+                // For older records without a direct appointment link,
+                // find appointments using the child's ID and due date.
                 if (appointments.length === 0) {
                     appointments = db.prepare(`
                         SELECT appointment_id
@@ -2934,6 +2934,7 @@ app.delete(
                     `).all(record.user_id, record.due_date);
                 }
 
+                // Delete related appointment data first.
                 for (const appointment of appointments) {
                     const appointmentId = appointment.appointment_id;
 
@@ -2947,10 +2948,8 @@ app.delete(
                         WHERE appointment_id = ?
                     `).run(appointmentId);
 
-                    db.prepare(`
-                        DELETE FROM Notification
-                        WHERE appointment_id = ?
-                    `).run(appointmentId);
+                    // Notification has no appointment_id column,
+                    // so it cannot be deleted using this relationship.
 
                     db.prepare(`
                         DELETE FROM Appointment
@@ -2958,13 +2957,10 @@ app.delete(
                     `).run(appointmentId);
                 }
 
-                // Delete notifications linked to the vaccination record
-                db.prepare(`
-                    DELETE FROM Notification
-                    WHERE child_vaccination_id = ?
-                `).run(recordId);
+                // Notification has no child_vaccination_id column,
+                // so do not attempt to delete notifications using it.
 
-                // Delete the vaccination record last
+                // Delete the vaccination record last.
                 db.prepare(`
                     DELETE FROM Child_Vaccination
                     WHERE child_vaccination_id = ?
@@ -3751,7 +3747,12 @@ function getMalaysiaDateTime() {
 // Retreive available time slots for appointments for staff
 app.get("/api/staff/available-slots", requireRole("staff"), (req, res) => {
     try {
-        const { user_id, date, appointment_id } = req.query;
+        const {
+            user_id,
+            date,
+            appointment_id,
+            child_vaccination_id
+        } = req.query;
 
         if (!user_id || !date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
             return res.status(400).json({
@@ -3949,11 +3950,15 @@ app.get("/api/patient/appointments/:appointmentId/available-reschedule-slots",
     }
 );
 
-
 // Add new patient appointments
 app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
     try {
-        const { user_id, appointment_date, start_time } = req.body;
+        const {
+            user_id,
+            appointment_date,
+            start_time,
+            child_vaccination_id
+        } = req.body;
 
         if (!user_id || !appointment_date || !start_time) {
             return res.status(400).json({
@@ -4027,7 +4032,25 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 ? "Child Vaccination"
                 : "Maternal Follow-up";
 
-        
+        let vaccinationRecordId = null;
+
+        if (patient.role === "child" && child_vaccination_id) {
+            const vaccinationRecord = db.prepare(`
+                SELECT child_vaccination_id
+                FROM Child_Vaccination
+                WHERE child_vaccination_id = ?
+                AND user_id = ?
+            `).get(child_vaccination_id, user_id);
+
+            if (!vaccinationRecord) {
+                return res.status(400).json({
+                    message: "The selected vaccination record was not found."
+                });
+            }
+
+            vaccinationRecordId = vaccinationRecord.child_vaccination_id;
+        }
+
         const createAppointmentTransaction = db.transaction(() => {
             // Recheck appointment capacity before inserting.
             const existingAppointments = db.prepare(`
@@ -4056,16 +4079,18 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                     user_id,
                     appointment_type,
                     appointment_date,
-                    start_time
+                    start_time,
+                    child_vaccination_id
                 )
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?)
             `).run(
                 user_id,
                 appointmentType,
                 appointment_date,
-                start_time
+                start_time,
+                vaccinationRecordId
             );
-
+            
             const appointmentId = Number(result.lastInsertRowid);
 
             // Automatically create a maternal record for maternal appointments only.
@@ -4251,8 +4276,16 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
         }
 
         if (!allowedSlots.includes(start_time)) {
+            const dayOfWeek = selectedDate.getUTCDay();
+
+            if (dayOfWeek === 6) {
+                return res.status(400).json({
+                    message: "For Saturday appointments, only 9:00 AM to 12:00 PM is available."
+                });
+            }
+
             return res.status(400).json({
-                message: "Please select a valid clinic appointment time slot."
+                message: "Weekday appointments are available from 8:00 AM to 12:00 PM and 1:00 PM to 5:00 PM."
             });
         }
 

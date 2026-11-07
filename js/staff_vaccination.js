@@ -489,7 +489,11 @@ async function loadVaccinationTimeSlots() {
         });
 
         const response = await fetch(
-            `/api/staff/available-slots?${params}`
+            `/api/staff/available-slots?${params}`,
+            {
+                method: "GET",
+                credentials: "same-origin"
+            }
         );
 
         const result = await response.json();
