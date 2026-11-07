@@ -19,7 +19,8 @@ const SqliteStore = require("better-sqlite3-session-store")(session);
 require("dotenv").config({
     path: require("node:path").join(__dirname, "../.env")
 });
-
+const https = require("node:https");
+const fs = require("node:fs");
 
 const app = express();
 app.use(cors());
@@ -40,7 +41,7 @@ app.use(session({
     cookie: {
         httpOnly: true,
         sameSite: "lax",
-        secure: false,
+        secure: true,
         maxAge: 60 * 60 * 1000
     }
 }));
@@ -343,7 +344,7 @@ app.post("/api/forgot-password", async (req, res) => {
         const resetToken = createPasswordReset(user.user_id);
 
         const baseUrl = (
-            process.env.APP_BASE_URL || "http://localhost:3000"
+            process.env.APP_BASE_URL || "https://localhost:3000"
         ).replace(/\/+$/, "");
 
         const resetUrl =
@@ -911,7 +912,7 @@ app.post("/api/staff", requireRole("admin"), async (req, res) => {
 
         // Construct the invitation URL for local testing
         const baseUrl = (
-            process.env.APP_BASE_URL || `http://localhost:${PORT}`
+            process.env.APP_BASE_URL || `https://localhost:${PORT}`
         ).replace(/\/+$/, "");
 
         const invitationUrl =
@@ -989,7 +990,7 @@ app.post("/api/staff/:staffId/resend-invitation", requireRole("admin"), async (r
         const token = createInvitation(staff.user_id);
 
         const baseUrl =
-            process.env.APP_BASE_URL || `http://localhost:${PORT}`;
+            process.env.APP_BASE_URL || `https://localhost:${PORT}`;
 
         const invitationUrl =
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
@@ -1418,7 +1419,7 @@ app.post("/api/pregnant-woman", requireRole("staff"), async (req, res) => {
 
         // Construct the invitation URL for local testing
         const baseUrl = (
-            process.env.APP_BASE_URL || `http://localhost:${PORT}`
+            process.env.APP_BASE_URL || `https://localhost:${PORT}`
         ).replace(/\/+$/, "");
 
         const invitationUrl =
@@ -1496,7 +1497,7 @@ app.post("/api/pregnant-woman/:pregnantWomanId/resend-invitation", requireRole("
         const token = createInvitation(pregnantWoman.user_id);
 
         const baseUrl =
-            process.env.APP_BASE_URL || `http://localhost:${PORT}`;
+            process.env.APP_BASE_URL || `https://localhost:${PORT}`;
 
         const invitationUrl =
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
@@ -1962,7 +1963,7 @@ app.post("/api/child", requireRole("staff"), async (req, res) => {
 
         // Construct the invitation URL for local testing
         const baseUrl = (
-            process.env.APP_BASE_URL || `http://localhost:${PORT}`
+            process.env.APP_BASE_URL || `https://localhost:${PORT}`
         ).replace(/\/+$/, "");
 
         const invitationUrl =
@@ -2040,7 +2041,7 @@ app.post("/api/child/:childId/resend-invitation", requireRole("staff"), async (r
         const token = createInvitation(child.user_id);
 
         const baseUrl =
-            process.env.APP_BASE_URL || `http://localhost:${PORT}`;
+            process.env.APP_BASE_URL || `https://localhost:${PORT}`;
 
         const invitationUrl =
             `${baseUrl}/set_password.html?token=${encodeURIComponent(token)}`;
@@ -6398,7 +6399,16 @@ updateMissedAppointments();
 // Check for missed appointments every 10 second.
 setInterval(updateMissedAppointments, 10000);
 
-app.listen(PORT, () => {
-    console.log(`CareTrack server running at http://localhost:${PORT}`);
+const httpsOptions = {
+    key: fs.readFileSync(
+        path.join(__dirname, "certs", "localhost-key.pem")
+    ),
+    cert: fs.readFileSync(
+        path.join(__dirname, "certs", "localhost.pem")
+    )
+};
+
+https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`HTTPS server running at https://localhost:${PORT}`);
     console.log("SQLite database connected!");
 });

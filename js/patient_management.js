@@ -8,7 +8,7 @@ async function loadPregnantWomen() {
     const tableBody = document.getElementById("pregnantWomanTableBody");
 
     try {
-        const response = await fetch("http://localhost:3000/api/pregnant-women");
+        const response = await fetch("https://localhost:3000/api/pregnant-women");
 
         if (!response.ok) {
             throw new Error("Failed to retrieve pregnant woman records.");
@@ -206,7 +206,7 @@ async function resendPregnantWomanInvitation(pregnantWomanId, button) {
 
         // Ask the backend to generate a new invitation
         const response = await fetch(
-            `http://localhost:3000/api/pregnant-woman/${pregnantWomanId}/resend-invitation`,
+            `https://localhost:3000/api/pregnant-woman/${pregnantWomanId}/resend-invitation`,
             {
                 method: "POST"
             }
@@ -456,7 +456,7 @@ document
         };
 
         try {
-            const response = await fetch("http://localhost:3000/api/pregnant-woman", {
+            const response = await fetch("https://localhost:3000/api/pregnant-woman", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -553,7 +553,7 @@ document.getElementById("editPregnantWomanForm").addEventListener(
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/pregnant-woman/${pregnantWomanId}`,
+                `https://localhost:3000/api/pregnant-woman/${pregnantWomanId}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -605,7 +605,7 @@ document
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/pregnant-woman/${selectedPregnantWoman.pregnant_woman_id}/status`,
+                `https://localhost:3000/api/pregnant-woman/${selectedPregnantWoman.pregnant_woman_id}/status`,
                 {
                     method: "PATCH",
                     headers: {
@@ -657,7 +657,7 @@ async function loadChild() {
     const tableBody = document.getElementById("childTableBody");
 
     try {
-        const response = await fetch("http://localhost:3000/api/children");
+        const response = await fetch("https://localhost:3000/api/children");
 
         if (!response.ok) {
             throw new Error("Failed to retrieve child records.");
@@ -855,7 +855,7 @@ async function resendChildInvitation(childId, button) {
 
         // Ask the backend to generate a new invitation
         const response = await fetch(
-            `http://localhost:3000/api/child/${childId}/resend-invitation`,
+            `https://localhost:3000/api/child/${childId}/resend-invitation`,
             {
                 method: "POST"
             }
@@ -1091,7 +1091,7 @@ document
         };
 
         try {
-            const response = await fetch("http://localhost:3000/api/child", {
+            const response = await fetch("https://localhost:3000/api/child", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1180,7 +1180,7 @@ document.getElementById("editChildForm").addEventListener(
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/child/${childId}`,
+                `https://localhost:3000/api/child/${childId}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -1232,7 +1232,7 @@ document
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/child/${selectedChild.child_id}/status`,
+                `https://localhost:3000/api/child/${selectedChild.child_id}/status`,
                 {
                     method: "PATCH",
                     headers: {

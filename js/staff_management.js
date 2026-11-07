@@ -6,7 +6,7 @@ async function loadStaff() {
     const tableBody = document.getElementById("staffTableBody");
 
     try {
-        const response = await fetch("http://localhost:3000/api/staff");
+        const response = await fetch("/api/staff");
 
         if (!response.ok) {
             throw new Error("Failed to retrieve staff records.");
@@ -202,7 +202,7 @@ async function resendInvitation(staffId, button) {
 
         // Ask the backend to generate a new invitation
         const response = await fetch(
-            `http://localhost:3000/api/staff/${staffId}/resend-invitation`,
+            `https://localhost:3000/api/staff/${staffId}/resend-invitation`,
             {
                 method: "POST"
             }
@@ -414,7 +414,7 @@ document
         };
 
         try {
-            const response = await fetch("http://localhost:3000/api/staff", {
+            const response = await fetch("https://localhost:3000/api/staff", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -491,7 +491,7 @@ document.getElementById("editStaffForm").addEventListener(
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/staff/${staffId}`,
+                `https://localhost:3000/api/staff/${staffId}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -543,7 +543,7 @@ document
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/staff/${selectedStaff.staff_id}/status`,
+                `https://localhost:3000/api/staff/${selectedStaff.staff_id}/status`,
                 {
                     method: "PATCH",
                     headers: {

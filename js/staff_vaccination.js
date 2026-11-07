@@ -1,6 +1,6 @@
 import { showToast } from "./popup_message.js";
 
-const API_BASE = "http://localhost:3000/api/vaccination-management";
+const API_BASE = "https://localhost:3000/api/vaccination-management";
 
 let children = [];
 let vaccines = [];

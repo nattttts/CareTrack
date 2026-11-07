@@ -546,7 +546,7 @@ async function editProfile() {
         button.disabled = true;
         button.textContent = "Saving...";
 
-        const response = await fetch("http://localhost:3000/api/me", {
+        const response = await fetch("https://localhost:3000/api/me", {
             method: "PUT",
             credentials: "include",
             headers: {

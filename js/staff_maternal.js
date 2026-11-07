@@ -1,6 +1,6 @@
 import { showToast } from "./popup_message.js";
 
-const API_BASE = "http://localhost:3000/api/maternal-records";
+const API_BASE = "https://localhost:3000/api/maternal-records";
 
 const $ = (id) => document.getElementById(id);
 
