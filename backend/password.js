@@ -1,32 +1,89 @@
+const { argon2, randomBytes, timingSafeEqual } = require("node:crypto");
 
-const argon2 = require("@node-rs/argon2");
+// Argon2id configuration
+const MEMORY_COST = 19456;
+const TIME_COST = 2;
+const PARALLELISM = 1;
+const SALT_LENGTH = 16;
+const HASH_LENGTH = 32;
+
+// Convert a Buffer into unpadded Base64
+function toBase64(buffer) {
+    return buffer.toString("base64").replace(/=+$/, "");
+}
 
 // Hash a password before saving it to the database
 async function hashPassword(password) {
-    return argon2.hash(password, {
-        // Argon2id is the password-hashing algorithm chosen
-        algorithm: argon2.Algorithm.Argon2id,
+    const salt = randomBytes(SALT_LENGTH);
 
-        // Memory used for hashing, in KiB (19 MiB)
-        // More memory makes large-scale password guessing more expensive
-        memoryCost: 19456,
-
-        // Number of passes through the hashing process
-        // Higher values increase the computation required
-        timeCost: 2,
-
-        // Number of parallel threads used for hashing
-        parallelism: 1
+    const hash = await new Promise((resolve, reject) => {
+        argon2("argon2id", {
+            message: Buffer.from(password, "utf8"),
+            nonce: salt,
+            memory: MEMORY_COST,
+            passes: TIME_COST,
+            parallelism: PARALLELISM,
+            tagLength: HASH_LENGTH
+        }, (error, derivedKey) => {
+            if (error) reject(error);
+            else resolve(derivedKey);
+        });
     });
+
+    return `$argon2id$v=19$m=${MEMORY_COST},t=${TIME_COST},p=${PARALLELISM}$${toBase64(salt)}$${toBase64(hash)}`;
 }
 
-// Check a password entered by a user against the saved hash
-// Returns true if it matches, or false if it does not
-async function verifyPassword(hash, password) {
-    return argon2.verify(hash, password);
+// Verify a password against its saved hash
+async function verifyPassword(savedHash, password) {
+    const parts = savedHash.split("$");
+
+    if (
+        parts.length !== 6 ||
+        parts[1] !== "argon2id" ||
+        parts[2] !== "v=19"
+    ) {
+        return false;
+    }
+
+    const parameters = Object.fromEntries(
+        parts[3].split(",").map(item => item.split("="))
+    );
+
+    if (
+        Number(parameters.m) !== MEMORY_COST ||
+        Number(parameters.t) !== TIME_COST ||
+        Number(parameters.p) !== PARALLELISM
+    ) {
+        return false;
+    }
+
+    const salt = Buffer.from(parts[4], "base64");
+    const expectedHash = Buffer.from(parts[5], "base64");
+
+    if (
+        salt.length !== SALT_LENGTH ||
+        expectedHash.length !== HASH_LENGTH
+    ) {
+        return false;
+    }
+
+    const actualHash = await new Promise((resolve, reject) => {
+        argon2("argon2id", {
+            message: Buffer.from(password, "utf8"),
+            nonce: salt,
+            memory: MEMORY_COST,
+            passes: TIME_COST,
+            parallelism: PARALLELISM,
+            tagLength: HASH_LENGTH
+        }, (error, derivedKey) => {
+            if (error) reject(error);
+            else resolve(derivedKey);
+        });
+    });
+
+    return timingSafeEqual(actualHash, expectedHash);
 }
 
-// Export both functions so server.js and other backend files can use them
 module.exports = {
     hashPassword,
     verifyPassword
