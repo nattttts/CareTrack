@@ -10,6 +10,7 @@ const tableBody = document.getElementById("queueTableBody");
 const noResults = document.getElementById("noResults");
 const queueResult = document.getElementById("queueCount");
 
+// Call Modal
 const callModalElement = document.getElementById("callModal");
 const callPatientName = document.getElementById("callPatientName");
 const callQueueNumber = document.getElementById("callQueueNumber");
@@ -21,10 +22,10 @@ const completePatientName = document.getElementById("completePatientName");
 const completeQueueNumber = document.getElementById("completeQueueNumber");
 const confirmCompleteButton = document.getElementById("confirmCompleteButton");
 
+// Skip Modal
 const skipModalElement = document.getElementById("skipModal");
 const skipPatientName = document.getElementById("skipPatientName");
 const confirmSkipButton = document.getElementById("confirmSkipButton");
-
 
 const selectedCallState = { row: null };
 const selectedCompleteState = { row: null };
@@ -35,19 +36,36 @@ let queueData = [];
 let isLoading = false;
 let queueLoadError = false;
 
-// Format appointment time, e.g. 10:30 AM.
+// ================= HTML ESCAPING =================
+function escapeHTML(value) {
+
+    return String(value ?? "").replace(/[&<>"']/g, character => {
+
+        const characters = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        };
+
+        return characters[character];
+    });
+}
+
+// ================= FORMAT APPOINTMENT TIME =================
 function formatAppointmentTime(time) {
 
     if (!time) {
         return "—";
     }
 
-    const parts = time.split(":");
+    const parts = String(time).split(":");
     const hour = Number(parts[0]);
     const minute = parts[1] || "00";
 
     if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
-        return time;
+        return String(time);
     }
 
     const period = hour >= 12 ? "PM" : "AM";
@@ -158,74 +176,43 @@ function renderQueue() {
         const appointmentTime = formatAppointmentTime(entry.start_time);
 
         row.dataset.id = entry.queue_entry_id;
-        row.dataset.appointmentId = entry.appointment_id;
         row.dataset.patient = patientName;
-        row.dataset.queue = String(queueNumber);
+        row.dataset.queue = String(queueNumber ?? "");
         row.dataset.service = service;
         row.dataset.status = status;
         row.dataset.tab = getQueueTab(status);
-        row.dataset.role = entry.patient_role || "";
 
-        // Queue number.
-        const queueCell = document.createElement("td");
+        row.innerHTML = `
+            <td>
+                <strong class="queue-number">
+                    ${escapeHTML(queueNumber)}
+                </strong>
+            </td>
 
-        const queueNumberElement = document.createElement("strong");
-        queueNumberElement.classList.add("queue-number");
-        queueNumberElement.textContent = queueNumber;
+            <td>
+                <div class="patient-cell">
+                    <h6>${escapeHTML(patientName)}</h6>
+                </div>
+            </td>
 
-        queueCell.appendChild(queueNumberElement);
+            <td>
+                <p class="service-name">
+                    ${escapeHTML(service)}
+                </p>
+            </td>
 
-        // Patient name
-        const patientCell = document.createElement("td");
+            <td>
+                <p class="appointment-time">
+                    ${escapeHTML(appointmentTime)}
+                </p>
+            </td>
 
-        const patientCellContainer = document.createElement("div");
-        patientCellContainer.classList.add("patient-cell");
+            <td class="status-column"></td>
 
-        const patientNameElement = document.createElement("h6");
-        patientNameElement.textContent = patientName;
-
-        patientCellContainer.appendChild(patientNameElement);
-        patientCell.appendChild(patientCellContainer);
-
-        // Service.
-        const serviceCell = document.createElement("td");
-
-        const serviceElement = document.createElement("p");
-        serviceElement.classList.add("service-name");
-        serviceElement.textContent = service;
-
-        serviceCell.appendChild(serviceElement);
-
-        // Appointment time.
-        const appointmentCell = document.createElement("td");
-
-        const appointmentTimeElement = document.createElement("p");
-        appointmentTimeElement.classList.add("appointment-time");
-        appointmentTimeElement.textContent = appointmentTime;
-
-        appointmentCell.appendChild(appointmentTimeElement);
-
-        // Status.
-        const statusCell = document.createElement("td");
-        statusCell.classList.add("status-column");
-
-        // Actions.
-        const actionCell = document.createElement("td");
-        actionCell.classList.add("actions-column");
-
-        const actionContainer = document.createElement("div");
-        actionContainer.classList.add("action-buttons");
-
-        actionCell.appendChild(actionContainer);
-
-        row.append(
-            queueCell,
-            patientCell,
-            serviceCell,
-            appointmentCell,
-            statusCell,
-            actionCell
-        );
+            <td class="actions-column">
+                <div class="action-buttons"></div>
+            </td>
+        `;
 
         tableBody.appendChild(row);
 
@@ -276,52 +263,48 @@ function updateActionButton(row) {
 
     const status = row.dataset.status;
 
-    actionContainer.innerHTML = "";
-
-    function createActionButton(label, action, className) {
-
-        const button = document.createElement("button");
-
-        button.type = "button";
-        button.classList.add("action-button", className);
-        button.textContent = label;
-        button.dataset.action = action;
-
-        return button;
-    }
-
     if (status === "Waiting") {
 
-        actionContainer.appendChild(
-            createActionButton(
-                "Call Patient",
-                "call",
-                "call-button"
-            )
-        );
+        actionContainer.innerHTML = `
+            <button
+                type="button"
+                class="action-button call-button"
+                data-action="call"
+            >
+                Call Patient
+            </button>
+        `;
 
     } else if (status === "Called") {
 
-        actionContainer.append(
-            createActionButton(
-                "Complete",
-                "complete",
-                "complete-button"
-            ),
-            createActionButton(
-                "Skip",
-                "skip",
-                "skip-button"
-            )
-        );
+        actionContainer.innerHTML = `
+            <button
+                type="button"
+                class="action-button complete-button"
+                data-action="complete"
+            >
+                Complete
+            </button>
 
+            <button
+                type="button"
+                class="action-button skip-button"
+                data-action="skip"
+            >
+                Skip
+            </button>
+        `;
+
+    } else {
+
+        actionContainer.innerHTML = "";
     }
 }
 
 // ================= UPDATE STATUS BADGE =================
 function updateStatusBadge(row) {
 
-    const statusCell = row.children[4];
+    const statusCell = row.querySelector(".status-column");
 
     if (!statusCell) {
         return;
@@ -338,26 +321,18 @@ function updateStatusBadge(row) {
 
     const className = classNames[status] || "";
 
-    // Create the status badge.
-    const statusBadge = document.createElement("span");
-    statusBadge.classList.add("status-badge");
-
-    if (className) {
-        statusBadge.classList.add(className);
-    }
-
-    // Add the status indicator.
-    statusBadge.textContent = `● ${status}`;
-
-    // Replace the existing status badge.
-    statusCell.replaceChildren(statusBadge);
+    statusCell.innerHTML = `
+        <span class="status-badge ${className}">
+            ● ${escapeHTML(status)}
+        </span>
+    `;
 }
 
 // ================= UPDATE STATUS THROUGH API =================
 async function updateQueueStatus(row, newStatus) {
 
     if (!row || !row.dataset.id) {
-        alert("Queue entry ID is missing.");
+        showToast("Queue entry ID is missing.", "error");
         return false;
     }
 
@@ -406,7 +381,6 @@ async function updateQueueStatus(row, newStatus) {
 
         // Restore the latest saved state after an unsuccessful update.
         await loadQueue();
-
         return false;
     }
 }
@@ -429,7 +403,6 @@ function handleAction(button) {
     }
 
     if (action === "call" && currentStatus === "Waiting") {
-        // Open the confirmation modal only when calling is allowed.
         openCallModal(row);
         return;
     }
