@@ -41,12 +41,6 @@ const insert = {
         VALUES (?, ?, ?, ?, ?, ?)
     `),
 
-    service: db.prepare(`
-        INSERT INTO Service
-            (service_id, service_name, description)
-        VALUES (?, ?, ?)
-    `),
-
     vaccine: db.prepare(`
         INSERT INTO Vaccination
             (vaccination_id, vaccine_name, description, dose_quantity, booster)
@@ -136,17 +130,7 @@ async function main() {
         children.forEach(row => insert.child.run(...row));
 
         // =========================================
-        // 5. SERVICES
-        // =========================================
-        const services = [
-            [1, "Maternal Follow-up", "Maternal healthcare follow-up appointments"],
-            [2, "Child Vaccination", "Childhood vaccination appointments"]
-        ];
-
-        services.forEach(row => insert.service.run(...row));
-
-        // =========================================
-        // 6. VACCINATION CATALOGUE
+        // 5. VACCINATION CATALOGUE
         // =========================================
         const vaccines = [
             [1, "DTaP-IPV-HepB-Hib", "Diphteria-Tetanus-Pertussis-Polio-Hepatitis B-Haemophilus influenzae type B", 3, 1],
@@ -157,7 +141,7 @@ async function main() {
         vaccines.forEach(row => insert.vaccine.run(...row));
 
         // =========================================
-        // 7. APPOINTMENTS
+        // 6. APPOINTMENTS
         // =========================================
         const appointments = [
             [1, "970107-07-0010", "Maternal Follow-up", "2026-07-20", "11:00", "Completed"],
@@ -174,7 +158,7 @@ async function main() {
         appointments.forEach(row => insert.appointment.run(...row));
 
         // =========================================
-        // 9. CHILD VACCINATION RECORDS
+        // 7. CHILD VACCINATION RECORDS
         // =========================================
         const childVaccinations = [
             [1, "260801-07-0007", 1, "2026-10-01", "Dose 1", "Completed"],
@@ -185,7 +169,7 @@ async function main() {
         childVaccinations.forEach(row => insert.childVaccination.run(...row));
 
         // =========================================
-        // 10. NOTIFICATIONS
+        // 8. NOTIFICATIONS
         // is_read: 0 = unread, 1 = read.
         // =========================================
         const notifications = [
@@ -226,7 +210,7 @@ async function main() {
         notifications.forEach(row => insert.notification.run(...row));
 
         // =========================================
-        // 11. QUEUE ENTRIES
+        // 9. QUEUE ENTRIES
         // Only appointments that have checked in.
         // =========================================
         const queueEntries = [

@@ -107,18 +107,7 @@ CREATE TABLE IF NOT EXISTS Child (
 
 
 -- =========================================
--- 7. SERVICE
--- E.g. Maternal follow-up, Child vaccination
--- =========================================
-CREATE TABLE IF NOT EXISTS Service (
-    service_id INTEGER PRIMARY KEY,
-    service_name TEXT NOT NULL UNIQUE,
-    description TEXT NOT NULL
-);
-
-
--- =========================================
--- 8. VACCINATION
+-- 7. VACCINATION
 -- Catalogue of available vaccines
 -- =========================================
 CREATE TABLE IF NOT EXISTS Vaccination (
@@ -131,7 +120,7 @@ CREATE TABLE IF NOT EXISTS Vaccination (
 
 
 -- =========================================
--- 9. APPOINTMENT
+-- 8. APPOINTMENT
 -- =========================================
 CREATE TABLE IF NOT EXISTS Appointment (
     appointment_id INTEGER PRIMARY KEY,
@@ -164,7 +153,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
 );
 
 -- =========================================
--- 10. RESCHEDULE REQUEST
+-- 9. RESCHEDULE REQUEST
 -- Tracks reschedule requests by patients
 -- =========================================
 CREATE TABLE IF NOT EXISTS Reschedule_Request (
@@ -183,7 +172,7 @@ CREATE TABLE IF NOT EXISTS Reschedule_Request (
 
 
 -- =========================================
--- 11. CHILD VACCINATION
+-- 10. CHILD VACCINATION
 -- Tracks a child's vaccine/dose and due date
 -- appointment_id links to its associated booking
 -- =========================================
@@ -208,7 +197,7 @@ CREATE TABLE IF NOT EXISTS Child_Vaccination (
 
 
 -- =========================================
--- 12. NOTIFICATION
+-- 11. NOTIFICATION
 -- Each user can receive multiple notifications.
 -- =========================================
 CREATE TABLE IF NOT EXISTS Notification (
@@ -232,7 +221,7 @@ CREATE TABLE IF NOT EXISTS Notification (
 
 
 -- =========================================
--- 13. QUEUE ENTRY
+-- 12. QUEUE ENTRY
 -- Created when a patient checks in
 -- =========================================
 CREATE TABLE IF NOT EXISTS Queue_Entry (
@@ -259,7 +248,7 @@ CREATE TABLE IF NOT EXISTS Queue_Entry (
 );
 
 /* =====================================================
-   MATERNAL RECORDS TABLE
+13. MATERNAL RECORDS TABLE
 ===================================================== */
 CREATE TABLE IF NOT EXISTS Maternal_Record (
     maternal_record_id INTEGER PRIMARY KEY,
@@ -289,4 +278,4 @@ CREATE TABLE IF NOT EXISTS Maternal_Record (
     CHECK (visit_number > 0),
     CHECK (height IS NULL OR (height > 0 AND height <= 300)),
     CHECK (weight IS NULL OR (weight > 0 AND weight <= 500))
-    );
+);
