@@ -4227,6 +4227,7 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
             SELECT
                 a.appointment_id,
                 a.user_id,
+                a.child_vaccination_id,
                 a.appointment_type,
                 a.appointment_date,
                 a.start_time,
@@ -4277,7 +4278,8 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
         }
 
         if (!allowedSlots.includes(start_time)) {
-            const dayOfWeek = selectedDate.getUTCDay();
+            const [year, month, day] = appointment_date.split("-").map(Number);
+            const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 
             if (dayOfWeek === 6) {
                 return res.status(400).json({
@@ -4363,6 +4365,32 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
                 );
                 error.statusCode = 409;
                 throw error;
+            }
+
+            // Update the vaccination due date if this is a child vaccination appointment
+            const dateChanged =
+                appointment.appointment_date !== appointment_date;
+
+            if (
+                dateChanged &&
+                appointment.appointment_type === "Child Vaccination"
+            ) {
+                const vaccinationUpdate = db.prepare(`
+                    UPDATE Child_Vaccination
+                    SET due_date = ?
+                    WHERE child_vaccination_id = ?
+                `).run(
+                    appointment_date,
+                    appointment.child_vaccination_id
+                );
+
+                if (vaccinationUpdate.changes !== 1) {
+                    const error = new Error(
+                        "The associated vaccination record could not be updated."
+                    );
+                    error.statusCode = 409;
+                    throw error;
+                }
             }
 
             // Mark the pending reschedule request as Approved
