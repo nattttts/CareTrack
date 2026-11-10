@@ -36,6 +36,27 @@ if (!resetToken) {
     submitButton.disabled = true;
 }
 
+// Toggle password visibility
+document.querySelectorAll(".password-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+        const input = document.getElementById(button.dataset.target);
+        const icon = button.querySelector("i");
+
+        const isPasswordHidden = input.type === "password";
+
+        input.type = isPasswordHidden ? "text" : "password";
+
+        button.setAttribute("aria-pressed", String(isPasswordHidden));
+        button.setAttribute(
+            "aria-label",
+            isPasswordHidden ? "Hide password" : "Show password"
+        );
+
+        icon.classList.toggle("bi-eye", !isPasswordHidden);
+        icon.classList.toggle("bi-eye-slash", isPasswordHidden);
+    });
+});
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
