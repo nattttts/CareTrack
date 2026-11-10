@@ -3151,7 +3151,7 @@ app.get("/api/staff/patients/search", requireRole("staff"), (req, res) => {
                 full_name,
                 role
             FROM User
-            WHERE role IN ('pregnant_woman', 'child')
+            WHERE role = 'pregnant_woman'
               AND account_status = 'Active'
               AND (
                   user_id LIKE ?
