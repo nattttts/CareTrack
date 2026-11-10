@@ -204,8 +204,6 @@ CREATE TABLE IF NOT EXISTS Notification (
     notification_id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
     type TEXT NOT NULL DEFAULT 'general',
-    appointment_date TEXT,
-    appointment_time TEXT,
     note TEXT,
 
     title TEXT NOT NULL,

@@ -4572,8 +4572,6 @@ app.get(
                     message,
                     created_at,
                     is_read,
-                    appointment_date,
-                    appointment_time,
                     note
                 FROM Notification
                 WHERE user_id = ?
