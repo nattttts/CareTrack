@@ -339,9 +339,6 @@ function renderRecords() {
             formatDate(record.due_date)
         );
 
-        // Remarks are not stored in the current database.
-        const remarks = "—";
-
         return `
             <tr>
                 <td>${vaccineName}</td>
@@ -352,7 +349,6 @@ function renderRecords() {
                     </span>
                 </td>
                 <td>${dueDate}</td>
-                <td>${remarks}</td>
             </tr>
         `;
     }).join("");
