@@ -148,6 +148,40 @@ body {
     color: #b5b5b5;
 }
 
+.password-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+}
+
+.password-input-wrapper input {
+    width: 100%;
+    padding-right: 45px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: auto;
+    margin: 0;
+    padding: 5px;
+
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.password-toggle:hover {
+    background: transparent;
+    color: #333;
+}
+
 .forgot-password {
     color: #f9528e;
     text-decoration: none;
