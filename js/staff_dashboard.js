@@ -204,8 +204,7 @@ function displayActiveQueue(queueEntries) {
     const activeEntries = queueEntries
         .filter(entry =>
             entry.queue_status === "Waiting" || entry.queue_status === "Called"
-        )
-        .slice(0, 4);
+        );
 
     if (activeEntries.length === 0) {
         activeQueueList.innerHTML = `

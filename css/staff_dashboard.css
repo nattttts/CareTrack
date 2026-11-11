@@ -312,6 +312,11 @@ a {
 }
 
 /* ================= ACTIVE QUEUE ================= */
+.active-queue-list {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
 /* Status Badges */
 .status-waiting {
     color: #d77b00;
