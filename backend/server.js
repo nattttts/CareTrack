@@ -3958,7 +3958,8 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
             user_id,
             appointment_date,
             start_time,
-            child_vaccination_id
+            child_vaccination_id,
+            rescheduled_from_appointment_id
         } = req.body;
 
         if (!user_id || !appointment_date || !start_time) {
@@ -4074,7 +4075,59 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 throw error;
             }
 
-            // Create the appointment.
+            // Handle rescheduling from an original missed appointment.
+            if (rescheduled_from_appointment_id !== null) {
+
+                if (
+                    !Number.isInteger(rescheduled_from_appointment_id) ||
+                    rescheduled_from_appointment_id <= 0
+                ) {
+                    const error = new Error("Invalid original appointment ID.");
+                    error.statusCode = 400;
+                    throw error;
+                }
+
+                // Verify that the original appointment belongs to this patient
+                // and is actually a missed appointment.
+                const originalAppointment = db.prepare(`
+                    SELECT appointment_id, appointment_type, status
+                    FROM Appointment
+                    WHERE appointment_id = ?
+                    AND user_id = ?
+                `).get(rescheduled_from_appointment_id, user_id);
+
+                if (
+                    !originalAppointment ||
+                    originalAppointment.status !== "Missed"
+                ) {
+                    const error = new Error(
+                        "The original missed appointment could not be found."
+                    );
+                    error.statusCode = 400;
+                    throw error;
+                }
+
+                // Remove the empty maternal record associated with the missed
+                // appointment. Preserve it if it contains clinical information.
+                if (originalAppointment.appointment_type === "Maternal Follow-up") {
+                    db.prepare(`
+                        DELETE FROM Maternal_Record
+                        WHERE appointment_id = ?
+                        AND height IS NULL
+                        AND weight IS NULL
+                        AND systolic IS NULL
+                        AND diastolic IS NULL
+                        AND urine_test IS NULL
+                        AND blood_test IS NULL
+                        AND (
+                            doctor_remarks IS NULL
+                            OR TRIM(doctor_remarks) = ''
+                        )
+                    `).run(rescheduled_from_appointment_id);
+                }
+            }
+
+            // Create the appointment
             const result = db.prepare(`
                 INSERT INTO Appointment (
                     user_id,
@@ -4177,8 +4230,8 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
         });
 
     } catch (error) {
-        if (error.statusCode === 409) {
-            return res.status(409).json({
+        if (error.statusCode === 400 || error.statusCode === 409) {
+            return res.status(error.statusCode).json({
                 message: error.message
             });
         }

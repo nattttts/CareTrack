@@ -273,6 +273,7 @@ async function loadAppointments() {
                     <button
                         type="button"
                         class="action-button reschedule-appointment-button"
+                        data-appointment-id="${escapeHtml(appointment.appointment_id)}"
                         data-user-id="${escapeHtml(appointment.user_id)}"
                     >
                         <i class="bi bi-calendar-plus"></i>
@@ -743,7 +744,8 @@ scheduleAppointmentForm.addEventListener("submit", async event => {
             body: JSON.stringify({
                 user_id: selectedPatient.user_id,
                 appointment_date: appointmentDateInput.value,
-                start_time: appointmentStartTimeInput.value
+                start_time: appointmentStartTimeInput.value,
+                rescheduled_from_appointment_id: rescheduledFromAppointmentId
             })
         });
 
@@ -757,6 +759,8 @@ scheduleAppointmentForm.addEventListener("submit", async event => {
 
         // Refresh the appointments table
         await loadAppointments();
+
+        rescheduledFromAppointmentId = null;
 
         // Close the modal
         const modalInstance =
@@ -818,38 +822,54 @@ scheduleAppointmentModal.addEventListener("hidden.bs.modal", () => {
     );
 });
 
+let rescheduledFromAppointmentId = null;
 
 // Schedule next appointment
 document.addEventListener("click", event => {
-    const button = event.target.closest(".follow-up-button, .reschedule-appointment-button");
+    const button = event.target.closest(
+        ".follow-up-button, .reschedule-appointment-button"
+    );
 
     if (!button) return;
 
     const userId = button.dataset.userId;
+    const appointmentId = button.dataset.appointmentId;
 
     if (!userId) {
-        console.error("No patient ID found for this follow-up.");
+        console.error("No patient ID found.");
         return;
     }
 
-    // Find the patient in the currently loaded appointment data
-    const patient = appointmentsData.find(
-        appointment => String(appointment.user_id) === String(userId)
+    const isReschedule = button.classList.contains(
+        "reschedule-appointment-button"
     );
+
+    // Only retain an original appointment ID for missed appointments
+    rescheduledFromAppointmentId = isReschedule
+        ? Number(appointmentId)
+        : null;
+
+    const patient = isReschedule
+        ? appointmentsData.find(
+            appointment =>
+                String(appointment.appointment_id) === String(appointmentId)
+          )
+        : appointmentsData.find(
+            appointment =>
+                String(appointment.user_id) === String(userId)
+          );
 
     if (!patient) {
         console.error("Patient not found:", userId);
         return;
     }
 
-    // Open the existing Schedule Appointment modal
     const modalElement = document.getElementById(
         "scheduleAppointmentModal"
     );
 
     bootstrap.Modal.getOrCreateInstance(modalElement).show();
 
-    // Select the patient after the modal opens
     selectPatient({
         user_id: patient.user_id,
         full_name: patient.patient_name,
