@@ -73,25 +73,26 @@ const insert = {
 };
 
 async function main() {
+    // Generate valid password hashes for demo accounts.
     const adminPasswordHash = await hashPassword("Admin@123456");
+    const demoPasswordHash = await hashPassword("Demo@12345678");
 
     const seed = db.transaction(() => {
         // =========================================
         // 1. USERS
-        // These are fictional test accounts.
-        // Replace placeholder hashes when auth is built.
+        // All demo accounts have usable passwords.
         // =========================================
         const users = [
             ["1", "Admin", "admin@gmail.com", adminPasswordHash, "admin", "Active", "2025-11-01 12:00:00", 1],
-            ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
-            ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Active", "2025-11-01 12:00:00", 1],
-            ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "staff", "Inactive", "2025-11-01 12:00:00", 1],
-            ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Active", "2026-09-02 12:00:00", 1],
-            ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Active", "2026-09-03 12:00:00", 1],
-            ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Inactive", "2025-11-10 12:00:00", 1],
-            ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "pregnant_woman", "Inactive", "2025-12-10 12:00:00", 1],
-            ["260801-07-0007", "Ali bin Ahmad", "mother3@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-08-02 12:00:00", 1],
-            ["260902-07-0003", "Tan Yi Xing", "mother4@gmail.com", "TEMP_HASH_REPLACE_BEFORE_AUTH", "child", "Active", "2026-09-03 12:00:00", 1]
+            ["920102-07-0002", "Aisha Rahman", "staff1@gmail.com", demoPasswordHash, "staff", "Active", "2025-11-01 12:00:00", 1],
+            ["930103-07-0004", "Tan Mei Ling", "staff2@gmail.com", demoPasswordHash, "staff", "Active", "2025-11-01 12:00:00", 1],
+            ["940104-07-0005", "Lim Ming Chong", "staff3@gmail.com", demoPasswordHash, "staff", "Inactive", "2025-11-01 12:00:00", 1],
+            ["950105-07-0006", "Amelie Chong", "mother1@gmail.com", demoPasswordHash, "pregnant_woman", "Active", "2026-09-02 12:00:00", 1],
+            ["960106-07-0008", "Beatrice Chew", "mother2@gmail.com", demoPasswordHash, "pregnant_woman", "Active", "2026-09-03 12:00:00", 1],
+            ["970107-07-0010", "Nurul binti Rashid", "mother3@gmail.com", demoPasswordHash, "pregnant_woman", "Inactive", "2025-11-10 12:00:00", 1],
+            ["980108-07-0012", "Jennie Lim", "mother4@gmail.com", demoPasswordHash, "pregnant_woman", "Inactive", "2025-12-10 12:00:00", 1],
+            ["260801-07-0007", "Ali bin Ahmad", "mother3@gmail.com", demoPasswordHash, "child", "Active", "2026-08-02 12:00:00", 1],
+            ["260902-07-0003", "Tan Yi Xing", "mother4@gmail.com", demoPasswordHash, "child", "Active", "2026-09-03 12:00:00", 1]
         ];
 
         users.forEach(row => insert.user.run(...row));
@@ -187,19 +188,19 @@ async function main() {
 
             [5, "950105-07-0006", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 12 October 2026 at 09:00.", 1],
-            
+
             [6, "950105-07-0006", "Appointment Successfully Rescheduled",
                 "Your appointment has been rescheduled to 13 October 2026 at 09:00.", 1],
-            
+
             [7, "950105-07-0006", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 13 November 2026 at 09:00.", 0],
 
             [8, "960106-07-0008", "Missed Appointment",
                 "Your appointment that was scheduled on 13 October 2026 was missed.", 1],
-            
+
             [9, "960106-07-0008", "Appointment Scheduled",
                 "Your next appointment has been scheduled on 20 October 2026", 0],
-            
+
             [10, "260801-07-0007", "Vaccination Appointment Scheduled",
                 "Your next vaccination appointment has been scheduled on 1 November 2026", 0],
 
@@ -232,7 +233,7 @@ async function main() {
         console.log("Pregnant women: mother1@gmail.com, mother2@gmail.com, mother3@gmail.com, mother4@gmail.com");
         console.log("Children: mother3@gmail.com, mother4@gmail.com");
         console.log("Admin password: Admin@123456");
-        console.log("Staff, Pregnant Woman, and Child accounts do not have usable passwords yet.");
+        console.log("Staff, Pregnant Woman, and Child password: Demo@123456");
 
         const counts = db.prepare(`
             SELECT
@@ -263,7 +264,7 @@ async function main() {
 }
 
 main().catch(error => {
-    console.error("Failed to generate Admin password hash.");
+    console.error("Failed to generate password hashes.");
     console.error(error.message);
     db.close();
     process.exitCode = 1;
