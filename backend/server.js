@@ -4075,6 +4075,7 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 throw error;
             }
 
+
             // Handle rescheduling from an original missed appointment.
             if (rescheduled_from_appointment_id !== null) {
 
@@ -4090,7 +4091,11 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 // Verify that the original appointment belongs to this patient
                 // and is actually a missed appointment.
                 const originalAppointment = db.prepare(`
-                    SELECT appointment_id, appointment_type, status
+                    SELECT
+                        appointment_id,
+                        appointment_type,
+                        status,
+                        child_vaccination_id
                     FROM Appointment
                     WHERE appointment_id = ?
                     AND user_id = ?
@@ -4107,9 +4112,9 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                     throw error;
                 }
 
-                // Remove the empty maternal record associated with the missed
-                // appointment. Preserve it if it contains clinical information.
+                // Handle maternal appointment rescheduling.
                 if (originalAppointment.appointment_type === "Maternal Follow-up") {
+
                     db.prepare(`
                         DELETE FROM Maternal_Record
                         WHERE appointment_id = ?
@@ -4124,6 +4129,59 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                             OR TRIM(doctor_remarks) = ''
                         )
                     `).run(rescheduled_from_appointment_id);
+
+                }
+
+                // Handle child vaccination appointment rescheduling.
+                else if (originalAppointment.appointment_type === "Child Vaccination") {
+
+                    if (!originalAppointment.child_vaccination_id) {
+                        const error = new Error(
+                            "The original appointment is not linked to a vaccination record."
+                        );
+                        error.statusCode = 400;
+                        throw error;
+                    }
+
+                    // Retrieve the existing vaccination record.
+                    const vaccinationRecord = db.prepare(`
+                        SELECT child_vaccination_id
+                        FROM Child_Vaccination
+                        WHERE child_vaccination_id = ?
+                        AND user_id = ?
+                        AND status = 'Upcoming'
+                    `).get(
+                        originalAppointment.child_vaccination_id,
+                        user_id
+                    );
+
+                    if (!vaccinationRecord) {
+                        const error = new Error(
+                            "The associated upcoming vaccination record could not be found."
+                        );
+                        error.statusCode = 400;
+                        throw error;
+                    }
+
+                    // Prevent another confirmed appointment from being created
+                    // for the same vaccination record.
+                    const existingAppointment = db.prepare(`
+                        SELECT appointment_id
+                        FROM Appointment
+                        WHERE child_vaccination_id = ?
+                        AND status = 'Confirmed'
+                    `).get(vaccinationRecord.child_vaccination_id);
+
+                    if (existingAppointment) {
+                        const error = new Error(
+                            "An active appointment already exists for this vaccination."
+                        );
+                        error.statusCode = 409;
+                        throw error;
+                    }
+
+                    // Reuse the existing vaccination record.
+                    vaccinationRecordId = vaccinationRecord.child_vaccination_id;
                 }
             }
 
@@ -4146,6 +4204,32 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
             );
             
             const appointmentId = Number(result.lastInsertRowid);
+
+            // Update the existing vaccination due date when rescheduling.
+            if (
+                appointmentType === "Child Vaccination" &&
+                rescheduled_from_appointment_id !== null
+            ) {
+                const vaccinationUpdate = db.prepare(`
+                    UPDATE Child_Vaccination
+                    SET due_date = ?
+                    WHERE child_vaccination_id = ?
+                    AND user_id = ?
+                    AND status = 'Upcoming'
+                `).run(
+                    appointment_date,
+                    vaccinationRecordId,
+                    user_id
+                );
+
+                if (vaccinationUpdate.changes !== 1) {
+                    const error = new Error(
+                        "The vaccination due date could not be updated."
+                    );
+                    error.statusCode = 409;
+                    throw error;
+                }
+            }
 
             // Automatically create a maternal record for maternal appointments only.
             // Child vaccination appointments are not affected.
