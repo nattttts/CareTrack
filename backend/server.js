@@ -4420,6 +4420,21 @@ app.patch("/api/staff/appointments/:appointmentId", requireRole("staff"), async 
                 throw error;
             }
 
+            // Update the maternal record visit date if this is a maternal appointment
+            if (
+                appointment.appointment_type === "Maternal Follow-up" &&
+                appointment.appointment_date !== appointment_date
+            ) {
+                db.prepare(`
+                    UPDATE Maternal_Record
+                    SET visit_date = ?
+                    WHERE appointment_id = ?
+                `).run(
+                    appointment_date,
+                    appointmentId
+                );
+            }
+
             // Update the vaccination due date if this is a child vaccination appointment
             const dateChanged =
                 appointment.appointment_date !== appointment_date;
