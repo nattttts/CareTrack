@@ -41,6 +41,28 @@ function formatDate(dateValue) {
     return `${day}/${month}/${year}`;
 }
 
+// Automatically determine whether a vaccination is overdue
+function getDisplayStatus(record) {
+    const today = new Date();
+    const todayString = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, "0"),
+        String(today.getDate()).padStart(2, "0")
+    ].join("-");
+
+    const dueDate = String(record.due_date || "").slice(0, 10);
+
+    if (
+        String(record.status).toLowerCase() === "upcoming" &&
+        dueDate &&
+        dueDate < todayString
+    ) {
+        return "Overdue";
+    }
+
+    return record.status;
+}
+
 // Send requests to the backend
 async function apiRequest(url, options = {}) {
     const response = await fetch(url, {
@@ -286,7 +308,9 @@ function renderVaccinationRecords(records) {
     }
 
     tableBody.innerHTML = records.map(record => {
-        const statusClass = String(record.status || "")
+        const displayStatus = getDisplayStatus(record);
+
+        const statusClass = String(displayStatus || "")
             .toLowerCase()
             .replace(/[^a-z]/g, "");
 
@@ -304,7 +328,7 @@ function renderVaccinationRecords(records) {
 
                 <td>
                     <span class="status ${statusClass}">
-                        ${escapeHTML(record.status)}
+                        ${escapeHTML(displayStatus)}
                     </span>
                 </td>
 
