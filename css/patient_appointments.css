@@ -392,6 +392,11 @@ img {
     color: #936318;
 }
 
+/* Rebooked (After missed) */
+.status.rebooked {
+    color: #000075;
+    background: #add8e6;
+}
 
 /* ================= ACTION BUTTONS ================= */
 

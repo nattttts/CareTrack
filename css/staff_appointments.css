@@ -489,6 +489,16 @@ a {
     background: #e5394c;
 }
 
+/* Rebooked (After missed) */
+.status-badge.rebooked {
+    color: #000075;
+    background: #add8e6;
+}
+
+.status-badge.rebooked > span {
+    background: #0000a0;
+}
+
 /* =====================================================
    APPOINTMENT ACTIONS
 ===================================================== */

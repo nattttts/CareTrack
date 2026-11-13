@@ -4288,6 +4288,21 @@ app.post("/api/staff/appointments", requireRole("staff"), async (req, res) => {
                 `A new ${appointmentType} appointment has been scheduled for ${appointment_date} at ${start_time}.`
             );
 
+            // Update the original missed appointment after
+            // successfully creating its replacement.
+            if (rescheduled_from_appointment_id !== null) {
+                db.prepare(`
+                    UPDATE Appointment
+                    SET status = 'Rebooked'
+                    WHERE appointment_id = ?
+                    AND user_id = ?
+                    AND status = 'Missed'
+                `).run(
+                    rescheduled_from_appointment_id,
+                    user_id
+                );
+            }
+
             return appointmentId;
         });
 

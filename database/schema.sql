@@ -140,7 +140,8 @@ CREATE TABLE IF NOT EXISTS Appointment (
             status IN (
                 'Confirmed',
                 'Completed',
-                'Missed'
+                'Missed',
+                'Rebooked'
             )
         ),
 

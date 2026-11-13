@@ -311,6 +311,11 @@ a {
     background: #fff0f2;
 }
 
+.status-rebooked {
+    color: #000075;
+    background: #add8e6;
+}
+
 /* ================= ACTIVE QUEUE ================= */
 .active-queue-list {
     max-height: 350px;

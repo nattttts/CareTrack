@@ -162,7 +162,8 @@ function displayTodayAppointments(appointments) {
             "Confirmed": "status-confirmed",
             "Pending Reschedule": "status-pending",
             "Completed": "status-completed",
-            "Missed": "status-missed"
+            "Missed": "status-missed",
+            "Rebooked": "status-rebooked"
         };
 
         const statusClass =

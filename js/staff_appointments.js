@@ -359,7 +359,8 @@ viewAppointmentModal.addEventListener("show.bs.modal", event => {
         "Confirmed": "confirmed",
         "Pending Reschedule": "pending-reschedule",
         "Completed": "completed",
-        "Missed": "missed"
+        "Missed": "missed",
+        "Rebooked": "rebooked"
     };
 
     document.getElementById("modalAppointmentType").textContent =

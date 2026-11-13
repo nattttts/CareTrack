@@ -98,7 +98,8 @@ function createAppointmentCard(appointment) {
     const statusClass = {
         Confirmed: "confirmed",
         Completed: "completed",
-        Missed: "missed"
+        Missed: "missed",
+        Rebooked: "rebooked"
     };
 
     const statusClassName = isReschedulePending
@@ -246,7 +247,7 @@ function renderAppointments() {
             }
         },
         {
-            status: "Missed",
+            status: ["Missed", "Rebooked"],
             containerId: "missedAppointments",
             emptyId: "missedEmpty",
             countId: "missedCount",
@@ -265,7 +266,11 @@ function renderAppointments() {
         const count = document.getElementById(category.countId);
 
         const matchingAppointments = appointmentsData
-            .filter(appointment => appointment.status === category.status)
+            .filter(appointment =>
+                Array.isArray(category.status)
+                    ? category.status.includes(appointment.status)
+                    : appointment.status === category.status
+            )
             .sort((a, b) => {
                 // Upcoming appointments remain in their original order
                 if (category.status === "Confirmed") {
