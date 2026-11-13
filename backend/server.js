@@ -6586,6 +6586,67 @@ app.get(
     }
 );
 
+app.post("/api/change-password", requireRole("pregnant_woman", "child", "staff"), async (req, res) => {
+    try {
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                message: "Please fill in all password fields."
+            });
+        }
+
+        if (newPassword.length < 12 || newPassword.length > 128) {
+            return res.status(400).json({
+                message: "Password must be between 12 and 128 characters."
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                message: "New passwords do not match."
+            });
+        }
+
+        const user = db.prepare(`
+            SELECT password_hash
+            FROM User
+            WHERE user_id = ?
+        `).get(req.session.user.userId);
+
+        if (!user || !(await verifyPassword(user.password_hash, currentPassword))) {
+            return res.status(401).json({
+                message: "Current password is incorrect."
+            });
+        }
+
+        if (await verifyPassword(user.password_hash, newPassword)) {
+            return res.status(400).json({
+                message: "New password must be different from your current password."
+            });
+        }
+
+        const newPasswordHash = await hashPassword(newPassword);
+
+        db.prepare(`
+            UPDATE User
+            SET password_hash = ?
+            WHERE user_id = ?
+        `).run(newPasswordHash, req.session.user.userId);
+
+        return res.json({
+            message: "Password updated successfully."
+        });
+
+    } catch (error) {
+        console.error("Change password error:", error);
+
+        return res.status(500).json({
+            message: "Unable to update password."
+        });
+    }
+});
+
 // Auto-update missed appointments when the server start
 updateMissedAppointments();
 

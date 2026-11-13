@@ -389,3 +389,67 @@ async function resetPassword() {
         );
     }
 }
+
+async function resetPassword() {
+    const currentPassword = prompt("Enter your current password:");
+
+    if (currentPassword === null) return;
+
+    const newPassword = prompt("Enter your new password:");
+
+    if (newPassword === null) return;
+
+    const confirmPassword = prompt("Confirm your new password:");
+
+    if (confirmPassword === null) return;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showProfileToast("Please fill in all password fields.", "error");
+        return;
+    }
+
+    if (newPassword.length < 12 || newPassword.length > 128) {
+        showProfileToast(
+            "Password must be between 12 and 128 characters.",
+            "error"
+        );
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        showProfileToast("New passwords do not match.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch("https://localhost:3000/api/change-password", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword,
+                confirmPassword
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Unable to update password.");
+        }
+
+        showProfileToast("Password updated successfully!");
+
+    } catch (error) {
+        console.error("Password update error:", error);
+
+        showProfileToast(
+            error.message || "Unable to update password.",
+            "error"
+        );
+    }
+}

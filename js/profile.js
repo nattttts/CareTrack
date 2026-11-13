@@ -466,49 +466,49 @@ document.addEventListener("DOMContentLoaded", loadLoggedInProfile);
 /* ========================================
    RESET PASSWORD BUTTON
 ======================================== */
-function resetPassword() {
+// function resetPassword() {
 
-    // Ask for the current password
-    const currentPassword = prompt("Please Enter Your Current Password: ");
+//     // Ask for the current password
+//     const currentPassword = prompt("Please Enter Your Current Password: ");
 
-    // User clicked Cancel
-    if (currentPassword === null) {
-        return;
-    }
-    if (currentPassword.trim() === "") {
-        alert("Please Enter Your Current Password: ");
-        return;
-    } 
-    // Ask for the new password
-    const newPassword = prompt("Please Enter Your New Password: ");
+//     // User clicked Cancel
+//     if (currentPassword === null) {
+//         return;
+//     }
+//     if (currentPassword.trim() === "") {
+//         alert("Please Enter Your Current Password: ");
+//         return;
+//     } 
+//     // Ask for the new password
+//     const newPassword = prompt("Please Enter Your New Password: ");
 
-    if (newPassword === null) {
-        return;
-    } if (newPassword.length < 8) {
-        alert("Your New Password MUST Contain At Least 8 CHARACTERS.");
-        return;
-    }if (currentPassword === newPassword) {
-        alert("Your New Password MUST Be Different From Your Current Password.");
-        return;
-    }
-    // Confirm the new password
-    const confirmPassword = prompt("Please Confirm Your New Password:"); 
+//     if (newPassword === null) {
+//         return;
+//     } if (newPassword.length < 8) {
+//         alert("Your New Password MUST Contain At Least 8 CHARACTERS.");
+//         return;
+//     }if (currentPassword === newPassword) {
+//         alert("Your New Password MUST Be Different From Your Current Password.");
+//         return;
+//     }
+//     // Confirm the new password
+//     const confirmPassword = prompt("Please Confirm Your New Password:"); 
 
-    if (confirmPassword === null) {
-        return;
-    }if (newPassword !== confirmPassword) {
-        alert("The New Passwords DO NOT MATCH. Please Try Again.");
-        return;
-    }
+//     if (confirmPassword === null) {
+//         return;
+//     }if (newPassword !== confirmPassword) {
+//         alert("The New Passwords DO NOT MATCH. Please Try Again.");
+//         return;
+//     }
     
-    // Confirm the action
-    const confirmReset = confirm("Are You Sure You Want To Reset Your Password?");
+//     // Confirm the action
+//     const confirmReset = confirm("Are You Sure You Want To Reset Your Password?");
 
-    if (!confirmReset) {
-        return;
-    }
-    showProfileToast("Password reset successful!!!");
-}
+//     if (!confirmReset) {
+//         return;
+//     }
+//     showProfileToast("Password reset successful!!!");
+// }
 
 async function editProfile() {
     const card = document.getElementById("personalInformationCard");
@@ -605,6 +605,70 @@ async function editProfile() {
         button.textContent = "✓ Save Changes";
     } finally {
         button.disabled = false;
+    }
+}
+
+async function resetPassword() {
+    const currentPassword = prompt("Enter your current password:");
+
+    if (currentPassword === null) return;
+
+    const newPassword = prompt("Enter your new password:");
+
+    if (newPassword === null) return;
+
+    const confirmPassword = prompt("Confirm your new password:");
+
+    if (confirmPassword === null) return;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showProfileToast("Please fill in all password fields.", "error");
+        return;
+    }
+
+    if (newPassword.length < 12 || newPassword.length > 128) {
+        showProfileToast(
+            "Password must be between 12 and 128 characters.",
+            "error"
+        );
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        showProfileToast("New passwords do not match.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch("https://localhost:3000/api/change-password", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword,
+                confirmPassword
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Unable to update password.");
+        }
+
+        showProfileToast("Password updated successfully!");
+
+    } catch (error) {
+        console.error("Password update error:", error);
+
+        showProfileToast(
+            error.message || "Unable to update password.",
+            "error"
+        );
     }
 }
 
