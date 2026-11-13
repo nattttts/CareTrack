@@ -233,7 +233,7 @@ async function main() {
         console.log("Pregnant women: mother1@gmail.com, mother2@gmail.com, mother3@gmail.com, mother4@gmail.com");
         console.log("Children: mother3@gmail.com, mother4@gmail.com");
         console.log("Admin password: Admin@123456");
-        console.log("Staff, Pregnant Woman, and Child password: Demo@123456");
+        console.log("Staff, Pregnant Woman, and Child password: Demo@12345678");
 
         const counts = db.prepare(`
             SELECT
